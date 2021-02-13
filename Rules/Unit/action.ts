@@ -74,6 +74,7 @@ import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
 import { Water } from '@civ-clone/core-terrain/Types/Water';
 import { NavalTransport, Worker } from '../../Types';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 
 export const getRules: (
   cityRegistry?: CityRegistry,
@@ -258,14 +259,17 @@ export const getRules: (
           unitRegistry.getByTile(to).length === 0
       ),
       new Effect(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          // TODO: pass cityRegistry in
-          new CaptureCity(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const [city] = cityRegistry.getByTile(to);
+
+          return new CaptureCity(
             from,
             to,
             unit,
-            ruleRegistry /*, cityRegistry*/
-          ) as UnitAction
+            city,
+            ruleRegistry
+          ) as UnitAction;
+        }
       )
     ),
 
@@ -471,8 +475,24 @@ export const getRules: (
           )
       ),
       new Effect(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          new Embark(from, to, unit, ruleRegistry) as UnitAction
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const [transport] = unitRegistry
+            .getByTile(to)
+            .filter(
+              (tileUnit: Unit): boolean => tileUnit instanceof NavalTransport
+            )
+            .filter((tileUnit: Unit): boolean =>
+              (tileUnit as NavalTransport).hasCapacity()
+            );
+
+          return new Embark(
+            from,
+            to,
+            unit,
+            (transport as unknown) as ITransport,
+            ruleRegistry
+          ) as UnitAction;
+        }
       )
     ),
 
@@ -498,8 +518,17 @@ export const getRules: (
           transportRegistry.getByUnit(unit).transport().tile() === from
       ),
       new Effect(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          new Disembark(from, to, unit, ruleRegistry) as UnitAction
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const transport = transportRegistry.getByUnit(unit).transport();
+
+          return new Disembark(
+            from,
+            to,
+            unit,
+            transport,
+            ruleRegistry
+          ) as UnitAction;
+        }
       )
     ),
 

@@ -51,9 +51,11 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
             .some((tileUnit) => tileUnit.player() !== unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry))),
         new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => cityRegistry
             .getByTile(to)
-            .some((city) => city.player() !== unit.player())), new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0), new Effect_1.default((unit, to, from = unit.tile()) => 
-        // TODO: pass cityRegistry in
-        new Actions_1.CaptureCity(from, to, unit, ruleRegistry /*, cityRegistry*/))),
+            .some((city) => city.player() !== unit.player())), new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0), new Effect_1.default((unit, to, from = unit.tile()) => {
+            const [city] = cityRegistry
+                .getByTile(to);
+            return new Actions_1.CaptureCity(from, to, unit, city, ruleRegistry);
+        })),
         new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Criterion_1.default((unit, to) => tileImprovementRegistry
             .getByTile(to)
             // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
@@ -92,7 +94,13 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
             .every((tileUnit) => tileUnit.player() === unit.player())), new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .filter((tileUnit) => tileUnit instanceof Types_2.NavalTransport)
-            .some((tileUnit) => tileUnit.hasCapacity())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Embark(from, to, unit, ruleRegistry))),
+            .some((tileUnit) => tileUnit.hasCapacity())), new Effect_1.default((unit, to, from = unit.tile()) => {
+            const [transport] = unitRegistry
+                .getByTile(to)
+                .filter((tileUnit) => tileUnit instanceof Types_2.NavalTransport)
+                .filter((tileUnit) => tileUnit.hasCapacity());
+            return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
+        })),
         new Action_1.Action(Action_1.isNeighbouringTile, new Criterion_1.default((unit) => {
             try {
                 transportRegistry.getByUnit(unit);
@@ -101,7 +109,10 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
             catch (e) {
                 return false;
             }
-        }), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disembark(from, to, unit, ruleRegistry))),
+        }), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
+            const transport = transportRegistry.getByUnit(unit).transport();
+            return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
+        })),
         new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_2.NavalTransport), new Criterion_1.default((unit) => unit.hasCargo()), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Criterion_1.default((unit, to) => to.getNeighbours().some((tile) => tile.isLand())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry))),
     ];
 };
