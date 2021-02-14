@@ -22,6 +22,7 @@ import created from '../Rules/Unit/created';
 import { expect } from 'chai';
 import StaticWorldGenerator from '@civ-clone/simple-world-generator/tests/lib/StaticWorldGenerator';
 import unitYield from '../Rules/Unit/yield';
+import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
 
 describe('unit:activate', () => {
   const ruleRegistry = new RuleRegistry(),
@@ -29,14 +30,17 @@ describe('unit:activate', () => {
     tileImprovementRegistry = new TileImprovementRegistry(),
     unitRegistry = new UnitRegistry(),
     unitImprovementRegistry = new UnitImprovementRegistry(),
-    playerResearchRegistry = new PlayerResearchRegistry();
+    playerResearchRegistry = new PlayerResearchRegistry(),
+    transportRegistry = new TransportRegistry();
 
   ruleRegistry.register(
     ...action(
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,
-      unitRegistry
+      unitImprovementRegistry,
+      unitRegistry,
+      transportRegistry
     ),
     ...activate(unitImprovementRegistry),
     ...available(playerResearchRegistry, tileImprovementRegistry),

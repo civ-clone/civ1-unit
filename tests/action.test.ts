@@ -44,11 +44,14 @@ import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
 import action from '../Rules/Unit/action';
 import available from '@civ-clone/civ1-world/Rules/TileImprovement/available';
+import built from '@civ-clone/civ1-world/Rules/TileImprovement/built';
 import { expect } from 'chai';
 import movementCost from '../Rules/Unit/movementCost';
 import unitCreated from '../Rules/Unit/created';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
+import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -57,7 +60,9 @@ describe('Action', (): void => {
     terrainRegistry = new TerrainRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     playerResearchRegistry = new PlayerResearchRegistry(),
+    transportRegistry = new TransportRegistry(),
     unitRegistry = new UnitRegistry(),
+    unitImprovementRegistry = new UnitImprovementRegistry(),
     getUnit = (
       player: Player,
       tile: Tile,
@@ -98,9 +103,12 @@ describe('Action', (): void => {
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,
-      unitRegistry
+      unitImprovementRegistry,
+      unitRegistry,
+      transportRegistry
     ),
     ...available(playerResearchRegistry, tileImprovementRegistry),
+    ...built(tileImprovementRegistry),
     ...movementCost(tileImprovementRegistry),
     ...unitYield(),
     ...unitCreated(unitRegistry),

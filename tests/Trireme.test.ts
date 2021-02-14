@@ -120,6 +120,7 @@ describe('Trireme', (): void => {
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,
+      unitImprovementRegistry,
       unitRegistry,
       transportRegistry
     ),
@@ -363,6 +364,7 @@ describe('Trireme', (): void => {
         cityRegistry,
         ruleRegistry,
         tileImprovementRegistry,
+        unitImprovementRegistry,
         unitRegistry,
         transportRegistry
       ),
@@ -410,6 +412,7 @@ describe('Trireme', (): void => {
         cityRegistry,
         ruleRegistry,
         tileImprovementRegistry,
+        unitImprovementRegistry,
         unitRegistry,
         transportRegistry
       ),

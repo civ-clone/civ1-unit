@@ -85,6 +85,7 @@
     "@civ-clone/core-rule": "^0.1.0",
     "@civ-clone/core-terrain": "^0.1.0",
     "@civ-clone/core-tile-improvement": "^0.1.0",
+    "@civ-clone/core-turn-based-game": "^0.1.0",
     "@civ-clone/core-unit": "^0.1.0",
     "@civ-clone/core-unit-transport": "^0.1.0",
     "@civ-clone/core-world": "^0.1.0"
