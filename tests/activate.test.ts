@@ -2,6 +2,7 @@ import { BuildIrrigation, Fortify } from '../Actions';
 import { Settlers, Warrior } from '../Units';
 import Action from '@civ-clone/core-unit/Action';
 import Busy from '@civ-clone/core-unit/Rules/Busy';
+import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import { Fortified } from '../UnitImprovements';
 import { River } from '@civ-clone/civ1-world/Terrains';
@@ -26,6 +27,7 @@ import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegis
 
 describe('unit:activate', () => {
   const ruleRegistry = new RuleRegistry(),
+    cityNameRegistry = new CityNameRegistry(),
     cityRegistry = new CityRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     unitRegistry = new UnitRegistry(),
@@ -35,6 +37,7 @@ describe('unit:activate', () => {
 
   ruleRegistry.register(
     ...action(
+      cityNameRegistry,
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,

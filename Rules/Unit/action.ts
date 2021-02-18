@@ -28,6 +28,10 @@ import {
   IAvailableRegistry,
 } from '@civ-clone/core-tile-improvement/Rules/Available';
 import {
+  CityNameRegistry,
+  instance as cityNameRegistryInstance,
+} from '@civ-clone/core-civilization/CityNameRegistry';
+import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
@@ -86,6 +90,7 @@ import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 
 export const getRules: (
+  cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
   ruleRegistry?: RuleRegistry,
   tileImprovementRegistry?: TileImprovementRegistry,
@@ -94,6 +99,7 @@ export const getRules: (
   transportRegistry?: TransportRegistry,
   turn?: Turn
 ) => Action[] = (
+  cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
   cityRegistry: CityRegistry = cityRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance,
@@ -346,7 +352,7 @@ export const getRules: (
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-        new FoundCity(from, to, unit, ruleRegistry)
+        new FoundCity(from, to, unit, cityNameRegistry, ruleRegistry)
     )
   ),
 

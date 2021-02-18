@@ -3,6 +3,7 @@ import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import { Land, Water } from '@civ-clone/core-terrain/Types';
 import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
+import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Loader from '@civ-clone/simple-world-generator/tests/lib/Loader';
 import Player from '@civ-clone/core-player/Player';
@@ -108,7 +109,8 @@ export const generateIslands: (ruleRegistry: RuleRegistry) => World = (
 };
 
 describe('Trireme', (): void => {
-  const cityRegistry = new CityRegistry(),
+  const cityNameRegistry = new CityNameRegistry(),
+    cityRegistry = new CityRegistry(),
     ruleRegistry = new RuleRegistry(),
     transportRegistry = new TransportRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
@@ -117,6 +119,7 @@ describe('Trireme', (): void => {
 
   ruleRegistry.register(
     ...action(
+      cityNameRegistry,
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,
@@ -361,6 +364,7 @@ describe('Trireme', (): void => {
 
     ruleRegistry.register(
       ...action(
+        cityNameRegistry,
         cityRegistry,
         ruleRegistry,
         tileImprovementRegistry,
@@ -409,6 +413,7 @@ describe('Trireme', (): void => {
 
     ruleRegistry.register(
       ...action(
+        cityNameRegistry,
         cityRegistry,
         ruleRegistry,
         tileImprovementRegistry,

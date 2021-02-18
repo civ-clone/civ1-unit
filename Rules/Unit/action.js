@@ -4,6 +4,7 @@ exports.getRules = void 0;
 const Action_1 = require("@civ-clone/core-unit/Rules/Action");
 const Actions_1 = require("../../Actions");
 const Available_1 = require("@civ-clone/core-tile-improvement/Rules/Available");
+const CityNameRegistry_1 = require("@civ-clone/core-civilization/CityNameRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Types_1 = require("../../Types");
 const TileImprovements_1 = require("@civ-clone/civ1-world/TileImprovements");
@@ -21,7 +22,7 @@ const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Units_1 = require("../../Units");
 const Water_1 = require("@civ-clone/core-terrain/Types/Water");
 const Types_2 = require("../../Types");
-const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance) => [
+const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance) => [
     new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => to.isLand()), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .every((tileUnit) => tileUnit.player() === unit.player()))), new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Naval), new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.isWater()), new Criterion_1.default((unit, to, from = unit.tile()) => cityRegistry
@@ -63,7 +64,7 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
     new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
     new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
     new Action_1.Action(new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
-    new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !cityRegistry.getByTile(from).length), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, ruleRegistry))),
+    new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !cityRegistry.getByTile(from).length), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry))),
     ...[
         [
             TileImprovements_1.Irrigation,

@@ -27,6 +27,7 @@ import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import { BridgeBuilding } from '@civ-clone/civ1-science/Advances';
 import City from '@civ-clone/core-city/City';
+import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { FoundCity } from '../Actions';
@@ -56,6 +57,7 @@ import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitIm
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),
     advanceRegistry = new AdvanceRegistry(),
+    cityNameRegistry = new CityNameRegistry(),
     cityRegistry = new CityRegistry(),
     terrainRegistry = new TerrainRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
@@ -100,6 +102,7 @@ describe('Action', (): void => {
 
   ruleRegistry.register(
     ...action(
+      cityNameRegistry,
       cityRegistry,
       ruleRegistry,
       tileImprovementRegistry,
