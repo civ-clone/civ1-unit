@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@civ-clone/civ1-city": "github:civ-clone/civ1-city",
+    "@civ-clone/civ1-player": "github:civ-clone/civ1-player",
     "@civ-clone/civ1-science": "github:civ-clone/civ1-science",
     "@civ-clone/core-player-world": "^0.1.0",
     "@civ-clone/core-science": "^0.1.0",
