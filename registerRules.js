@@ -15,5 +15,5 @@ const movementCost_1 = require("./Rules/Unit/movementCost");
 const action_2 = require("./Rules/Player/action");
 const yield_1 = require("./Rules/Unit/yield");
 const validateMove_1 = require("./Rules/Unit/validateMove");
-RuleRegistry_1.instance.register(...action_1.default(), ...activate_1.default(), ...build_1.default(), ...buildCost_1.default(), ...buildingComplete_1.default(), ...created_1.default(), ...defeated_1.default(), ...destroyed_1.default(), ...lostAtSea_1.default(), ...moved_1.default(), ...movementCost_1.default(), ...action_2.default(), ...yield_1.default(), ...validateMove_1.default());
+RuleRegistry_1.instance.register(...(0, action_1.default)(), ...(0, activate_1.default)(), ...(0, build_1.default)(), ...(0, buildCost_1.default)(), ...(0, buildingComplete_1.default)(), ...(0, created_1.default)(), ...(0, defeated_1.default)(), ...(0, destroyed_1.default)(), ...(0, lostAtSea_1.default)(), ...(0, moved_1.default)(), ...(0, movementCost_1.default)(), ...(0, action_2.default)(), ...(0, yield_1.default)(), ...(0, validateMove_1.default)());
 //# sourceMappingURL=registerRules.js.map

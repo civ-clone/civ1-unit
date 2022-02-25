@@ -11,7 +11,8 @@ const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Types_1 = require("../../Types");
 const Units_1 = require("../../Units");
-const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = () => Math.random(), engine = Engine_1.instance) => [
+const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
+const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = () => Math.random(), engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance) => [
     new Moved_1.default(new Effect_1.default((unit, action) => {
         engine.emit('unit:moved', unit, action);
     })),
@@ -27,6 +28,12 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
         transportRegistry.unregister(manifest);
     })),
     new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
+        ruleRegistry.process(LostAtSea_1.LostAtSea, unit);
+    })),
+    new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Fighter), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => {
+        const [city] = cityRegistry.getByTile(unit.tile());
+        return !city;
+    }), new Effect_1.default((unit) => {
         ruleRegistry.process(LostAtSea_1.LostAtSea, unit);
     })),
 ];

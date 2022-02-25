@@ -95,11 +95,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         .every((tileUnit) => tileUnit.player() === unit.player())), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .filter((tileUnit) => tileUnit instanceof Types_2.NavalTransport)
-        .some((tileUnit) => tileUnit.hasCapacity())), new Effect_1.default((unit, to, from = unit.tile()) => {
+        .some((tileUnit) => tileUnit.hasCapacity() &&
+        tileUnit.canStow(unit))), new Effect_1.default((unit, to, from = unit.tile()) => {
         const [transport] = unitRegistry
             .getByTile(to)
             .filter((tileUnit) => tileUnit instanceof Types_2.NavalTransport)
-            .filter((tileUnit) => tileUnit.hasCapacity());
+            .filter((tileUnit) => tileUnit.hasCapacity() &&
+            tileUnit.canStow(unit));
         return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
     })),
     new Action_1.Action(Action_1.isNeighbouringTile, new Criterion_1.default((unit) => {

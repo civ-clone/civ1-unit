@@ -262,19 +262,11 @@ export const getRules: (
     new Criterion(
       (unit: Unit, to: Tile): boolean => unitRegistry.getByTile(to).length === 0
     ),
-    new Effect(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
-        const [city] = cityRegistry.getByTile(to);
+    new Effect((unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+      const [city] = cityRegistry.getByTile(to);
 
-        return new CaptureCity(
-          from,
-          to,
-          unit,
-          city,
-          ruleRegistry
-        ) as UnitAction;
-      }
-    )
+      return new CaptureCity(from, to, unit, city, ruleRegistry) as UnitAction;
+    })
   ),
 
   new Action(
@@ -356,40 +348,42 @@ export const getRules: (
     )
   ),
 
-  ...([
+  ...(
     [
-      Irrigation,
-      BuildIrrigation,
-      new Or(
-        new Criterion(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            from.terrain() instanceof River
+      [
+        Irrigation,
+        BuildIrrigation,
+        new Or(
+          new Criterion(
+            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+              from.terrain() instanceof River
+          ),
+          new Criterion(
+            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+              from.isCoast()
+          ),
+          new Criterion(
+            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+              from
+                .getAdjacent()
+                .some(
+                  (tile: Tile): boolean =>
+                    tile.terrain() instanceof River ||
+                    (tileImprovementRegistry
+                      .getByTile(tile)
+                      .some(
+                        (improvement: TileImprovement): boolean =>
+                          improvement instanceof Irrigation
+                      ) &&
+                      !cityRegistry.getByTile(tile).length)
+                )
+          )
         ),
-        new Criterion(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            from.isCoast()
-        ),
-        new Criterion(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            from
-              .getAdjacent()
-              .some(
-                (tile: Tile): boolean =>
-                  tile.terrain() instanceof River ||
-                  (tileImprovementRegistry
-                    .getByTile(tile)
-                    .some(
-                      (improvement: TileImprovement): boolean =>
-                        improvement instanceof Irrigation
-                    ) &&
-                    !cityRegistry.getByTile(tile).length)
-              )
-        )
-      ),
-    ],
-    [Mine, BuildMine],
-    [Road, BuildRoad],
-  ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]).map(
+      ],
+      [Mine, BuildMine],
+      [Road, BuildRoad],
+    ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]
+  ).map(
     ([Improvement, ActionType, ...additionalCriteria]: [
       typeof TileImprovement,
       typeof DelayedAction,
@@ -426,12 +420,14 @@ export const getRules: (
         )
       )
   ),
-  ...([
-    [Jungle, ClearJungle],
-    [Forest, ClearForest],
-    [Plains, PlantForest],
-    [Swamp, ClearSwamp],
-  ] as [typeof Terrain, typeof DelayedAction][]).map(
+  ...(
+    [
+      [Jungle, ClearJungle],
+      [Forest, ClearForest],
+      [Plains, PlantForest],
+      [Swamp, ClearSwamp],
+    ] as [typeof Terrain, typeof DelayedAction][]
+  ).map(
     ([TerrainType, ActionType]: [
       typeof Terrain,
       typeof DelayedAction
@@ -470,30 +466,30 @@ export const getRules: (
       unitRegistry
         .getByTile(to)
         .filter((tileUnit: Unit): boolean => tileUnit instanceof NavalTransport)
-        .some((tileUnit: Unit): boolean =>
-          (tileUnit as NavalTransport).hasCapacity()
+        .some(
+          (tileUnit: Unit): boolean =>
+            (tileUnit as NavalTransport).hasCapacity() &&
+            (tileUnit as NavalTransport).canStow(unit)
         )
     ),
-    new Effect(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
-        const [transport] = unitRegistry
-          .getByTile(to)
-          .filter(
-            (tileUnit: Unit): boolean => tileUnit instanceof NavalTransport
-          )
-          .filter((tileUnit: Unit): boolean =>
-            (tileUnit as NavalTransport).hasCapacity()
-          );
+    new Effect((unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+      const [transport] = unitRegistry
+        .getByTile(to)
+        .filter((tileUnit: Unit): boolean => tileUnit instanceof NavalTransport)
+        .filter(
+          (tileUnit: Unit): boolean =>
+            (tileUnit as NavalTransport).hasCapacity() &&
+            (tileUnit as NavalTransport).canStow(unit)
+        );
 
-        return new Embark(
-          from,
-          to,
-          unit,
-          (transport as unknown) as ITransport,
-          ruleRegistry
-        ) as UnitAction;
-      }
-    )
+      return new Embark(
+        from,
+        to,
+        unit,
+        transport as unknown as ITransport,
+        ruleRegistry
+      ) as UnitAction;
+    })
   ),
 
   new Action(
@@ -517,19 +513,17 @@ export const getRules: (
       (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         transportRegistry.getByUnit(unit).transport().tile() === from
     ),
-    new Effect(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
-        const transport = transportRegistry.getByUnit(unit).transport();
+    new Effect((unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+      const transport = transportRegistry.getByUnit(unit).transport();
 
-        return new Disembark(
-          from,
-          to,
-          unit,
-          transport,
-          ruleRegistry
-        ) as UnitAction;
-      }
-    )
+      return new Disembark(
+        from,
+        to,
+        unit,
+        transport,
+        ruleRegistry
+      ) as UnitAction;
+    })
   ),
 
   new Action(

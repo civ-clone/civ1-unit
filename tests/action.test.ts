@@ -234,41 +234,43 @@ describe('Action', (): void => {
     cityRegistry.unregister(city);
   });
 
-  ([
-    [BuildIrrigation, Desert, Grassland, Hills, Plains, River],
-    [BuildMine, Desert, Hills, Mountains],
+  (
     [
-      BuildRoad,
-      Arctic,
-      Desert,
-      Forest,
-      Grassland,
-      Hills,
-      Jungle,
-      Mountains,
-      Plains,
-      Swamp,
-      Tundra,
-    ],
-    [ClearForest, Forest],
-    [ClearJungle, Jungle],
-    [ClearSwamp, Swamp],
-    [
-      FoundCity,
-      Arctic,
-      Desert,
-      Forest,
-      Grassland,
-      Hills,
-      Jungle,
-      Mountains,
-      Plains,
-      River,
-      Swamp,
-      Tundra,
-    ],
-    [PlantForest, Plains],
-  ] as [typeof UnitAction, ...typeof Terrain[]][]).forEach(
+      [BuildIrrigation, Desert, Grassland, Hills, Plains, River],
+      [BuildMine, Desert, Hills, Mountains],
+      [
+        BuildRoad,
+        Arctic,
+        Desert,
+        Forest,
+        Grassland,
+        Hills,
+        Jungle,
+        Mountains,
+        Plains,
+        Swamp,
+        Tundra,
+      ],
+      [ClearForest, Forest],
+      [ClearJungle, Jungle],
+      [ClearSwamp, Swamp],
+      [
+        FoundCity,
+        Arctic,
+        Desert,
+        Forest,
+        Grassland,
+        Hills,
+        Jungle,
+        Mountains,
+        Plains,
+        River,
+        Swamp,
+        Tundra,
+      ],
+      [PlantForest, Plains],
+    ] as [typeof UnitAction, ...typeof Terrain[]][]
+  ).forEach(
     ([ActionType, ...validTerrains]: [
       typeof UnitAction,
       ...typeof Terrain[]
@@ -324,11 +326,13 @@ describe('Action', (): void => {
     });
   });
 
-  ([[BuildRoad, BridgeBuilding, River]] as [
-    typeof UnitAction,
-    typeof Advance,
-    typeof Terrain
-  ][]).forEach(([Action, Advance, Terrain]) => {
+  (
+    [[BuildRoad, BridgeBuilding, River]] as [
+      typeof UnitAction,
+      typeof Advance,
+      typeof Terrain
+    ][]
+  ).forEach(([Action, Advance, Terrain]) => {
     it(`should not be possible for Settlers to ${Action.name} on ${Terrain.name} before discovering ${Advance.name}`, (): void => {
       const world = generateFixedWorld({
           TerrainType: Terrain,

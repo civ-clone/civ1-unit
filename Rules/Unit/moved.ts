@@ -21,18 +21,23 @@ import Effect from '@civ-clone/core-rule/Effect';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
 import Unit from '@civ-clone/core-unit/Unit';
 import { NavalTransport } from '../../Types';
-import { Trireme } from '../../Units';
+import { Fighter, Trireme } from '../../Units';
+import CityRegistry, {
+  instance as cityRegistryInstance,
+} from '@civ-clone/core-city/CityRegistry';
 
 export const getRules: (
   transportRegistry?: TransportRegistry,
   ruleRegistry?: RuleRegistry,
   randomNumberGenerator?: () => number,
-  engine?: Engine
+  engine?: Engine,
+  cityRegistry?: CityRegistry
 ) => Moved[] = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   randomNumberGenerator: () => number = (): number => Math.random(),
-  engine: Engine = engineInstance
+  engine: Engine = engineInstance,
+  cityRegistry: CityRegistry = cityRegistryInstance
 ): Moved[] => [
   new Moved(
     new Effect((unit: Unit, action: Action): void => {
@@ -77,6 +82,18 @@ export const getRules: (
     new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
     new Criterion((unit: Unit): boolean => !unit.tile().isCoast()),
     new Criterion((): boolean => randomNumberGenerator() <= 0.5),
+    new Effect((unit: Unit): void => {
+      (ruleRegistry as ILostAtSeaRegistry).process(LostAtSea, unit);
+    })
+  ),
+  new Moved(
+    new Criterion((unit: Unit): boolean => unit instanceof Fighter),
+    new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
+    new Criterion((unit: Unit): boolean => {
+      const [city] = cityRegistry.getByTile(unit.tile());
+
+      return !city;
+    }),
     new Effect((unit: Unit): void => {
       (ruleRegistry as ILostAtSeaRegistry).process(LostAtSea, unit);
     })

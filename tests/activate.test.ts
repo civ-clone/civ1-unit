@@ -51,11 +51,13 @@ describe('unit:activate', () => {
     ...unitYield(unitImprovementRegistry)
   );
 
-  ([[Warrior, Fortify, Fortified]] as [
-    typeof Unit,
-    typeof Action,
-    typeof UnitImprovement
-  ][]).forEach(([UnitType, ActionType, UnitImprovementType]) => {
+  (
+    [[Warrior, Fortify, Fortified]] as [
+      typeof Unit,
+      typeof Action,
+      typeof UnitImprovement
+    ][]
+  ).forEach(([UnitType, ActionType, UnitImprovementType]) => {
     it(`should clear ${UnitImprovementType.name} when activated`, () => {
       const player = new Player(),
         world = new World(new StaticWorldGenerator());

@@ -27,7 +27,7 @@ export const getRules: (
     ),
     new Criterion(
       (unit: Unit, movementCost: number): boolean =>
-        unit.moves().value() / movementCost >= randomNumberGenerator() * 1.5
+        unit.moves().value() / movementCost >= randomNumberGenerator()
     ),
     new Effect((unit: Unit): boolean => {
       unit.moves().subtract(unit.moves());

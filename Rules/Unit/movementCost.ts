@@ -12,7 +12,7 @@ import {
   Swamp,
   Tundra,
 } from '@civ-clone/civ1-world/Terrains';
-import { Land, NavalTransport } from '../../Types';
+import { Air, Land, Naval, NavalTransport } from '../../Types';
 import { Railroad, Road } from '@civ-clone/civ1-world/TileImprovements';
 import {
   TileImprovementRegistry,
@@ -37,28 +37,34 @@ export const getRules: (
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance
 ) => [
-  ...([
-    [Arctic, 2],
-    [Desert, 1],
-    [Forest, 2],
-    [Grassland, 1],
-    [Hills, 2],
-    [Jungle, 2],
-    [Mountains, 3],
-    [Ocean, 1],
-    [Plains, 1],
-    [River, 1],
-    [Swamp, 2],
-    [Tundra, 1],
-  ] as [typeof Terrain, number][]).map(
+  ...(
+    [
+      [Arctic, 2],
+      [Desert, 1],
+      [Forest, 2],
+      [Grassland, 1],
+      [Hills, 2],
+      [Jungle, 2],
+      [Mountains, 3],
+      [Plains, 1],
+      [River, 1],
+      [Swamp, 2],
+      [Tundra, 1],
+    ] as [typeof Terrain, number][]
+  ).map(
     ([TerrainType, cost]: [typeof Terrain, number]): MovementCost =>
       new MovementCost(
+        new Criterion((unit: Unit) => unit instanceof Land),
         new Criterion(
           (unit: Unit, action: Action): boolean =>
             action.to().terrain() instanceof TerrainType
         ),
         new Effect((): number => cost)
       )
+  ),
+  new MovementCost(
+    new Criterion((unit: Unit) => unit instanceof Air || unit instanceof Naval),
+    new Effect(() => 1)
   ),
   new MovementCost(
     new Criterion((unit: Unit, action: Action) =>

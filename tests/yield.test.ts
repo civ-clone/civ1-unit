@@ -27,16 +27,18 @@ describe('unit:yield', (): void => {
     ...unitYield(unitImprovementRegistry, ruleRegistry)
   );
 
-  ([
-    [Defence, [], 2],
-    [Defence, [FortifiedImprovement], 4],
-    [Defence, [VeteranImprovement], 3],
-    [Defence, [FortifiedImprovement, VeteranImprovement], 5],
-    [Attack, [], 1],
-    [Attack, [FortifiedImprovement], 1],
-    [Attack, [VeteranImprovement], 1.5],
-    [Attack, [FortifiedImprovement, VeteranImprovement], 1.5],
-  ] as [typeof Yield, typeof UnitImprovement[], number][]).forEach(
+  (
+    [
+      [Defence, [], 2],
+      [Defence, [FortifiedImprovement], 4],
+      [Defence, [VeteranImprovement], 3],
+      [Defence, [FortifiedImprovement, VeteranImprovement], 5],
+      [Attack, [], 1],
+      [Attack, [FortifiedImprovement], 1],
+      [Attack, [VeteranImprovement], 1.5],
+      [Attack, [FortifiedImprovement, VeteranImprovement], 1.5],
+    ] as [typeof Yield, typeof UnitImprovement[], number][]
+  ).forEach(
     ([YieldType, UnitImprovements, expectedValue]: [
       typeof Yield,
       typeof UnitImprovement[],
