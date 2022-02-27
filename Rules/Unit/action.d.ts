@@ -7,6 +7,7 @@ import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegis
 import { Turn } from '@civ-clone/core-turn-based-game/Turn';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 export declare const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -14,6 +15,7 @@ export declare const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   unitImprovementRegistry?: UnitImprovementRegistry,
   unitRegistry?: UnitRegistry,
+  terrainFeatureRegistry?: TerrainFeatureRegistry,
   transportRegistry?: TransportRegistry,
   turn?: Turn
 ) => Action[];

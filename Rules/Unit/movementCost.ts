@@ -46,6 +46,7 @@ export const getRules: (
       [Hills, 2],
       [Jungle, 2],
       [Mountains, 3],
+      [Ocean, 1],
       [Plains, 1],
       [River, 1],
       [Swamp, 2],
@@ -67,6 +68,7 @@ export const getRules: (
     new Effect(() => 1)
   ),
   new MovementCost(
+    new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action) =>
       tileImprovementRegistry
         .getByTile(action.from())
@@ -85,6 +87,7 @@ export const getRules: (
   ),
 
   new MovementCost(
+    new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action): boolean =>
       tileImprovementRegistry
         .getByTile(action.from())

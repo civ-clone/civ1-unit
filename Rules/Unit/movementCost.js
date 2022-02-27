@@ -18,18 +18,19 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
         [Terrains_1.Hills, 2],
         [Terrains_1.Jungle, 2],
         [Terrains_1.Mountains, 3],
+        [Terrains_1.Ocean, 1],
         [Terrains_1.Plains, 1],
         [Terrains_1.River, 1],
         [Terrains_1.Swamp, 2],
         [Terrains_1.Tundra, 1],
     ].map(([TerrainType, cost]) => new MovementCost_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => action.to().terrain() instanceof TerrainType), new Effect_1.default(() => cost))),
     new MovementCost_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Air || unit instanceof Types_1.Naval), new Effect_1.default(() => 1)),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => tileImprovementRegistry
+    new MovementCost_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.from())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 1 / 3)),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => tileImprovementRegistry
+    new MovementCost_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.from())
         .some((improvement) => improvement instanceof TileImprovements_1.Railroad)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())

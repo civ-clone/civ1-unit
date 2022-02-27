@@ -22,14 +22,15 @@ const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Units_1 = require("../../Units");
 const Water_1 = require("@civ-clone/core-terrain/Types/Water");
 const Types_2 = require("../../Types");
-const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance) => [
+const TerrainFeatureRegistry_1 = require("@civ-clone/core-terrain-feature/TerrainFeatureRegistry");
+const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance) => [
     new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => to.isLand()), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .every((tileUnit) => tileUnit.player() === unit.player()))), new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Naval), new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.isWater()), new Criterion_1.default((unit, to, from = unit.tile()) => cityRegistry
         .getByTile(from)
         .some((city) => city.player() === unit.player()))), new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new Criterion_1.default((unit, to) => cityRegistry
         .getByTile(to)
-        .some((city) => city.player() === unit.player()))))), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Or_1.default(new Criterion_1.default((unit, to) => !cityRegistry.getByTile(to).length), new Criterion_1.default((unit, to) => cityRegistry
+        .some((city) => city.player() === unit.player())))), new Criterion_1.default((unit) => unit instanceof Types_1.Air)), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Or_1.default(new Criterion_1.default((unit, to) => !cityRegistry.getByTile(to).length), new Criterion_1.default((unit, to) => cityRegistry
         .getByTile(to)
         .every((city) => city.player() === unit.player())))), 
     // This is analogous to the original Civilization unit adjacency rules
@@ -45,7 +46,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             .some((tileUnit) => tileUnit.player() !== unit.player()))))), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .every((tileUnit) => tileUnit.player() === unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
-    new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to) => to.isLand())), new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Naval), new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new And_1.default(new Criterion_1.default((unit, to) => unitRegistry
+    new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Air), new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to) => to.isLand())), new And_1.default(new Criterion_1.default((unit, to) => unit instanceof Types_1.Naval), new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new And_1.default(new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .some((tileUnit) => tileUnit.player() !== unit.player())))))), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
@@ -89,7 +90,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         [Terrains_1.Forest, Actions_1.ClearForest],
         [Terrains_1.Plains, Actions_1.PlantForest],
         [Terrains_1.Swamp, Actions_1.ClearSwamp],
-    ].map(([TerrainType, ActionType]) => new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_2.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => to === from), new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof TerrainType), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn)))),
+    ].map(([TerrainType, ActionType]) => new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_2.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => to === from), new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof TerrainType), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
     new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, to) => to.terrain() instanceof Water_1.Water), new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .every((tileUnit) => tileUnit.player() === unit.player())), new Criterion_1.default((unit, to) => unitRegistry

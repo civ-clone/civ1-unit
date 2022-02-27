@@ -35,7 +35,7 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Fortifiable, Land as LandUnit, Naval } from '../../Types';
+import { Air, Fortifiable, Land as LandUnit, Naval } from '../../Types';
 import {
   Irrigation,
   Mine,
@@ -88,6 +88,10 @@ import { Water } from '@civ-clone/core-terrain/Types/Water';
 import { NavalTransport, Worker } from '../../Types';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
+import {
+  TerrainFeatureRegistry,
+  instance as terrainFeatureRegistryInstance,
+} from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 export const getRules: (
   cityNameRegistry?: CityNameRegistry,
@@ -96,6 +100,7 @@ export const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   unitImprovementRegistry?: UnitImprovementRegistry,
   unitRegistry?: UnitRegistry,
+  terrainFeatureRegistry?: TerrainFeatureRegistry,
   transportRegistry?: TransportRegistry,
   turn?: Turn
 ) => Action[] = (
@@ -105,6 +110,7 @@ export const getRules: (
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance,
   unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
   unitRegistry: UnitRegistry = unitRegistryInstance,
+  terrainFeatureRegistry: TerrainFeatureRegistry = terrainFeatureRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance,
   turn: Turn = turnInstance
 ) => [
@@ -151,7 +157,8 @@ export const getRules: (
               .some((city: City): boolean => city.player() === unit.player())
           )
         )
-      )
+      ),
+      new Criterion((unit: Unit): boolean => unit instanceof Air)
     ),
     new Or(
       new Criterion(
@@ -215,6 +222,7 @@ export const getRules: (
     isNeighbouringTile,
     hasMovesLeft,
     new Or(
+      new Criterion((unit: Unit): boolean => unit instanceof Air),
       new And(
         new Criterion(
           (unit: Unit, to: Tile): boolean => unit instanceof LandUnit
@@ -426,11 +434,24 @@ export const getRules: (
       [Forest, ClearForest],
       [Plains, PlantForest],
       [Swamp, ClearSwamp],
-    ] as [typeof Terrain, typeof DelayedAction][]
+    ] as [
+      typeof Terrain,
+      (
+        | typeof ClearJungle
+        | typeof ClearForest
+        | typeof PlantForest
+        | typeof ClearSwamp
+      )
+    ][]
   ).map(
     ([TerrainType, ActionType]: [
       typeof Terrain,
-      typeof DelayedAction
+      (
+        | typeof ClearJungle
+        | typeof ClearForest
+        | typeof PlantForest
+        | typeof ClearSwamp
+      )
     ]): Action =>
       new Action(
         hasMovesLeft,
@@ -445,7 +466,14 @@ export const getRules: (
         ),
         new Effect(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-            new ActionType(from, to, unit, ruleRegistry, turn)
+            new ActionType(
+              from,
+              to,
+              unit,
+              ruleRegistry,
+              terrainFeatureRegistry,
+              turn
+            )
         )
       )
   ),
