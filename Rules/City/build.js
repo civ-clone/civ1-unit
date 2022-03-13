@@ -31,7 +31,7 @@ const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance) =>
         [Units_1.Horseman, Advances_1.HorsebackRiding],
         [Units_1.Ironclad, Advances_1.SteamEngine],
         [Units_1.Knight, Advances_1.Chivalry],
-        [Units_1.MechanizedInfanty, Advances_1.LaborUnion],
+        [Units_1.MechanizedInfantry, Advances_1.LaborUnion],
         [Units_1.Musketman, Advances_1.Gunpowder],
         [Units_1.Nuclear, Advances_1.Rocketry],
         [Units_1.Rifleman, Advances_1.Conscription],

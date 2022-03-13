@@ -13,7 +13,7 @@ export { Frigate } from '@civ-clone/base-unit-frigate/Frigate';
 export { Horseman } from '@civ-clone/base-unit-horseman/Horseman';
 export { Ironclad } from '@civ-clone/base-unit-ironclad/Ironclad';
 export { Knight } from '@civ-clone/base-unit-knight/Knight';
-export { MechanizedInfanty } from '@civ-clone/base-unit-mechanizedinfanty/MechanizedInfanty';
+export { MechanizedInfantry } from '@civ-clone/base-unit-mechanizedinfantry/MechanizedInfantry';
 export { Musketman } from '@civ-clone/base-unit-musketman/Musketman';
 export { Nuclear } from '@civ-clone/base-unit-nuclear/Nuclear';
 export { Rifleman } from '@civ-clone/base-unit-rifleman/Rifleman';

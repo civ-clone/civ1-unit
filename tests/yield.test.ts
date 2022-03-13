@@ -44,9 +44,9 @@ describe('unit:yield', (): void => {
       typeof UnitImprovement[],
       number
     ]): void => {
-      it(`should modify ${YieldType.name} appropriately when improvements applied to the unit`, (): void => {
+      it(`should modify ${YieldType.name} appropriately when improvements applied to the unit`, async (): Promise<void> => {
         const player = new Player(),
-          city = setUpCity({
+          city = await setUpCity({
             ruleRegistry,
           }),
           unit = new Spearman(city, player, city.tile(), ruleRegistry);

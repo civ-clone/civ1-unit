@@ -20,7 +20,7 @@ const getRules = () => [
         [Units_1.Horseman, 20],
         [Units_1.Ironclad, 50],
         [Units_1.Knight, 40],
-        [Units_1.MechanizedInfanty, 50],
+        [Units_1.MechanizedInfantry, 50],
         [Units_1.Musketman, 30],
         [Units_1.Nuclear, 160],
         [Units_1.Rifleman, 30],
@@ -33,7 +33,9 @@ const getRules = () => [
         [Units_1.Transport, 50],
         [Units_1.Trireme, 40],
         [Units_1.Warrior, 10],
-    ].flatMap(([UnitType, cost]) => (0, BuildCost_1.buildCost)(UnitType, cost)),
+    ].flatMap(([UnitType, cost]) => 
+    // Why does TS hate this inheritance so much, is this an anti-pattern?
+    (0, BuildCost_1.buildCost)(UnitType, cost)),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

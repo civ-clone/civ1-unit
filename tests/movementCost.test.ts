@@ -24,10 +24,10 @@ describe('unit:movementCost', (): void => {
     ...validateMove()
   );
 
-  it('should cost 0.33 per movement when travelling on roads', (): void => {
+  it('should cost 0.33 per movement when travelling on roads', async (): Promise<void> => {
     const world = new World(new FillGenerator(5, 5, Grassland));
 
-    world.build();
+    await world.build();
 
     world
       .entries()
@@ -52,10 +52,10 @@ describe('unit:movementCost', (): void => {
     expect(unit.moves().value()).to.approximately(1 - 2 / 3, 0.0001);
   });
 
-  it('should cost 0.33 per movement when travelling on railroads', (): void => {
+  it('should cost 0.33 per movement when travelling on railroads', async (): Promise<void> => {
     const world = new World(new FillGenerator(5, 5, Grassland));
 
-    world.build();
+    await world.build();
 
     world
       .entries()

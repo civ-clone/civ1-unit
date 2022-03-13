@@ -18,7 +18,7 @@ import {
   Horseman,
   Ironclad,
   Knight,
-  MechanizedInfanty,
+  MechanizedInfantry,
   Musketman,
   Nuclear,
   Rifleman,
@@ -33,6 +33,7 @@ import {
   Warrior,
 } from '../../Units';
 import Unit from '@civ-clone/core-unit/Unit';
+import Buildable from '@civ-clone/core-city-build/Buildable';
 
 export const getRules: () => BuildCost[] = (): BuildCost[] => [
   ...(
@@ -52,7 +53,7 @@ export const getRules: () => BuildCost[] = (): BuildCost[] => [
       [Horseman, 20],
       [Ironclad, 50],
       [Knight, 40],
-      [MechanizedInfanty, 50],
+      [MechanizedInfantry, 50],
       [Musketman, 30],
       [Nuclear, 160],
       [Rifleman, 30],
@@ -67,7 +68,8 @@ export const getRules: () => BuildCost[] = (): BuildCost[] => [
       [Warrior, 10],
     ] as [typeof Unit, number][]
   ).flatMap(([UnitType, cost]: [typeof Unit, number]): BuildCost[] =>
-    buildCost(UnitType, cost)
+    // Why does TS hate this inheritance so much, is this an anti-pattern?
+    buildCost(UnitType as unknown as typeof Buildable, cost)
   ),
 ];
 

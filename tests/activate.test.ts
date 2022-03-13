@@ -24,11 +24,13 @@ import { expect } from 'chai';
 import StaticWorldGenerator from '@civ-clone/simple-world-generator/tests/lib/StaticWorldGenerator';
 import unitYield from '../Rules/Unit/yield';
 import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
+import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 describe('unit:activate', () => {
   const ruleRegistry = new RuleRegistry(),
     cityNameRegistry = new CityNameRegistry(),
     cityRegistry = new CityRegistry(),
+    terrainFeatureRegistry = new TerrainFeatureRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     unitRegistry = new UnitRegistry(),
     unitImprovementRegistry = new UnitImprovementRegistry(),
@@ -43,6 +45,7 @@ describe('unit:activate', () => {
       tileImprovementRegistry,
       unitImprovementRegistry,
       unitRegistry,
+      terrainFeatureRegistry,
       transportRegistry
     ),
     ...activate(unitImprovementRegistry),
@@ -58,11 +61,11 @@ describe('unit:activate', () => {
       typeof UnitImprovement
     ][]
   ).forEach(([UnitType, ActionType, UnitImprovementType]) => {
-    it(`should clear ${UnitImprovementType.name} when activated`, () => {
+    it(`should clear ${UnitImprovementType.name} when activated`, async () => {
       const player = new Player(),
         world = new World(new StaticWorldGenerator());
 
-      world.build(ruleRegistry);
+      await world.build(ruleRegistry);
 
       const unit = new UnitType(null, player, world.get(0, 0), ruleRegistry),
         [action] = unit
@@ -112,12 +115,12 @@ describe('unit:activate', () => {
 
   ([[Settlers, BuildIrrigation]] as [typeof Unit, typeof Action][]).forEach(
     ([UnitType, ActionType]) => {
-      it(`should set Busy when triggered`, () => {
+      it(`should set Busy when triggered`, async () => {
         const player = new Player(),
           world = new World(new StaticWorldGenerator());
 
         playerResearchRegistry.register(new PlayerResearch(player));
-        world.build(ruleRegistry);
+        await world.build(ruleRegistry);
 
         const unit = new UnitType(null, player, world.get(18, 0), ruleRegistry),
           [action] = unit

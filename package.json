@@ -68,7 +68,7 @@
     "@civ-clone/base-unit-improvement-veteran": "^0.1.0",
     "@civ-clone/base-unit-ironclad": "^0.1.0",
     "@civ-clone/base-unit-knight": "^0.1.0",
-    "@civ-clone/base-unit-mechanizedinfanty": "^0.1.0",
+    "@civ-clone/base-unit-mechanizedinfantry": "^0.1.0",
     "@civ-clone/base-unit-musketman": "^0.1.0",
     "@civ-clone/base-unit-nuclear": "^0.1.0",
     "@civ-clone/base-unit-rifleman": "^0.1.0",

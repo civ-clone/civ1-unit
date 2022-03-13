@@ -25,10 +25,11 @@ import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
-export const generateIslands: (ruleRegistry: RuleRegistry) => World = (
+export const generateIslands: (
   ruleRegistry: RuleRegistry
-): World => {
+) => Promise<World> = async (ruleRegistry: RuleRegistry): Promise<World> => {
   const generator = new Loader(8, 8, [
       [new Ocean()],
       [new Ocean()],
@@ -97,7 +98,7 @@ export const generateIslands: (ruleRegistry: RuleRegistry) => World = (
     ]),
     world = new World(generator);
 
-  world.build(ruleRegistry);
+  await world.build(ruleRegistry);
 
   for (let i = 0; i < 64; i++) {
     expect(world.get(i % 8, Math.floor(i / 8)).terrain()).to.instanceof(
@@ -113,6 +114,7 @@ describe('Trireme', (): void => {
     cityRegistry = new CityRegistry(),
     ruleRegistry = new RuleRegistry(),
     transportRegistry = new TransportRegistry(),
+    terrainFeatureRegistry = new TerrainFeatureRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     unitRegistry = new UnitRegistry(),
     unitImprovementRegistry = new UnitImprovementRegistry();
@@ -125,6 +127,7 @@ describe('Trireme', (): void => {
       tileImprovementRegistry,
       unitImprovementRegistry,
       unitRegistry,
+      terrainFeatureRegistry,
       transportRegistry
     ),
     ...created(unitRegistry),
@@ -136,8 +139,8 @@ describe('Trireme', (): void => {
     ...validateMove()
   );
 
-  it('should be able to move across water', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be able to move across water', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       transport = new Trireme(
@@ -159,8 +162,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport);
   });
 
-  it('should be possible to stow other units on it', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be possible to stow other units on it', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       transport = new Trireme(
@@ -189,8 +192,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport, unit);
   });
 
-  it('should be possible to transport units', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be possible to transport units', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       transport = new Trireme(
@@ -268,8 +271,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport, unit);
   });
 
-  it('should be possible to Attack a defended enemy city', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be possible to Attack a defended enemy city', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       enemy = new Player(),
@@ -296,8 +299,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport, unit);
   });
 
-  it('should be possible to Attack an enemy unit', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be possible to Attack an enemy unit', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       enemy = new Player(),
@@ -315,8 +318,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport, unit);
   });
 
-  it('should not be possible to Attack an undefended enemy city', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should not be possible to Attack an undefended enemy city', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       enemy = new Player(),
@@ -336,8 +339,8 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport);
   });
 
-  it('should be possible to enter a friendly city', (): void => {
-    const world = generateIslands(ruleRegistry),
+  it('should be possible to enter a friendly city', async (): Promise<void> => {
+    const world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       transport = new Trireme(null, player, tile, ruleRegistry),
@@ -356,9 +359,9 @@ describe('Trireme', (): void => {
     unitRegistry.unregister(<Unit>transport);
   });
 
-  it('should be become lost at sea if ending turn away from the coast with a low number from the  random number generator', (): void => {
+  it('should be become lost at sea if ending turn away from the coast with a low number from the  random number generator', async (): Promise<void> => {
     const ruleRegistry = new RuleRegistry(),
-      world = generateIslands(ruleRegistry),
+      world = await generateIslands(ruleRegistry),
       player = new Player(),
       unit = new Trireme(null, player, world.get(2, 2), ruleRegistry);
 
@@ -370,6 +373,7 @@ describe('Trireme', (): void => {
         tileImprovementRegistry,
         unitImprovementRegistry,
         unitRegistry,
+        terrainFeatureRegistry,
         transportRegistry
       ),
       ...created(unitRegistry),
@@ -404,9 +408,9 @@ describe('Trireme', (): void => {
     expect(unit.destroyed()).to.true;
   });
 
-  it('should not be become lost at sea if ending turn away from the coast with a high number from the  random number generator', (): void => {
+  it('should not be become lost at sea if ending turn away from the coast with a high number from the  random number generator', async (): Promise<void> => {
     const ruleRegistry = new RuleRegistry(),
-      world = generateIslands(ruleRegistry),
+      world = await generateIslands(ruleRegistry),
       tile = world.get(2, 2),
       player = new Player(),
       unit = new Trireme(null, player, tile, ruleRegistry);
@@ -419,6 +423,7 @@ describe('Trireme', (): void => {
         tileImprovementRegistry,
         unitImprovementRegistry,
         unitRegistry,
+        terrainFeatureRegistry,
         transportRegistry
       ),
       ...created(unitRegistry),

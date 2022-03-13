@@ -53,6 +53,7 @@ import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
 import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -62,6 +63,7 @@ describe('Action', (): void => {
     terrainRegistry = new TerrainRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     playerResearchRegistry = new PlayerResearchRegistry(),
+    terrainFeatureRegistry = new TerrainFeatureRegistry(),
     transportRegistry = new TransportRegistry(),
     unitRegistry = new UnitRegistry(),
     unitImprovementRegistry = new UnitImprovementRegistry(),
@@ -81,7 +83,7 @@ describe('Action', (): void => {
 
       return player;
     },
-    generateFixedWorld = ({
+    generateFixedWorld = async ({
       TerrainType = Grassland,
       height = 5,
       rulesRegistry = ruleRegistry,
@@ -91,11 +93,11 @@ describe('Action', (): void => {
       height?: number;
       rulesRegistry?: RuleRegistry;
       width?: number;
-    } = {}): World => {
+    } = {}): Promise<World> => {
       const generator = new FillGenerator(height, width, TerrainType),
         world = new World(generator);
 
-      world.build(rulesRegistry);
+      await world.build(rulesRegistry);
 
       return world;
     };
@@ -108,6 +110,7 @@ describe('Action', (): void => {
       tileImprovementRegistry,
       unitImprovementRegistry,
       unitRegistry,
+      terrainFeatureRegistry,
       transportRegistry
     ),
     ...available(playerResearchRegistry, tileImprovementRegistry),
@@ -133,8 +136,8 @@ describe('Action', (): void => {
     Tundra
   );
 
-  it('should be able to attack enemy unit next to it', (): void => {
-    const world = generateFixedWorld(),
+  it('should be able to attack enemy unit next to it', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       enemy = getPlayer(),
       unit = getUnit(player, world.get(0, 0)),
@@ -145,16 +148,16 @@ describe('Action', (): void => {
     expect(actions.some((action) => action instanceof Attack)).to.true;
   });
 
-  it('should be able to fortify', (): void => {
-    const world = generateFixedWorld(),
+  it('should be able to fortify', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       unit = getUnit(player, world.get(0, 0));
 
     expect(unit.actions().some((action) => action instanceof Fortify)).to.true;
   });
 
-  it('should not be able to move adjacent to an enemy unit', (): void => {
-    const world = generateFixedWorld(),
+  it('should not be able to move adjacent to an enemy unit', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       enemy = getPlayer(),
       unit = getUnit(player, world.get(0, 0));
@@ -173,8 +176,8 @@ describe('Action', (): void => {
     });
   });
 
-  it('should be able to move away from enemy unit', (): void => {
-    const world = generateFixedWorld(),
+  it('should be able to move away from enemy unit', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       enemy = getPlayer(),
       unit = getUnit(player, world.get(0, 0));
@@ -190,8 +193,8 @@ describe('Action', (): void => {
     );
   });
 
-  it('should be possible to capture an unprotected enemy city', (): void => {
-    const world = generateFixedWorld(),
+  it('should be possible to capture an unprotected enemy city', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       enemy = getPlayer(),
       unit = getUnit(player, world.get(1, 1)),
@@ -214,8 +217,8 @@ describe('Action', (): void => {
     cityRegistry.unregister(city);
   });
 
-  it('should not be possible to capture a protected enemy city', (): void => {
-    const world = generateFixedWorld(),
+  it('should not be possible to capture a protected enemy city', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
       player = getPlayer(),
       enemy = getPlayer(),
       unit = getUnit(player, world.get(1, 1)),
@@ -276,8 +279,8 @@ describe('Action', (): void => {
       ...typeof Terrain[]
     ]) => {
       validTerrains.forEach((TerrainType: typeof Terrain): void => {
-        it(`should be possible for Settlers to ${ActionType.name} on ${TerrainType.name}`, (): void => {
-          const world = generateFixedWorld({
+        it(`should be possible for Settlers to ${ActionType.name} on ${TerrainType.name}`, async (): Promise<void> => {
+          const world = await generateFixedWorld({
             TerrainType: TerrainType,
           });
 
@@ -297,8 +300,8 @@ describe('Action', (): void => {
       terrainRegistry
         .filter((Terrain) => !validTerrains.includes(Terrain))
         .forEach((Terrain) => {
-          it(`should not be possible for Settlers to ${ActionType.name} on ${Terrain.name}`, (): void => {
-            const world = generateFixedWorld({
+          it(`should not be possible for Settlers to ${ActionType.name} on ${Terrain.name}`, async (): Promise<void> => {
+            const world = await generateFixedWorld({
                 TerrainType: Terrain,
               }),
               player = getPlayer(),
@@ -314,8 +317,8 @@ describe('Action', (): void => {
   );
 
   [Desert, Grassland, Hills, Plains].forEach((Terrain) => {
-    it(`should not be possible for Settlers to BuildIrrigation on ${Terrain.name} without access to water`, (): void => {
-      const world = generateFixedWorld({
+    it(`should not be possible for Settlers to BuildIrrigation on ${Terrain.name} without access to water`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
           TerrainType: Terrain,
         }),
         player = getPlayer(),
@@ -333,8 +336,8 @@ describe('Action', (): void => {
       typeof Terrain
     ][]
   ).forEach(([Action, Advance, Terrain]) => {
-    it(`should not be possible for Settlers to ${Action.name} on ${Terrain.name} before discovering ${Advance.name}`, (): void => {
-      const world = generateFixedWorld({
+    it(`should not be possible for Settlers to ${Action.name} on ${Terrain.name} before discovering ${Advance.name}`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
           TerrainType: Terrain,
         }),
         player = getPlayer(),
@@ -344,8 +347,8 @@ describe('Action', (): void => {
         .false;
     });
 
-    it(`should be possible for Settlers to ${Action.name} on ${Terrain.name} after discovering ${Advance.name}`, (): void => {
-      const world = generateFixedWorld({
+    it(`should be possible for Settlers to ${Action.name} on ${Terrain.name} after discovering ${Advance.name}`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
           TerrainType: Terrain,
         }),
         player = getPlayer(),

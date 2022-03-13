@@ -1085,9 +1085,9 @@
   dependencies:
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
-"@civ-clone/base-unit-mechanizedinfanty@^0.1.0":
-  "integrity" "sha512-DkzOgX2l53G/cpUL7GsMDybKWYvi2BpCNVZuq64pXbL2j9jdDtoNlqhtxIqG9RnsfPAVid3WYSmiqt64YtZ2fQ=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-mechanizedinfanty/-/base-unit-mechanizedinfanty-0.1.0.tgz"
+"@civ-clone/base-unit-mechanizedinfantry@^0.1.0":
+  "integrity" "sha512-RriRfgqcV68TBWmmL9fiBeEDoKSGb4/QVE8pdSziYY6+5dtOgAPIRT7qrTLeJKpXEod7yvL/sDOpYDFBBj94qA=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-mechanizedinfantry/-/base-unit-mechanizedinfantry-0.1.0.tgz"
   "version" "0.1.0"
   dependencies:
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"

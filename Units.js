@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Warrior = exports.Trireme = exports.Transport = exports.Tank = exports.Swordman = exports.Submarine = exports.Spearman = exports.Settlers = exports.Sail = exports.Rifleman = exports.Nuclear = exports.Musketman = exports.MechanizedInfanty = exports.Knight = exports.Ironclad = exports.Horseman = exports.Frigate = exports.Fighter = exports.Diplomat = exports.Cruiser = exports.Chariot = exports.Catapult = exports.Carrier = exports.Caravan = exports.Cannon = exports.Bomber = exports.Battleship = exports.Artillery = void 0;
+exports.Warrior = exports.Trireme = exports.Transport = exports.Tank = exports.Swordman = exports.Submarine = exports.Spearman = exports.Settlers = exports.Sail = exports.Rifleman = exports.Nuclear = exports.Musketman = exports.MechanizedInfantry = exports.Knight = exports.Ironclad = exports.Horseman = exports.Frigate = exports.Fighter = exports.Diplomat = exports.Cruiser = exports.Chariot = exports.Catapult = exports.Carrier = exports.Caravan = exports.Cannon = exports.Bomber = exports.Battleship = exports.Artillery = void 0;
 var Artillery_1 = require("@civ-clone/base-unit-artillery/Artillery");
 Object.defineProperty(exports, "Artillery", { enumerable: true, get: function () { return Artillery_1.Artillery; } });
 var Battleship_1 = require("@civ-clone/base-unit-battleship/Battleship");
@@ -31,8 +31,8 @@ var Ironclad_1 = require("@civ-clone/base-unit-ironclad/Ironclad");
 Object.defineProperty(exports, "Ironclad", { enumerable: true, get: function () { return Ironclad_1.Ironclad; } });
 var Knight_1 = require("@civ-clone/base-unit-knight/Knight");
 Object.defineProperty(exports, "Knight", { enumerable: true, get: function () { return Knight_1.Knight; } });
-var MechanizedInfanty_1 = require("@civ-clone/base-unit-mechanizedinfanty/MechanizedInfanty");
-Object.defineProperty(exports, "MechanizedInfanty", { enumerable: true, get: function () { return MechanizedInfanty_1.MechanizedInfanty; } });
+var MechanizedInfantry_1 = require("@civ-clone/base-unit-mechanizedinfantry/MechanizedInfantry");
+Object.defineProperty(exports, "MechanizedInfantry", { enumerable: true, get: function () { return MechanizedInfantry_1.MechanizedInfantry; } });
 var Musketman_1 = require("@civ-clone/base-unit-musketman/Musketman");
 Object.defineProperty(exports, "Musketman", { enumerable: true, get: function () { return Musketman_1.Musketman; } });
 var Nuclear_1 = require("@civ-clone/base-unit-nuclear/Nuclear");
