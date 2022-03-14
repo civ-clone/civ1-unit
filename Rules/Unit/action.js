@@ -70,9 +70,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         [
             TileImprovements_1.Irrigation,
             Actions_1.BuildIrrigation,
-            new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof Terrains_1.River), new Criterion_1.default((unit, to, from = unit.tile()) => from.isCoast()), new Criterion_1.default((unit, to, from = unit.tile()) => from
+            new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof Terrains_1.River), new Criterion_1.default((unit, to, from = unit.tile()) => from
                 .getAdjacent()
                 .some((tile) => tile.terrain() instanceof Terrains_1.River ||
+                tile.terrain() instanceof Water_1.Water ||
                 (tileImprovementRegistry
                     .getByTile(tile)
                     .some((improvement) => improvement instanceof TileImprovements_1.Irrigation) &&
@@ -80,6 +81,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         ],
         [TileImprovements_1.Mine, Actions_1.BuildMine],
         [TileImprovements_1.Road, Actions_1.BuildRoad],
+        [
+            TileImprovements_1.Railroad,
+            Actions_1.BuildRailroad,
+            new Criterion_1.default((unit, to) => tileImprovementRegistry
+                .getByTile(to)
+                .some((tileImprovement) => tileImprovement instanceof TileImprovements_1.Road)),
+        ],
     ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(new Criterion_1.default((unit) => unit instanceof Types_2.Worker), Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => ruleRegistry
         .get(Available_1.Available)
         .some((rule) => rule.validate(from, Improvement, unit.player()))), new Criterion_1.default((unit, to, from = unit.tile()) => from === to), new Criterion_1.default((unit, to) => !tileImprovementRegistry

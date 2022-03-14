@@ -802,6 +802,15 @@
     "@civ-clone/core-tile-improvement" "^0.1.0"
     "@civ-clone/core-unit" "^0.1.0"
 
+"@civ-clone/base-unit-action-build-railroad@^0.1.0":
+  "integrity" "sha512-0ViZGY+634aTjNsJwlnfZE1i3kn4oj9BmDvpW3HsaCAZGfzdI5mhBwsALlii2WyGrMrZOfGr9GgEdrHa+BzR7A=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-action-build-railroad/-/base-unit-action-build-railroad-0.1.1.tgz"
+  "version" "0.1.1"
+  dependencies:
+    "@civ-clone/base-tile-improvement-railroad" "^0.1.0"
+    "@civ-clone/core-tile-improvement" "^0.1.0"
+    "@civ-clone/core-unit" "^0.1.0"
+
 "@civ-clone/base-unit-action-build-road@^0.1.0":
   "integrity" "sha512-aKJkwj3U6FH8kx0K9I5RvVN6ByiaEaU/lMUUi4ummXOx6UEqgaZFpnDiJK5CySlH1AnLKIPSmLvHdjj1CB4hcQ=="
   "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-action-build-road/-/base-unit-action-build-road-0.1.1.tgz"
@@ -970,18 +979,18 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-battleship@^0.1.0":
-  "integrity" "sha512-jPiOX4F+DaFGT88o2lndQPyyaPkVjhryhex0P8igpxxx4GSWeM2piMNFnZ8iMJy3QDDYVXEyOvfaPwZX+S81TA=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-battleship/-/base-unit-battleship-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-8rJfzPpctFygP60bzhubTGdByZk36Oh0K5JxjSE2vSRC45/av7ZNrTPGa8E8I3bLTj8gtCeoWkrf/9iCaAZYOg=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-battleship/-/base-unit-battleship-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval" "^0.1.0"
 
 "@civ-clone/base-unit-bomber@^0.1.0":
-  "integrity" "sha512-g4MZFydUzo5gA2D0fxXx07RtJGWD0MpuKAlTMMZDbi570fV+F7rdkevHK6BCctgRyJCb2X9oiOmIeyyTL4W6Ng=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-bomber/-/base-unit-bomber-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-ddIbl+dsKthCacgzJqOQzrCZMwB4m7a8cx4SX2GJKXg9otoyrLbqRivR/VWKQbEN0u6oFt+uyc+kAlYvdjCnbw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-bomber/-/base-unit-bomber-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-air" "^0.1.0"
 
 "@civ-clone/base-unit-cannon@^0.1.0":
   "integrity" "sha512-eWDWGcLCFUMFf7ppLofScIdkJmiohv+A5ZiiaB1InsfR703liIK/E6BhakJ55+kgGIZPOGv3gnzA62tCKUL7rw=="
@@ -998,11 +1007,13 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-carrier@^0.1.0":
-  "integrity" "sha512-7MhYchVOx0f7Sc71kh7Jjbw/bfe6vRkVPdB/H4pUv8BIXALLEiPAlrEXdreE+neS5keVluYxABWfO6pju5CeKQ=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-carrier/-/base-unit-carrier-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-czOKQo1ccjYQUG2bW7DpU8uhbmiCPDCJN4I+QuwB4j1AGynSmweBrp4EqRYC5lnQs1yQpN6SlTiMbrWg0LO0qw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-carrier/-/base-unit-carrier-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-air" "^0.1.0"
+    "@civ-clone/base-unit-type-naval-transport" "^0.1.0"
+    "@civ-clone/core-unit" "^0.1.0"
 
 "@civ-clone/base-unit-catapult@^0.1.0":
   "integrity" "sha512-IsXjawSw0PmoAyfksy8BAEueGXlIcY7Z1R9BpqE4/U6zDpnWORuk7D0V51SQAtArBBLY9M5G5gA/rM5zZk5VeQ=="
@@ -1019,11 +1030,11 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-cruiser@^0.1.0":
-  "integrity" "sha512-ZTDVjsx7JHfWOfSPuQO/6CEgCqM0KA1bBCxP1crWyenuWzDkV3iZjY1iROew1zLgg/sySqpcC9HkP/34x+Qddg=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-cruiser/-/base-unit-cruiser-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-Kjq5Z3WOA0LPElP5ltL4DJIzZ8KbDUSNJbL1JV2MoX3eeClyUNBg58j8ZuEfomLycpEomQBKpKdDCpHDpkEXgA=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-cruiser/-/base-unit-cruiser-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval" "^0.1.0"
 
 "@civ-clone/base-unit-diplomat@^0.1.0":
   "integrity" "sha512-OCUSOhprnt7n7HVafOE6csoL2tOszmnKt42dOqWXdQT1Xu//4/2fLDYrcB6a9l2BdSAnrUwset+65EgXFR8+CA=="
@@ -1033,18 +1044,18 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-fighter@^0.1.0":
-  "integrity" "sha512-4DQQfqNVrQolSsQHWtvyVvYVYUBx6Kz50sTbqtQmYHRHlWfxz3IYgcw/9hfshgoHnJpHWX82YIrROBjpsIpd2g=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-fighter/-/base-unit-fighter-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-zyMyVhxnBwYU4O8QI3qm/ngeMp0hnFYHh50xGXTCa4V/WpxOJIObCeCr/wJMvZCgY1RGkFrwdX6JRmoSXju2jw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-fighter/-/base-unit-fighter-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-air" "^0.1.0"
 
 "@civ-clone/base-unit-frigate@^0.1.0":
-  "integrity" "sha512-ffb5Fk31N79Z+kzSSXTI/UPQ7OVITTVFm4EE/VCxH0slZyIlVons660DxTqt5PrtyrE5FRvVA1CzGGTxoyUb1g=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-frigate/-/base-unit-frigate-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-fkzuYLjmWKEbcfyYpAYMPB/L2so/tPKlln/hjHvD6MkqwEnTD1Srk2g4fx0oKRg0ghYqCsWKG53WxxcqOUFHQw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-frigate/-/base-unit-frigate-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval-transport" "^0.1.0"
 
 "@civ-clone/base-unit-horseman@^0.1.0":
   "integrity" "sha512-8mXjjjyier+gkDswwCIV2yPkIekgDMQVbgv6rTiRxxiYu8M2PCZpc4tYAc2ipG4m4vnD6HMvnJDNapcEUzwbiQ=="
@@ -1072,11 +1083,11 @@
     "@civ-clone/core-yield" "^0.1.0"
 
 "@civ-clone/base-unit-ironclad@^0.1.0":
-  "integrity" "sha512-FE1A7VurUUkk0fJN+2a/J1Gg1wlFkaBXBpQ6oDqDo/Rzgqts75fNs+nSIbZKMx+wk4NzTlk5uuCtX9wVvQsTiQ=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-ironclad/-/base-unit-ironclad-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-+HsrfgdKr73xrK2rMDSPr0m6jy4XdfwgXov+5loqnW3nZeWMk6GtA550J3BZcRitpNDjcY0OTkg+XxYjVVtSmQ=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-ironclad/-/base-unit-ironclad-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval" "^0.1.0"
 
 "@civ-clone/base-unit-knight@^0.1.0":
   "integrity" "sha512-LVhADX0ozE4g6RSmiRgJWrVA+nkC6iHI253i+T9iOkbbGm+y2qFyn7CXmgRxg36F2gQgGQgLKJr4K+nZtGIppQ=="
@@ -1100,11 +1111,11 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-nuclear@^0.1.0":
-  "integrity" "sha512-ATQvfemFqFWl5JvJns1P/Oi1A5CqiZP0b5AkO2rlZw0+CG8/rTHxPeQYdzg4zlpGBM8MsEGlU7CujGajGohy5g=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-nuclear/-/base-unit-nuclear-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-8w2qckqbgj4+8WYwkpLiOe2JbTSAPbHCYhZ1hkYpYj/gTaMTjLgbgWZ7Ydz8KNVRMIY9ORuQBD2MpyK2J9ahDw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-nuclear/-/base-unit-nuclear-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-air" "^0.1.0"
 
 "@civ-clone/base-unit-rifleman@^0.1.0":
   "integrity" "sha512-WtCOyivWRttHg6sGaZOfVC6iA/P7lywm7hH3To2JbOHrG92ifC/zYxNOyL+plKHVrKBz6c1GQow5TGfMy1GSVw=="
@@ -1135,11 +1146,11 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-submarine@^0.1.0":
-  "integrity" "sha512-JM4p0jaaDkxii+Z835Dvv3gFTdUFdC+VDEbVxLdVpdeJN5074J2k4r5GEsmgKvFBu5LnAVB5DpHh+lO0+sh4Fg=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-submarine/-/base-unit-submarine-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-h5VSytWnlfBkVqHxmuGMioE2mJ0ssk5mBgrCC7MCrk2YFqUiuiHAOa5oPDLAzPPJxSkZmSneFojAaSQel3Bhvw=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-submarine/-/base-unit-submarine-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval" "^0.1.0"
 
 "@civ-clone/base-unit-swordman@^0.1.0":
   "integrity" "sha512-9lyqWsvCwOfuiYFCuc6s6oFMglJvcx0jz4W17vd3PoTGrnLeFmVkJfDhPQ06FNjDneKrmXN1EOvyZV7PGE+XVg=="
@@ -1156,11 +1167,11 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/base-unit-transport@^0.1.0":
-  "integrity" "sha512-GUkLvRnIsQsJ8MZ1s7kCUhPtlm/95MTvvqNYt1lMfiFMKovVoW3auadUx0aQ+8bQU1ri1sQmu48wDpvccNzh+A=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-transport/-/base-unit-transport-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-da3dIaGYgEBHJJeVU30XENf0huHQ/uNqCym1fQoG6Q7i7uzdz4g890/hSnIhyTvDfhMHrDuQWw5juGuLnY4RJA=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-transport/-/base-unit-transport-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
+    "@civ-clone/base-unit-type-naval-transport" "^0.1.1"
 
 "@civ-clone/base-unit-trireme@^0.1.0":
   "integrity" "sha512-PUTlSWv7M4CzMh017Wpd7VtNH6mK8hiuM6PIg57cqFsE/gyn3WmEygdyu6ErPWJjsk5B5Mz+VufqFexAA2PxEg=="
@@ -1190,7 +1201,7 @@
   dependencies:
     "@civ-clone/core-unit" "^0.1.0"
 
-"@civ-clone/base-unit-type-naval-transport@^0.1.0":
+"@civ-clone/base-unit-type-naval-transport@^0.1.0", "@civ-clone/base-unit-type-naval-transport@^0.1.1":
   "integrity" "sha512-WLSjb0zJuEsO05UIA3h2YoJMlCAe6TTwDKUpmmRhRE5RxVP21SXD08MgYg2KurT54H0ADqT+qjv78iGrVs3GPw=="
   "resolved" "https://registry.npmjs.org/@civ-clone/base-unit-type-naval-transport/-/base-unit-type-naval-transport-0.1.1.tgz"
   "version" "0.1.1"
@@ -1226,7 +1237,7 @@
     "@civ-clone/base-unit-type-fortifiable" "^0.1.0"
 
 "@civ-clone/civ1-city@github:civ-clone/civ1-city":
-  "resolved" "git+ssh://git@github.com/civ-clone/civ1-city.git#918845f994db76f5e9977d27c1a055806567afd5"
+  "resolved" "git+ssh://git@github.com/civ-clone/civ1-city.git#88cbd77898b5299e9b92184aec603c2d62491f58"
   "version" "0.1.0"
   dependencies:
     "@civ-clone/base-city-yield-gold" "^0.1.0"
@@ -1269,7 +1280,7 @@
     "@civ-clone/core-world" "^0.1.0"
 
 "@civ-clone/civ1-science@github:civ-clone/civ1-science":
-  "resolved" "git+ssh://git@github.com/civ-clone/civ1-science.git#4c3562c0edcab1669a6949269312e7d020706066"
+  "resolved" "git+ssh://git@github.com/civ-clone/civ1-science.git#d282f43ec955f735fc70bc20dcf1d5129986232e"
   "version" "0.1.0"
   dependencies:
     "@civ-clone/base-city-yield-research" "^0.1.0"
@@ -1349,7 +1360,7 @@
     "@civ-clone/core-yield" "^0.1.0"
 
 "@civ-clone/civ1-world@github:civ-clone/civ1-world":
-  "resolved" "git+ssh://git@github.com/civ-clone/civ1-world.git#9d3e67419c3f1d8d7d7ccb15737dd7fb33c65f09"
+  "resolved" "git+ssh://git@github.com/civ-clone/civ1-world.git#b85b8f4cae73caa5884d023aba95236b0fc6821a"
   "version" "0.1.0"
   dependencies:
     "@civ-clone/base-terrain-arctic" "^0.1.0"
@@ -1393,17 +1404,16 @@
     "@civ-clone/core-world-generator" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
-"@civ-clone/core-city-build@^0.1.0":
-  "integrity" "sha512-ehtwHpKt4INr7qnqgT5hN7vNSafeR0FRk0ie/6+rDYbl5ixWwC5xag7c2FaGG8loRX/zif2qWHF6YV+IxadX4Q=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/core-city-build/-/core-city-build-0.1.3.tgz"
-  "version" "0.1.3"
+"@civ-clone/core-city-build@^0.1.0", "@civ-clone/core-city-build@^0.1.3":
+  "integrity" "sha512-V08l071RbQmTUzxPYHnNynKVyrwTrReBvh/yRqB1Cov9nFWqM522+W2RaL87m7S5429faZjde32w524oUPYaEA=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/core-city-build/-/core-city-build-0.1.4.tgz"
+  "version" "0.1.4"
   dependencies:
     "@civ-clone/core-city" "^0.1.0"
-    "@civ-clone/core-city-improvement" "^0.1.0"
     "@civ-clone/core-data-object" "^0.1.0"
+    "@civ-clone/core-player" "^0.1.0"
     "@civ-clone/core-registry" "^0.1.0"
     "@civ-clone/core-rule" "^0.1.0"
-    "@civ-clone/core-unit" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
 "@civ-clone/core-city-growth@^0.1.0":
@@ -1417,21 +1427,10 @@
     "@civ-clone/core-rule" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
-"@civ-clone/core-city-improvement@^0.1.0":
-  "integrity" "sha512-j4HPaCiPrdCE8tL4enpQZWXAhyeMwNTLrnPzLib691gCDR++kPbwAveyxwB48UlcW6BuYHLrF3OGFHNiybPeKw=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/core-city-improvement/-/core-city-improvement-0.1.1.tgz"
-  "version" "0.1.1"
-  dependencies:
-    "@civ-clone/core-city" "^0.1.0"
-    "@civ-clone/core-data-object" "^0.1.0"
-    "@civ-clone/core-player" "^0.1.0"
-    "@civ-clone/core-registry" "^0.1.0"
-    "@civ-clone/core-rule" "^0.1.0"
-
 "@civ-clone/core-city@^0.1.0":
-  "integrity" "sha512-iv/oatWjvhQvp5sa1kuI+mFq73PU/wfHejWEAPIAdUSJv3N5RwW2PSTAPSMGIdQE04jw+FiudrDBpLpaBEJIZQ=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/core-city/-/core-city-0.1.3.tgz"
-  "version" "0.1.3"
+  "integrity" "sha512-ZiRhHqVWKd96PtwgMzxJOQ47kAvsC1n7ALE3zBI1x4z6CETiV0hhmSolWrQdfW4Gdl53JxW1XtgZlM26gu2grQ=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/core-city/-/core-city-0.1.4.tgz"
+  "version" "0.1.4"
   dependencies:
     "@civ-clone/core-data-object" "^0.1.0"
     "@civ-clone/core-player" "^0.1.0"
@@ -1498,17 +1497,17 @@
     "@civ-clone/core-registry" "^0.1.0"
     "@civ-clone/core-rule" "^0.1.0"
 
-"@civ-clone/core-registry@^0.1", "@civ-clone/core-registry@^0.1.0":
+"@civ-clone/core-registry@^0.1.0":
   "integrity" "sha512-g8TqSC+kwDTgpgGBaQd/d4G5Mw75qb4C1nDu3qeVf3bEmggoM5IpyJbSrrn5+uISPJdF9OIQuZWmugLQSmk0tQ=="
   "resolved" "https://registry.npmjs.org/@civ-clone/core-registry/-/core-registry-0.1.0.tgz"
   "version" "0.1.0"
 
 "@civ-clone/core-rule@^0.1.0":
-  "integrity" "sha512-K0um1LoUOjWW9DQfvR4/0fqhETNIJbM+qPeNFbeBOijtrk9bIJ+kNtv7hriZ5BEK7cdlZBcgcbu7LAVcFZc0Tg=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/core-rule/-/core-rule-0.1.0.tgz"
-  "version" "0.1.0"
+  "integrity" "sha512-YKK0Z6uYnw3EASzH+KqkFCQ9VTGLnsLFT4K5kR2Zr/RLo+qkyBMOs0l3DgpbhddfsHqzRY+yscrGjnF4L63rog=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/core-rule/-/core-rule-0.1.1.tgz"
+  "version" "0.1.1"
   dependencies:
-    "@civ-clone/core-registry" "^0.1"
+    "@civ-clone/core-registry" "^0.1.0"
 
 "@civ-clone/core-science@^0.1.0":
   "integrity" "sha512-bFCPAUkumSBD+osPnMhdNo/PoFftOcqL5bABPHzuhdsrAP8M0NFZmBlwoJJFeQjIpRFMI7OxnwGvig909joUYw=="
@@ -1578,11 +1577,12 @@
     "@civ-clone/core-unit" "^0.1.0"
 
 "@civ-clone/core-unit@^0.1.0":
-  "integrity" "sha512-uyQ8gYT2FXUG4NbU2U/F4ftpMjag5+2AKPNsFiKgRaeZEMvRYHEW65b8VcTm2nxWyY5srBbDI5mVNvKKlxeBew=="
-  "resolved" "https://registry.npmjs.org/@civ-clone/core-unit/-/core-unit-0.1.7.tgz"
-  "version" "0.1.7"
+  "integrity" "sha512-0P2s8Yn+wYwQy8wCjAmZ/LyWiZfwRdVpRxs8XzFece4n3YAHVzUWlylJBJR8lh3VKJAIMxEkpaPiUE2U8x6mew=="
+  "resolved" "https://registry.npmjs.org/@civ-clone/core-unit/-/core-unit-0.1.9.tgz"
+  "version" "0.1.9"
   dependencies:
     "@civ-clone/core-city" "^0.1.0"
+    "@civ-clone/core-city-build" "^0.1.3"
     "@civ-clone/core-data-object" "^0.1.0"
     "@civ-clone/core-player" "^0.1.0"
     "@civ-clone/core-registry" "^0.1.0"
@@ -1622,7 +1622,7 @@
     "@civ-clone/core-registry" "^0.1.0"
 
 "@civ-clone/simple-world-generator@github:civ-clone/simple-world-generator":
-  "resolved" "git+ssh://git@github.com/civ-clone/simple-world-generator.git#b56ed8a1c485621624ae8b3c95c24746db6b8f1d"
+  "resolved" "git+ssh://git@github.com/civ-clone/simple-world-generator.git#eea83e1a36ddef860258d85e5efc38dfeb9e9db1"
   "version" "0.1.1"
   dependencies:
     "@civ-clone/civ1-world" "github:civ-clone/civ1-world"
@@ -2119,10 +2119,10 @@
   dependencies:
     "brace-expansion" "^1.1.7"
 
-"minimatch@3.0.4":
-  "integrity" "sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA=="
-  "resolved" "https://registry.npmjs.org/minimatch/-/minimatch-3.0.4.tgz"
-  "version" "3.0.4"
+"minimatch@4.2.1":
+  "integrity" "sha512-9Uq1ChtSZO+Mxa/CL1eGizn2vRn3MlLgzhT0Iz8zaY8NdvxvB0d5QdPFmCKf7JKA9Lerx5vRrnwO03jsSfGG9g=="
+  "resolved" "https://registry.npmjs.org/minimatch/-/minimatch-4.2.1.tgz"
+  "version" "4.2.1"
   dependencies:
     "brace-expansion" "^1.1.7"
 
@@ -2139,9 +2139,9 @@
     "minimist" "^1.2.5"
 
 "mocha@^3.X.X || ^4.X.X || ^5.X.X || ^6.X.X || ^7.X.X || ^8.X.X || ^9.X.X", "mocha@^9.0.0":
-  "integrity" "sha512-T7uscqjJVS46Pq1XDXyo9Uvey9gd3huT/DD9cYBb4K2Xc/vbKRPUWK067bxDQRK0yIz6Jxk73IrnimvASzBNAQ=="
-  "resolved" "https://registry.npmjs.org/mocha/-/mocha-9.2.1.tgz"
-  "version" "9.2.1"
+  "integrity" "sha512-L6XC3EdwT6YrIk0yXpavvLkn8h+EU+Y5UcCHKECyMbdUIxyMuZj4bX4U9e1nvnvUUvQVsV2VHQr5zLdcUkhW/g=="
+  "resolved" "https://registry.npmjs.org/mocha/-/mocha-9.2.2.tgz"
+  "version" "9.2.2"
   dependencies:
     "@ungap/promise-all-settled" "1.1.2"
     "ansi-colors" "4.1.1"
@@ -2156,9 +2156,9 @@
     "he" "1.2.0"
     "js-yaml" "4.1.0"
     "log-symbols" "4.1.0"
-    "minimatch" "3.0.4"
+    "minimatch" "4.2.1"
     "ms" "2.1.3"
-    "nanoid" "3.2.0"
+    "nanoid" "3.3.1"
     "serialize-javascript" "6.0.0"
     "strip-json-comments" "3.1.1"
     "supports-color" "8.1.1"
@@ -2178,10 +2178,10 @@
   "resolved" "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz"
   "version" "2.1.3"
 
-"nanoid@3.2.0":
-  "integrity" "sha512-fmsZYa9lpn69Ad5eDn7FMcnnSR+8R34W9qJEijxYhTbfOWzr22n1QxCMzXLK+ODyW2973V3Fux959iQoUxzUIA=="
-  "resolved" "https://registry.npmjs.org/nanoid/-/nanoid-3.2.0.tgz"
-  "version" "3.2.0"
+"nanoid@3.3.1":
+  "integrity" "sha512-n6Vs/3KGyxPQd6uO0eH4Bv0ojGSUvuLlIHtC3Y0kEO23YRge8H9x1GCzLn28YX0H66pMkxuaeESFq4tKISKwdw=="
+  "resolved" "https://registry.npmjs.org/nanoid/-/nanoid-3.3.1.tgz"
+  "version" "3.3.1"
 
 "normalize-path@^3.0.0", "normalize-path@~3.0.0":
   "integrity" "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="
@@ -2402,9 +2402,9 @@
     "yn" "^2.0.0"
 
 "tsconfig-paths@^3.5.0":
-  "integrity" "sha512-e5adrnOYT6zqVnWqZu7i/BQ3BnhzvGbjEjejFXO20lKIKpwTaupkCPgEfv4GZK1IBciJUEhYs3J3p75FdaTFVg=="
-  "resolved" "https://registry.npmjs.org/tsconfig-paths/-/tsconfig-paths-3.12.0.tgz"
-  "version" "3.12.0"
+  "integrity" "sha512-nWuffZppoaYK0vQ1SQmkSsQzJoHA4s6uzdb2waRpD806x9yfq153AdVsWz4je2qZcW+pENrMQXbGQ3sMCkXuhw=="
+  "resolved" "https://registry.npmjs.org/tsconfig-paths/-/tsconfig-paths-3.13.0.tgz"
+  "version" "3.13.0"
   dependencies:
     "@types/json5" "^0.0.29"
     "json5" "^1.0.1"
@@ -2417,9 +2417,9 @@
   "version" "4.0.8"
 
 "typescript@^4.0.0":
-  "integrity" "sha512-TCTIul70LyWe6IJWT8QSYeA54WQe8EjQFU4wY52Fasj5UKx88LNYKCgBEHcOMOrFF1rKGbD8v/xcNWVUq9SymA=="
-  "resolved" "https://registry.npmjs.org/typescript/-/typescript-4.5.5.tgz"
-  "version" "4.5.5"
+  "integrity" "sha512-HM/hFigTBHZhLXshn9sN37H085+hQGeJHJ/X7LpBWLID/fbc2acUMfU+lGD98X81sKP+pFa9f0DZmCwB9GnbAg=="
+  "resolved" "https://registry.npmjs.org/typescript/-/typescript-4.6.2.tgz"
+  "version" "4.6.2"
 
 "v8-to-istanbul@^8.0.0":
   "integrity" "sha512-FGtKtv3xIpR6BYhvgH8MI/y78oT7d8Au3ww4QIxymrCtZEh5b8gCw2siywE+puhEmuWKDtmfrvF5UlB298ut3w=="

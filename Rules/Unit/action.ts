@@ -7,6 +7,7 @@ import {
   Attack,
   BuildIrrigation,
   BuildMine,
+  BuildRailroad,
   BuildRoad,
   CaptureCity,
   ClearForest,
@@ -368,15 +369,12 @@ export const getRules: (
           ),
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              from.isCoast()
-          ),
-          new Criterion(
-            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
               from
                 .getAdjacent()
                 .some(
                   (tile: Tile): boolean =>
                     tile.terrain() instanceof River ||
+                    tile.terrain() instanceof Water ||
                     (tileImprovementRegistry
                       .getByTile(tile)
                       .some(
@@ -390,6 +388,18 @@ export const getRules: (
       ],
       [Mine, BuildMine],
       [Road, BuildRoad],
+      [
+        Railroad,
+        BuildRailroad,
+        new Criterion((unit: Unit, to: Tile) =>
+          tileImprovementRegistry
+            .getByTile(to)
+            .some(
+              (tileImprovement: TileImprovement) =>
+                tileImprovement instanceof Road
+            )
+        ),
+      ],
     ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]
   ).map(
     ([Improvement, ActionType, ...additionalCriteria]: [

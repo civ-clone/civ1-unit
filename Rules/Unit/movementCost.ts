@@ -13,6 +13,17 @@ import {
   Tundra,
 } from '@civ-clone/civ1-world/Terrains';
 import { Air, Land, Naval, NavalTransport } from '../../Types';
+import {
+  BuildIrrigation,
+  BuildMine,
+  BuildRailroad,
+  BuildRoad,
+  ClearForest,
+  ClearJungle,
+  ClearSwamp,
+  Move,
+  PlantForest,
+} from '../../Actions';
 import { Railroad, Road } from '@civ-clone/civ1-world/TileImprovements';
 import {
   TileImprovementRegistry,
@@ -29,6 +40,23 @@ import MovementCost from '@civ-clone/core-unit/Rules/MovementCost';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
+import UnitAction from '@civ-clone/core-unit/Action';
+
+// I wonder if this would be easier to manage as a `Yield` on the `Terrain`?
+export const baseTerrainMovementCost: [typeof Terrain, number][] = [
+  [Arctic, 2],
+  [Desert, 1],
+  [Forest, 2],
+  [Grassland, 1],
+  [Hills, 2],
+  [Jungle, 2],
+  [Mountains, 3],
+  [Ocean, 1],
+  [Plains, 1],
+  [River, 1],
+  [Swamp, 2],
+  [Tundra, 1],
+];
 
 export const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
@@ -37,24 +65,12 @@ export const getRules: (
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance
 ) => [
-  ...(
-    [
-      [Arctic, 2],
-      [Desert, 1],
-      [Forest, 2],
-      [Grassland, 1],
-      [Hills, 2],
-      [Jungle, 2],
-      [Mountains, 3],
-      [Ocean, 1],
-      [Plains, 1],
-      [River, 1],
-      [Swamp, 2],
-      [Tundra, 1],
-    ] as [typeof Terrain, number][]
-  ).map(
+  ...baseTerrainMovementCost.map(
     ([TerrainType, cost]: [typeof Terrain, number]): MovementCost =>
       new MovementCost(
+        new Criterion(
+          (unit: Unit, action: UnitAction) => action instanceof Move
+        ),
         new Criterion((unit: Unit) => unit instanceof Land),
         new Criterion(
           (unit: Unit, action: Action): boolean =>
@@ -64,10 +80,12 @@ export const getRules: (
       )
   ),
   new MovementCost(
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Air || unit instanceof Naval),
     new Effect(() => 1)
   ),
   new MovementCost(
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action) =>
       tileImprovementRegistry
@@ -87,6 +105,7 @@ export const getRules: (
   ),
 
   new MovementCost(
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action): boolean =>
       tileImprovementRegistry
@@ -111,6 +130,7 @@ export const getRules: (
   ),
 
   new MovementCost(
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit): boolean => unit instanceof Land),
     new Criterion((unit: Unit): boolean => {
       try {
@@ -126,6 +146,32 @@ export const getRules: (
         transportRegistry.getByUnit(unit).transport() instanceof NavalTransport
     ),
     new Effect((): number => 0)
+  ),
+
+  ...(
+    [
+      [BuildIrrigation, 2],
+      [BuildMine, 3],
+      [BuildRoad, 1],
+      [BuildRailroad, 2],
+      [ClearForest, 2],
+      [ClearJungle, 3],
+      [ClearSwamp, 3],
+      [PlantForest, 3],
+    ] as [typeof UnitAction, number][]
+  ).flatMap(([Action, moveCost]: [typeof UnitAction, number]): MovementCost[] =>
+    baseTerrainMovementCost.map(
+      ([TerrainType, terrainCost]: [typeof Terrain, number]): MovementCost =>
+        new MovementCost(
+          new Criterion(
+            (unit: Unit, action: UnitAction) => action instanceof Action
+          ),
+          new Criterion(
+            (unit: Unit) => unit.tile().terrain() instanceof TerrainType
+          ),
+          new Effect(() => moveCost * terrainCost)
+        )
+    )
   ),
 ];
 

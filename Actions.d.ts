@@ -2,6 +2,7 @@ export { Attack } from '@civ-clone/base-unit-action-attack/Attack';
 export { BuildIrrigation } from '@civ-clone/base-unit-action-build-irrigation/BuildIrrigation';
 export { BuildMine } from '@civ-clone/base-unit-action-build-mine/BuildMine';
 export { BuildRoad } from '@civ-clone/base-unit-action-build-road/BuildRoad';
+export { BuildRailroad } from '@civ-clone/base-unit-action-build-railroad/BuildRailroad';
 export { CaptureCity } from '@civ-clone/base-unit-action-capture-city/CaptureCity';
 export { ClearForest } from '@civ-clone/base-unit-action-clear-forest/ClearForest';
 export { ClearJungle } from '@civ-clone/base-unit-action-clear-jungle/ClearJungle';

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Unload = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.Unload = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
 var Attack_1 = require("@civ-clone/base-unit-action-attack/Attack");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Attack_1.Attack; } });
 var BuildIrrigation_1 = require("@civ-clone/base-unit-action-build-irrigation/BuildIrrigation");
@@ -9,6 +9,8 @@ var BuildMine_1 = require("@civ-clone/base-unit-action-build-mine/BuildMine");
 Object.defineProperty(exports, "BuildMine", { enumerable: true, get: function () { return BuildMine_1.BuildMine; } });
 var BuildRoad_1 = require("@civ-clone/base-unit-action-build-road/BuildRoad");
 Object.defineProperty(exports, "BuildRoad", { enumerable: true, get: function () { return BuildRoad_1.BuildRoad; } });
+var BuildRailroad_1 = require("@civ-clone/base-unit-action-build-railroad/BuildRailroad");
+Object.defineProperty(exports, "BuildRailroad", { enumerable: true, get: function () { return BuildRailroad_1.BuildRailroad; } });
 var CaptureCity_1 = require("@civ-clone/base-unit-action-capture-city/CaptureCity");
 Object.defineProperty(exports, "CaptureCity", { enumerable: true, get: function () { return CaptureCity_1.CaptureCity; } });
 var ClearForest_1 = require("@civ-clone/base-unit-action-clear-forest/ClearForest");
