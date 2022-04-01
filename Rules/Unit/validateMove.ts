@@ -25,14 +25,12 @@ export const getRules: (
       (unit: Unit, movementCost: number): boolean =>
         unit.moves().value() < movementCost
     ),
-    new Criterion(
-      (unit: Unit, movementCost: number): boolean =>
-        unit.moves().value() / movementCost >= randomNumberGenerator()
-    ),
-    new Effect((unit: Unit): boolean => {
-      unit.moves().subtract(unit.moves());
+    new Effect((unit: Unit, movementCost: number): boolean => {
+      const remainingMoves = unit.moves().value();
 
-      return true;
+      unit.moves().set(0);
+
+      return remainingMoves >= movementCost * 0.5 * randomNumberGenerator();
     })
   ),
 ];

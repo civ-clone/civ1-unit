@@ -9,9 +9,10 @@ const getRules = (randomNumberGenerator = () => Math.random()) => [
         unit.moves().subtract(movementCost);
         return true;
     })),
-    new ValidateMove_1.default(new Criterion_1.default((unit, movementCost) => unit.moves().value() < movementCost), new Criterion_1.default((unit, movementCost) => unit.moves().value() / movementCost >= randomNumberGenerator()), new Effect_1.default((unit) => {
-        unit.moves().subtract(unit.moves());
-        return true;
+    new ValidateMove_1.default(new Criterion_1.default((unit, movementCost) => unit.moves().value() < movementCost), new Effect_1.default((unit, movementCost) => {
+        const remainingMoves = unit.moves().value();
+        unit.moves().set(0);
+        return (remainingMoves >= movementCost * 0.5 * randomNumberGenerator());
     })),
 ];
 exports.getRules = getRules;

@@ -44,7 +44,7 @@ describe('unit:validateMove', (): void => {
     const unit = new Warrior(null, player, world.get(0, 0), ruleRegistry),
       move = new Move(unit.tile(), world.get(0, 1), unit, ruleRegistry);
 
-    unit.moves().set(0.1);
+    unit.moves().set(0.4);
 
     expect(move.perform()).to.false;
   });
