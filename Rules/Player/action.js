@@ -14,14 +14,14 @@ const getRules = (unitRegistry = UnitRegistry_1.instance) => {
             .getByPlayer(player)
             .filter((unit) => unit.active() && unit.moves().value() > 0)
             .sort((a, b) => (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0))
-            .map((unit) => new PlayerActions_1.ActiveUnit(unit)))),
+            .map((unit) => new PlayerActions_1.ActiveUnit(player, unit)))),
         new Action_1.default(new Criterion_1.default((player) => unitRegistry
             .getByPlayer(player)
             .some((unit) => !unit.active() || !unit.moves().value())), new Effect_1.default((player) => unitRegistry
             .getByPlayer(player)
             .filter((unit) => !unit.active() || unit.moves().value() === 0)
             .sort((a, b) => (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0))
-            .map((unit) => new PlayerActions_1.InactiveUnit(unit)))),
+            .map((unit) => new PlayerActions_1.InactiveUnit(player, unit)))),
     ];
 };
 exports.getRules = getRules;

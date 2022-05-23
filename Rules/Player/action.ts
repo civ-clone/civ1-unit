@@ -29,7 +29,7 @@ export const getRules: (unitRegistry?: UnitRegistry) => Action[] = (
             (a: Unit, b: Unit): number =>
               (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0)
           )
-          .map((unit: Unit): ActiveUnit => new ActiveUnit(unit))
+          .map((unit: Unit): ActiveUnit => new ActiveUnit(player, unit))
       )
     ),
     new Action(
@@ -46,7 +46,7 @@ export const getRules: (unitRegistry?: UnitRegistry) => Action[] = (
             (a: Unit, b: Unit): number =>
               (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0)
           )
-          .map((unit) => new InactiveUnit(unit))
+          .map((unit) => new InactiveUnit(player, unit))
       )
     ),
   ];
