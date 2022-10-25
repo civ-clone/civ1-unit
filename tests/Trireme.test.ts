@@ -1,6 +1,14 @@
-import { Attack, Disembark, Embark, Move, Unload } from '../Actions';
+import {
+  Attack,
+  CaptureCity,
+  Disembark,
+  Embark,
+  Move,
+  Unload,
+} from '../Actions';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import { Land, Water } from '@civ-clone/core-terrain/Types';
+import { Trireme, Warrior } from '../Units';
 import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
 import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
@@ -8,13 +16,12 @@ import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Loader from '@civ-clone/simple-world-generator/tests/lib/Loader';
 import Player from '@civ-clone/core-player/Player';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import TerrainFeatureRegistry from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import TransportRegistry from '@civ-clone/core-unit-transport/TransportRegistry';
-import { Trireme } from '../Units';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
-import { Warrior } from '../Units';
 import World from '@civ-clone/core-world/World';
 import action from '../Rules/Unit/action';
 import created from '../Rules/Unit/created';
@@ -25,7 +32,6 @@ import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
-import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 export const generateIslands: (
   ruleRegistry: RuleRegistry
@@ -333,6 +339,12 @@ describe('Trireme', (): void => {
       transport
         .actions(city.tile())
         .some((action: Action): boolean => action instanceof Attack)
+    ).to.false;
+
+    expect(
+      transport
+        .actions(city.tile())
+        .some((action: Action): boolean => action instanceof CaptureCity)
     ).to.false;
 
     cityRegistry.unregister(city);

@@ -35,12 +35,15 @@ import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import TerrainFeatureRegistry from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import TerrainRegistry from '@civ-clone/core-terrain/TerrainRegistry';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
 import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import TransportRegistry from '@civ-clone/core-unit-transport/TransportRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
 import action from '../Rules/Unit/action';
@@ -51,9 +54,6 @@ import movementCost from '../Rules/Unit/movementCost';
 import unitCreated from '../Rules/Unit/created';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
-import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
-import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
-import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),

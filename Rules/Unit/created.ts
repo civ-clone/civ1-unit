@@ -18,6 +18,7 @@ export const getRules: (
   engine: Engine = engineInstance
 ): Created[] => [
   new Created(new Effect((unit: Unit): void => unitRegistry.register(unit))),
+  new Created(new Effect((unit: Unit): void => unit.applyVisibility())),
   new Created(
     new Effect((unit: Unit): void => unit.moves().set(unit.movement()))
   ),

@@ -94,6 +94,25 @@ import {
   instance as terrainFeatureRegistryInstance,
 } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
+const noCityOrMatchesPlayer = (
+  negate: boolean = false,
+  cityRegistry: CityRegistry = cityRegistryInstance
+) =>
+  new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => {
+    const city = cityRegistry.getByTile(from);
+
+    if (city === null) {
+      return true;
+    }
+
+    const matches = city.player() === unit.player();
+
+    if (negate) {
+      return !matches;
+    }
+
+    return matches;
+  });
 export const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -119,6 +138,7 @@ export const getRules: (
     isNeighbouringTile,
     hasMovesLeft,
     new Or(
+      // `LandUnit`s can move to other `Land` `Tile`s.
       new And(
         new Criterion(
           (unit: Unit, to: Tile): boolean => unit instanceof LandUnit
@@ -128,6 +148,7 @@ export const getRules: (
             from.isLand()
         ),
         new Criterion((unit: Unit, to: Tile): boolean => to.isLand()),
+        // Either there are no units, or they're the same `Player`.
         new Criterion((unit: Unit, to: Tile): boolean =>
           unitRegistry
             .getByTile(to)
@@ -138,25 +159,18 @@ export const getRules: (
       ),
       new And(
         new Criterion((unit: Unit, to: Tile): boolean => unit instanceof Naval),
+        // `Naval` `Unit`s can either move from `Water` or a friendly `City`...
         new Or(
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
               from.isWater()
           ),
-          new Criterion(
-            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              cityRegistry
-                .getByTile(from)
-                .some((city: City): boolean => city.player() === unit.player())
-          )
+          noCityOrMatchesPlayer()
         ),
+        // ...to `Water` or a friendly `City`.
         new Or(
           new Criterion((unit: Unit, to: Tile): boolean => to.isWater()),
-          new Criterion((unit: Unit, to: Tile) =>
-            cityRegistry
-              .getByTile(to)
-              .some((city: City): boolean => city.player() === unit.player())
-          )
+          noCityOrMatchesPlayer()
         )
       ),
       new Criterion((unit: Unit): boolean => unit instanceof Air)
@@ -165,16 +179,7 @@ export const getRules: (
       new Criterion(
         (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
       ),
-      new Or(
-        new Criterion(
-          (unit: Unit, to: Tile): boolean => !cityRegistry.getByTile(to).length
-        ),
-        new Criterion((unit: Unit, to: Tile): boolean =>
-          cityRegistry
-            .getByTile(to)
-            .every((city: City): boolean => city.player() === unit.player())
-        )
-      )
+      noCityOrMatchesPlayer()
     ),
 
     // This is analogous to the original Civilization unit adjacency rules
@@ -255,24 +260,22 @@ export const getRules: (
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-        new Attack(from, to, unit, ruleRegistry)
+        new Attack(from, to, unit, ruleRegistry, unitRegistry)
     )
   ),
 
   new Action(
     isNeighbouringTile,
     hasMovesLeft,
-    new Criterion((unit: Unit, to: Tile): boolean =>
-      cityRegistry
-        .getByTile(to)
-        .some((city: City): boolean => city.player() !== unit.player())
+    new Criterion(
+      (unit: Unit, to: Tile): boolean => cityRegistry.getByTile(to) !== null
     ),
     new Criterion((unit: Unit, to: Tile): boolean => unit instanceof LandUnit),
     new Criterion(
       (unit: Unit, to: Tile): boolean => unitRegistry.getByTile(to).length === 0
     ),
     new Effect((unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
-      const [city] = cityRegistry.getByTile(to);
+      const city = cityRegistry.getByTile(to)!;
 
       return new CaptureCity(from, to, unit, city, ruleRegistry) as UnitAction;
     })
@@ -346,7 +349,7 @@ export const getRules: (
     ),
     new Criterion(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        !cityRegistry.getByTile(from).length
+        cityRegistry.getByTile(from) === null
     ),
     new Criterion(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
@@ -381,7 +384,7 @@ export const getRules: (
                         (improvement: TileImprovement): boolean =>
                           improvement instanceof Irrigation
                       ) &&
-                      !cityRegistry.getByTile(tile).length)
+                      cityRegistry.getByTile(tile) === null)
                 )
           )
         ),

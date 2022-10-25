@@ -10,7 +10,9 @@ import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import TerrainFeatureRegistry from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import TransportRegistry from '@civ-clone/core-unit-transport/TransportRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
 import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
@@ -23,8 +25,6 @@ import created from '../Rules/Unit/created';
 import { expect } from 'chai';
 import StaticWorldGenerator from '@civ-clone/simple-world-generator/tests/lib/StaticWorldGenerator';
 import unitYield from '../Rules/Unit/yield';
-import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
-import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
 describe('unit:activate', () => {
   const ruleRegistry = new RuleRegistry(),

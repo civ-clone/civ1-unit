@@ -1,2 +1,2 @@
-import './registerRules';
 import './registerAvailableBuildItems';
+import './registerRules';

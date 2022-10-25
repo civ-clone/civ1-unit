@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = void 0;
 const Actions_1 = require("../../Actions");
 const Engine_1 = require("@civ-clone/core-engine/Engine");
-const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
+const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Types_1 = require("../../Types");
 const Units_1 = require("../../Units");
@@ -28,13 +28,10 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
         transportRegistry.unregister(manifest);
     })),
     new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
-        ruleRegistry.process(LostAtSea_1.LostAtSea, unit);
+        ruleRegistry.process(LostAtSea_1.default, unit);
     })),
-    new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Fighter), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => {
-        const [city] = cityRegistry.getByTile(unit.tile());
-        return !city;
-    }), new Effect_1.default((unit) => {
-        ruleRegistry.process(LostAtSea_1.LostAtSea, unit);
+    new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Fighter), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) !== null), new Effect_1.default((unit) => {
+        ruleRegistry.process(LostAtSea_1.default, unit);
     })),
 ];
 exports.getRules = getRules;

@@ -45,15 +45,12 @@ import {
   Yield as UnitYield,
   unitYield,
 } from '@civ-clone/core-unit/Rules/Yield';
+import { BaseYield } from '@civ-clone/core-unit/Rules/Yield';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
 import Yield from '@civ-clone/core-yield/Yield';
-import {
-  BaseYield,
-  IBaseYieldRegistry,
-} from '@civ-clone/core-unit/Rules/Yield';
 
 export const getRules: (
   unitImprovementRegistry?: UnitImprovementRegistry,
@@ -133,7 +130,7 @@ export const getRules: (
             new Effect((unit: Unit, unitYield: Yield): void => {
               const baseYield = new YieldType();
 
-              (ruleRegistry as IBaseYieldRegistry).process(
+              ruleRegistry.process(
                 BaseYield,
                 <typeof Unit>unit.constructor,
                 baseYield

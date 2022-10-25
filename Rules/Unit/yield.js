@@ -7,9 +7,9 @@ const UnitImprovements_1 = require("../../UnitImprovements");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const Yield_1 = require("@civ-clone/core-unit/Rules/Yield");
+const Yield_2 = require("@civ-clone/core-unit/Rules/Yield");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
-const Yield_2 = require("@civ-clone/core-unit/Rules/Yield");
 const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance) => [
     ...[
         [Units_1.Artillery, 12, 2, 2],

@@ -4,10 +4,6 @@ import {
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
 import {
-  LostAtSea,
-  ILostAtSeaRegistry,
-} from '@civ-clone/core-unit-transport/Rules/LostAtSea';
-import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
@@ -18,6 +14,7 @@ import {
 import Action from '@civ-clone/core-unit/Action';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
+import LostAtSea from '@civ-clone/core-unit-transport/Rules/LostAtSea';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
 import Unit from '@civ-clone/core-unit/Unit';
 import { NavalTransport } from '../../Types';
@@ -25,6 +22,7 @@ import { Fighter, Trireme } from '../../Units';
 import CityRegistry, {
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 
 export const getRules: (
   transportRegistry?: TransportRegistry,
@@ -83,19 +81,17 @@ export const getRules: (
     new Criterion((unit: Unit): boolean => !unit.tile().isCoast()),
     new Criterion((): boolean => randomNumberGenerator() <= 0.5),
     new Effect((unit: Unit): void => {
-      (ruleRegistry as ILostAtSeaRegistry).process(LostAtSea, unit);
+      ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
     })
   ),
   new Moved(
     new Criterion((unit: Unit): boolean => unit instanceof Fighter),
     new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-    new Criterion((unit: Unit): boolean => {
-      const [city] = cityRegistry.getByTile(unit.tile());
-
-      return !city;
-    }),
+    new Criterion(
+      (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
+    ),
     new Effect((unit: Unit): void => {
-      (ruleRegistry as ILostAtSeaRegistry).process(LostAtSea, unit);
+      ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
     })
   ),
 ];
