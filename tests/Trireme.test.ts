@@ -32,6 +32,7 @@ import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import stowed from '../Rules/Unit/stowed';
 
 export const generateIslands: (
   ruleRegistry: RuleRegistry
@@ -141,6 +142,7 @@ describe('Trireme', (): void => {
     ...lostAtSea(),
     ...moved(transportRegistry, ruleRegistry),
     ...movementCost(tileImprovementRegistry, transportRegistry),
+    ...stowed(),
     ...unitYield(unitImprovementRegistry),
     ...validateMove()
   );
@@ -359,16 +361,29 @@ describe('Trireme', (): void => {
       city = new City(player, world.get(1, 1), '', ruleRegistry);
 
     cityRegistry.register(city);
-    unitRegistry.register(<Unit>transport);
+    unitRegistry.register(transport as Unit);
+
+    const [move] = transport
+      .actions(city.tile())
+      .filter((action: Action): boolean => action instanceof Move);
+
+    expect(move).instanceof(Move);
+
+    move.perform();
+
+    expect(transport.tile()).equal(city.tile());
+
+    transport.setActive();
+    transport.moves().set(transport.movement());
 
     expect(
       transport
-        .actions(city.tile())
+        .actions(tile)
         .some((action: Action): boolean => action instanceof Move)
-    ).to.true;
+    ).true;
 
     cityRegistry.unregister(city);
-    unitRegistry.unregister(<Unit>transport);
+    unitRegistry.unregister(transport as Unit);
   });
 
   it('should be become lost at sea if ending turn away from the coast with a low number from the  random number generator', async (): Promise<void> => {

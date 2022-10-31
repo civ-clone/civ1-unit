@@ -3,6 +3,10 @@ import {
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
 import {
+  UnitImprovementRegistry,
+  instance as unitImprovementRegistryInstance,
+} from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
@@ -13,9 +17,11 @@ import Unit from '@civ-clone/core-unit/Unit';
 
 export const getRules: (
   unitRegistry?: UnitRegistry,
+  unitImprovementRegistry?: UnitImprovementRegistry,
   engine?: Engine
 ) => Destroyed[] = (
   unitRegistry: UnitRegistry = unitRegistryInstance,
+  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
   engine: Engine = engineInstance
 ): Destroyed[] => [
   new Destroyed(
@@ -31,6 +37,15 @@ export const getRules: (
       unit.setActive(false);
       unit.setDestroyed();
     })
+  ),
+  new Destroyed(
+    new Effect((unit: Unit): void =>
+      unitImprovementRegistry
+        .getByUnit(unit)
+        .forEach((unitImprovement) =>
+          unitImprovementRegistry.unregister(unitImprovement)
+        )
+    )
   ),
 ];
 

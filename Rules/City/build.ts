@@ -143,6 +143,7 @@ export const getRules: (
       [Ironclad, Combustion],
       [Knight, Automobile],
       [Musketman, Conscription],
+      [Sail, Magnetism],
       [Spearman, Gunpowder],
       [Swordman, Conscription],
       [Trireme, Navigation],

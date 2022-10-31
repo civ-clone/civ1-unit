@@ -3,6 +3,7 @@ import {
   hasMovesLeft,
   isNeighbouringTile,
 } from '@civ-clone/core-unit/Rules/Action';
+import { Air, Fortifiable, Land as LandUnit, Naval } from '../../Types';
 import {
   Attack,
   BuildIrrigation,
@@ -25,10 +26,6 @@ import {
   Unload,
 } from '../../Actions';
 import {
-  Available,
-  IAvailableRegistry,
-} from '@civ-clone/core-tile-improvement/Rules/Available';
-import {
   CityNameRegistry,
   instance as cityNameRegistryInstance,
 } from '@civ-clone/core-civilization/CityNameRegistry';
@@ -36,13 +33,6 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Air, Fortifiable, Land as LandUnit, Naval } from '../../Types';
-import {
-  Irrigation,
-  Mine,
-  Railroad,
-  Road,
-} from '@civ-clone/civ1-world/TileImprovements';
 import {
   Forest,
   Jungle,
@@ -51,9 +41,21 @@ import {
   Swamp,
 } from '@civ-clone/civ1-world/Terrains';
 import {
+  Irrigation,
+  Mine,
+  Railroad,
+  Road,
+} from '@civ-clone/civ1-world/TileImprovements';
+import { Land, Water } from '@civ-clone/core-terrain/Types';
+import { NavalTransport, Worker } from '../../Types';
+import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
+import {
+  TerrainFeatureRegistry,
+  instance as terrainFeatureRegistryInstance,
+} from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import {
   TileImprovementRegistry,
   instance as tileImprovementRegistryInstance,
@@ -75,9 +77,11 @@ import {
   instance as unitImprovementRegistryInstance,
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import And from '@civ-clone/core-rule/Criteria/And';
-import City from '@civ-clone/core-city/City';
+import Available from '@civ-clone/core-tile-improvement/Rules/Available';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import Effect from '@civ-clone/core-rule/Effect';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
 import { Settlers } from '../../Units';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -85,34 +89,7 @@ import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
-import { Water } from '@civ-clone/core-terrain/Types/Water';
-import { NavalTransport, Worker } from '../../Types';
-import { ITransport } from '@civ-clone/core-unit-transport/Transport';
-import DelayedAction from '@civ-clone/core-unit/DelayedAction';
-import {
-  TerrainFeatureRegistry,
-  instance as terrainFeatureRegistryInstance,
-} from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 
-const noCityOrMatchesPlayer = (
-  negate: boolean = false,
-  cityRegistry: CityRegistry = cityRegistryInstance
-) =>
-  new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => {
-    const city = cityRegistry.getByTile(from);
-
-    if (city === null) {
-      return true;
-    }
-
-    const matches = city.player() === unit.player();
-
-    if (negate) {
-      return !matches;
-    }
-
-    return matches;
-  });
 export const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -158,65 +135,83 @@ export const getRules: (
         )
       ),
       new And(
-        new Criterion((unit: Unit, to: Tile): boolean => unit instanceof Naval),
+        new Criterion((unit: Unit): boolean => unit instanceof Naval),
         // `Naval` `Unit`s can either move from `Water` or a friendly `City`...
         new Or(
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
               from.isWater()
           ),
-          noCityOrMatchesPlayer()
+          new Criterion(
+            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+              cityRegistry.getByTile(from)?.player() === unit.player()
+          )
         ),
         // ...to `Water` or a friendly `City`.
         new Or(
           new Criterion((unit: Unit, to: Tile): boolean => to.isWater()),
-          noCityOrMatchesPlayer()
+          new Criterion(
+            (unit: Unit, to: Tile): boolean =>
+              cityRegistry.getByTile(to)?.player() === unit.player()
+          )
         )
       ),
       new Criterion((unit: Unit): boolean => unit instanceof Air)
     ),
-    new Or(
-      new Criterion(
-        (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
-      ),
-      noCityOrMatchesPlayer()
-    ),
 
-    // This is analogous to the original Civilization unit adjacency rules
+    // This is analogous to the original Civilization unit adjacency rules.
+    // You may only move your `Unit` to the `Tile` if...
     new Or(
       new Criterion(
+        // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
         (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
       ),
+      // new Criterion(
+      //   // ...it's a `Diplomatic` `Unit`...
+      //   (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
+      // ),
       new Criterion(
+        // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
         (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
           !(
-            from
-              .getNeighbours()
-              .some((tile: Tile) =>
-                unitRegistry
-                  .getByTile(tile)
-                  .some(
-                    (tileUnit: Unit): boolean =>
-                      tileUnit.player() !== unit.player()
-                  )
-              ) &&
-            to
-              .getNeighbours()
-              .some((tile: Tile) =>
-                unitRegistry
-                  .getByTile(tile)
-                  .some(
-                    (tileUnit: Unit): boolean =>
-                      tileUnit.player() !== unit.player()
-                  )
+            from.getNeighbours().some((tile: Tile) =>
+              unitRegistry.getByTile(tile).some(
+                (tileUnit: Unit): boolean =>
+                  tileUnit instanceof LandUnit &&
+                  // Ignore `LandUnit`s in `Transport` on `Water`
+                  tileUnit.tile().terrain() instanceof Land &&
+                  tileUnit.player() !== unit.player()
               )
+            ) &&
+            to.getNeighbours().some((tile: Tile) =>
+              unitRegistry.getByTile(tile).some(
+                (tileUnit: Unit): boolean =>
+                  tileUnit instanceof LandUnit &&
+                  // Ignore `LandUnit`s in `Transport` on `Water`
+                  tileUnit.tile().terrain() instanceof Land &&
+                  tileUnit.player() !== unit.player()
+              )
+            )
           )
-      )
-    ),
-    new Criterion((unit: Unit, to: Tile): boolean =>
-      unitRegistry
-        .getByTile(to)
-        .every((tileUnit: Unit): boolean => tileUnit.player() === unit.player())
+      ),
+      new Criterion(
+        (unit: Unit, to: Tile): boolean =>
+          unitRegistry
+            .getByTile(to)
+            .filter(
+              (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
+            ).length > 0
+      ),
+      new Criterion((unit: Unit, to: Tile): boolean => {
+        // ...or one of your `City`s.
+        const city = cityRegistry.getByTile(to);
+
+        if (city === null) {
+          return false;
+        }
+
+        return city.player() === unit.player();
+      })
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -273,6 +268,10 @@ export const getRules: (
     new Criterion((unit: Unit, to: Tile): boolean => unit instanceof LandUnit),
     new Criterion(
       (unit: Unit, to: Tile): boolean => unitRegistry.getByTile(to).length === 0
+    ),
+    new Criterion(
+      (unit: Unit, to: Tile): boolean =>
+        cityRegistry.getByTile(to)!.player() !== unit.player()
     ),
     new Effect((unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
       const city = cityRegistry.getByTile(to)!;
@@ -415,7 +414,7 @@ export const getRules: (
         hasMovesLeft,
         new Criterion(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            (ruleRegistry as IAvailableRegistry)
+            ruleRegistry
               .get(Available)
               .some((rule: Available): boolean =>
                 rule.validate(from, Improvement, unit.player())
@@ -424,15 +423,6 @@ export const getRules: (
         new Criterion(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
             from === to
-        ),
-        new Criterion(
-          (unit: Unit, to: Tile): boolean =>
-            !tileImprovementRegistry
-              .getByTile(to)
-              .some(
-                (improvement: TileImprovement): boolean =>
-                  improvement instanceof Improvement
-              )
         ),
         ...additionalCriteria,
         new Effect(
