@@ -59,7 +59,10 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
         [Actions_1.ClearForest, 2],
         [Actions_1.ClearJungle, 3],
         [Actions_1.ClearSwamp, 3],
+        [Actions_1.Fortify, 1],
+        [Actions_1.Pillage, 1],
         [Actions_1.PlantForest, 3],
+        [Actions_1.Sleep, 0],
     ].flatMap(([Action, moveCost]) => exports.baseTerrainMovementCost.map(([TerrainType, terrainCost]) => new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Action), new Criterion_1.default((unit) => unit.tile().terrain() instanceof TerrainType), new Effect_1.default(() => moveCost * terrainCost)))),
 ];
 exports.getRules = getRules;

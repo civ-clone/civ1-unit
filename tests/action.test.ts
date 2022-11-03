@@ -14,22 +14,24 @@ import {
 } from '@civ-clone/civ1-world/Terrains';
 import {
   Attack,
-  BuildRailroad,
-  CaptureCity,
-  Fortify,
-  Move,
-  Pillage,
-} from '../Actions';
-import {
   BuildIrrigation,
   BuildMine,
+  BuildRailroad,
   BuildRoad,
+  CaptureCity,
   ClearForest,
   ClearJungle,
   ClearSwamp,
+  Fortify,
   FoundCity,
+  Move,
+  Pillage,
   PlantForest,
 } from '../Actions';
+import {
+  BridgeBuilding,
+  Railroad as RailroadAdvance,
+} from '@civ-clone/civ1-science/Advances';
 import { Caravan, Diplomat, Sail, Settlers, Warrior } from '../Units';
 import {
   Irrigation,
@@ -37,11 +39,9 @@ import {
   Railroad,
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
-import { Railroad as RailroadAdvance } from '@civ-clone/civ1-science/Advances';
 import Action from '@civ-clone/core-unit/Action';
 import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
-import { BridgeBuilding } from '@civ-clone/civ1-science/Advances';
 import City from '@civ-clone/core-city/City';
 import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';

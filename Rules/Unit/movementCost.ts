@@ -21,8 +21,11 @@ import {
   ClearForest,
   ClearJungle,
   ClearSwamp,
+  Fortify,
   Move,
+  Pillage,
   PlantForest,
+  Sleep,
 } from '../../Actions';
 import { Railroad, Road } from '@civ-clone/civ1-world/TileImprovements';
 import {
@@ -157,7 +160,10 @@ export const getRules: (
       [ClearForest, 2],
       [ClearJungle, 3],
       [ClearSwamp, 3],
+      [Fortify, 1],
+      [Pillage, 1],
       [PlantForest, 3],
+      [Sleep, 0],
     ] as [typeof UnitAction, number][]
   ).flatMap(([Action, moveCost]: [typeof UnitAction, number]): MovementCost[] =>
     baseTerrainMovementCost.map(

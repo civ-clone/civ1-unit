@@ -1,9 +1,17 @@
 import {
   Action,
   hasMovesLeft,
+  isCurrentTile,
   isNeighbouringTile,
 } from '@civ-clone/core-unit/Rules/Action';
-import { Air, Fortifiable, Land as LandUnit, Naval } from '../../Types';
+import {
+  Air,
+  Fortifiable,
+  Land as LandUnit,
+  Naval,
+  NavalTransport,
+  Worker,
+} from '../../Types';
 import {
   Attack,
   BuildIrrigation,
@@ -47,7 +55,6 @@ import {
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
 import { Land, Water } from '@civ-clone/core-terrain/Types';
-import { NavalTransport, Worker } from '../../Types';
 import {
   RuleRegistry,
   instance as ruleRegistryInstance,
@@ -90,6 +97,15 @@ import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
 
+const isLandUnit = new Criterion(
+    (unit: Unit, to: Tile, from: Tile = unit.tile()) => unit instanceof LandUnit
+  ),
+  isNavalUnit = new Criterion(
+    (unit: Unit, to: Tile, from: Tile = unit.tile()) => unit instanceof Naval
+  ),
+  tileHasCity = (tile: Tile, cityRegistry: CityRegistry): boolean =>
+    cityRegistry.getByTile(tile) !== null;
+
 export const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -117,9 +133,7 @@ export const getRules: (
     new Or(
       // `LandUnit`s can move to other `Land` `Tile`s.
       new And(
-        new Criterion(
-          (unit: Unit, to: Tile): boolean => unit instanceof LandUnit
-        ),
+        isLandUnit,
         new Criterion(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
             from.isLand()
@@ -135,7 +149,7 @@ export const getRules: (
         )
       ),
       new And(
-        new Criterion((unit: Unit): boolean => unit instanceof Naval),
+        isNavalUnit,
         // `Naval` `Unit`s can either move from `Water` or a friendly `City`...
         new Or(
           new Criterion(
@@ -213,6 +227,16 @@ export const getRules: (
         return city.player() === unit.player();
       })
     ),
+    new Criterion((unit: Unit, to: Tile): boolean => {
+      // ...or one of your `City`s.
+      const city = cityRegistry.getByTile(to);
+
+      if (city === null) {
+        return true;
+      }
+
+      return city.player() === unit.player();
+    }),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
         new Move(from, to, unit, ruleRegistry) as UnitAction
@@ -225,13 +249,11 @@ export const getRules: (
     new Or(
       new Criterion((unit: Unit): boolean => unit instanceof Air),
       new And(
-        new Criterion(
-          (unit: Unit, to: Tile): boolean => unit instanceof LandUnit
-        ),
+        isLandUnit,
         new Criterion((unit: Unit, to: Tile): boolean => to.isLand())
       ),
       new And(
-        new Criterion((unit: Unit, to: Tile): boolean => unit instanceof Naval),
+        isNavalUnit,
         new Or(
           new Criterion((unit: Unit, to: Tile): boolean => to.isWater()),
           new And(
@@ -262,10 +284,10 @@ export const getRules: (
   new Action(
     isNeighbouringTile,
     hasMovesLeft,
-    new Criterion(
-      (unit: Unit, to: Tile): boolean => cityRegistry.getByTile(to) !== null
+    isLandUnit,
+    new Criterion((unit: Unit, to: Tile): boolean =>
+      tileHasCity(to, cityRegistry)
     ),
-    new Criterion((unit: Unit, to: Tile): boolean => unit instanceof LandUnit),
     new Criterion(
       (unit: Unit, to: Tile): boolean => unitRegistry.getByTile(to).length === 0
     ),
@@ -282,10 +304,8 @@ export const getRules: (
 
   new Action(
     hasMovesLeft,
+    isCurrentTile,
     new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
-    ),
     new Criterion(
       (unit: Unit, to: Tile): boolean =>
         tileImprovementRegistry
@@ -306,12 +326,10 @@ export const getRules: (
 
   new Action(
     hasMovesLeft,
+    isCurrentTile,
     new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
     new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
       from.isLand()
-    ),
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -321,9 +339,7 @@ export const getRules: (
 
   new Action(
     hasMovesLeft,
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
-    ),
+    isCurrentTile,
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
         new Sleep(from, to, unit, ruleRegistry, turn)
@@ -331,9 +347,7 @@ export const getRules: (
   ),
 
   new Action(
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
-    ),
+    isCurrentTile,
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
         new NoOrders(from, to, unit, ruleRegistry)
@@ -342,16 +356,14 @@ export const getRules: (
 
   new Action(
     hasMovesLeft,
+    isCurrentTile,
     new Criterion((unit: Unit): boolean => unit instanceof Settlers),
     new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
       from.isLand()
     ),
     new Criterion(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        cityRegistry.getByTile(from) === null
-    ),
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
+        !tileHasCity(from, cityRegistry)
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -383,7 +395,7 @@ export const getRules: (
                         (improvement: TileImprovement): boolean =>
                           improvement instanceof Irrigation
                       ) &&
-                      cityRegistry.getByTile(tile) === null)
+                      !tileHasCity(tile, cityRegistry))
                 )
           )
         ),
@@ -420,10 +432,7 @@ export const getRules: (
                 rule.validate(from, Improvement, unit.player())
               )
         ),
-        new Criterion(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            from === to
-        ),
+        isCurrentTile,
         ...additionalCriteria,
         new Effect(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -458,11 +467,8 @@ export const getRules: (
     ]): Action =>
       new Action(
         hasMovesLeft,
+        isCurrentTile,
         new Criterion((unit: Unit): boolean => unit instanceof Worker),
-        new Criterion(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            to === from
-        ),
         new Criterion(
           (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
             from.terrain() instanceof TerrainType
@@ -484,7 +490,7 @@ export const getRules: (
   new Action(
     isNeighbouringTile,
     hasMovesLeft,
-    new Criterion((unit: Unit): boolean => unit instanceof LandUnit),
+    isLandUnit,
     new Criterion(
       (unit: Unit, to: Tile): boolean => to.terrain() instanceof Water
     ),
@@ -559,11 +565,9 @@ export const getRules: (
 
   new Action(
     hasMovesLeft,
+    isCurrentTile,
     new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
     new Criterion((unit: Unit): boolean => (unit as NavalTransport).hasCargo()),
-    new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean => from === to
-    ),
     new Criterion((unit: Unit, to: Tile): boolean =>
       to.getNeighbours().some((tile: Tile): boolean => tile.isLand())
     ),

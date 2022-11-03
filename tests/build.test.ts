@@ -60,23 +60,22 @@ import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/AvailableCityBuildItemsRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
-import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
 import CityGrowthRegistry from '@civ-clone/core-city-growth/CityGrowthRegistry';
+import Created from '@civ-clone/core-unit/Rules/Created';
+import Effect from '@civ-clone/core-rule/Effect';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
 import PlayerWorldRegistry from '@civ-clone/core-player-world/PlayerWorldRegistry';
 import { Production } from '@civ-clone/civ1-world/Yields';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
+import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import build from '../Rules/City/build';
 import buildCost from '../Rules/City/buildCost';
 import buildingComplete from '../Rules/City/buildingComplete';
 import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import simpleRLELoader from '@civ-clone/simple-world-generator/tests/lib/simpleRLELoader';
-import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
-import Created from '@civ-clone/core-unit/Rules/Created';
-import Effect from '@civ-clone/core-rule/Effect';
 
 describe('CityBuild:build', () => {
   it('should include the expected `Unit`s', async () => {
