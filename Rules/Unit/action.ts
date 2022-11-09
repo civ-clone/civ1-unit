@@ -237,6 +237,12 @@ export const getRules: (
 
       return city.player() === unit.player();
     }),
+    new Criterion(
+      (unit: Unit, to: Tile): boolean =>
+        !unitRegistry
+          .getByTile(to)
+          .some((tileUnit) => tileUnit.player() !== unit.player())
+    ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
         new Move(from, to, unit, ruleRegistry) as UnitAction

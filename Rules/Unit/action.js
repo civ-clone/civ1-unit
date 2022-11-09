@@ -69,7 +69,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             return true;
         }
         return city.player() === unit.player();
-    }), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
+    }), new Criterion_1.default((unit, to) => !unitRegistry
+        .getByTile(to)
+        .some((tileUnit) => tileUnit.player() !== unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
     new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Air), new And_1.default(isLandUnit, new Criterion_1.default((unit, to) => to.isLand())), new And_1.default(isNavalUnit, new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new And_1.default(new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
         .some((tileUnit) => tileUnit.player() !== unit.player())))))), new Criterion_1.default((unit, to) => unitRegistry
