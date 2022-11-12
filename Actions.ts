@@ -7,6 +7,7 @@ export { CaptureCity } from '@civ-clone/base-unit-action-capture-city/CaptureCit
 export { ClearForest } from '@civ-clone/base-unit-action-clear-forest/ClearForest';
 export { ClearJungle } from '@civ-clone/base-unit-action-clear-jungle/ClearJungle';
 export { ClearSwamp } from '@civ-clone/base-unit-action-clear-swamp/ClearSwamp';
+export { Disband } from '@civ-clone/base-unit-action-disband/Disband';
 export { Disembark } from '@civ-clone/base-unit-action-disembark/Disembark';
 export { Embark } from '@civ-clone/base-unit-action-embark/Embark';
 export { Fortify } from '@civ-clone/base-unit-action-fortify/Fortify';

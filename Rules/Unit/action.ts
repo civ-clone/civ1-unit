@@ -22,6 +22,7 @@ import {
   ClearForest,
   ClearJungle,
   ClearSwamp,
+  Disband,
   Disembark,
   Embark,
   Fortify,
@@ -349,6 +350,15 @@ export const getRules: (
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
         new Sleep(from, to, unit, ruleRegistry, turn)
+    )
+  ),
+
+  new Action(
+    hasMovesLeft,
+    isCurrentTile,
+    new Effect(
+      (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+        new Disband(from, to, unit, ruleRegistry)
     )
   ),
 

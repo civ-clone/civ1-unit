@@ -1072,6 +1072,13 @@
     "@civ-clone/core-unit" "^0.1.0"
     "@civ-clone/core-world" "^0.1.0"
 
+"@civ-clone/base-unit-action-disband@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@civ-clone/base-unit-action-disband/-/base-unit-action-disband-0.1.0.tgz#f6f508abf2194af72eafd84fcf832095d6a4cea0"
+  integrity sha512-SiU7a0kE2ZG9JEsz1nL+yNdWlPTdJEA3HYBDv0NJAGF9jIz4h+DTTqJL0xeJLkfASvZ8+DLEciDNYZQwEtDVZQ==
+  dependencies:
+    "@civ-clone/core-unit" "^0.1.15"
+
 "@civ-clone/base-unit-action-disembark@^0.1.0":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@civ-clone/base-unit-action-disembark/-/base-unit-action-disembark-0.1.1.tgz#36c52009eca7ccfff170b4412705c15b38f35a70"
@@ -1439,7 +1446,7 @@
 
 "@civ-clone/civ1-city-improvement@github:civ-clone/civ1-city-improvement":
   version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/civ1-city-improvement/tar.gz/ce7ae66c283a662062cad638453ff55fb0189070"
+  resolved "https://codeload.github.com/civ-clone/civ1-city-improvement/tar.gz/f48d763109aa967b2df3fcd26b2cdf91b5fe6fc4"
   dependencies:
     "@civ-clone/base-city-improvement-aqueduct" "^0.1.0"
     "@civ-clone/base-city-improvement-bank" "^0.1.0"
@@ -1482,8 +1489,11 @@
 
 "@civ-clone/civ1-city@github:civ-clone/civ1-city":
   version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/civ1-city/tar.gz/7e8dd48c6d69b584680aea9c15a5b6fc46d7ba0e"
+  resolved "https://codeload.github.com/civ-clone/civ1-city/tar.gz/e55ce4260c681e19e0251ee0bceb295e5897d103"
   dependencies:
+    "@civ-clone/base-city-improvement-courthouse" "^0.1.0"
+    "@civ-clone/base-city-improvement-palace" "^0.1.0"
+    "@civ-clone/base-city-yield-corruption" "^0.1.0"
     "@civ-clone/base-city-yield-gold" "^0.1.0"
     "@civ-clone/base-city-yield-happiness" "^0.1.0"
     "@civ-clone/base-city-yield-luxuries" "^0.1.0"
@@ -1500,7 +1510,7 @@
     "@civ-clone/core-city" "^0.1.0"
     "@civ-clone/core-city-build" "^0.1.0"
     "@civ-clone/core-city-growth" "^0.1.0"
-    "@civ-clone/core-city-happiness" "github:civ-clone/core-city-happiness"
+    "@civ-clone/core-city-happiness" "^0.1.0"
     "@civ-clone/core-city-improvement" "^0.1.2"
     "@civ-clone/core-engine" "^0.1.0"
     "@civ-clone/core-government" "^0.1.0"
@@ -1533,7 +1543,7 @@
 
 "@civ-clone/civ1-science@github:civ-clone/civ1-science":
   version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/civ1-science/tar.gz/fba11f984ed6ad07398617d1d7a8b8519f0b1eac"
+  resolved "https://codeload.github.com/civ-clone/civ1-science/tar.gz/dc5a591fe6fbbd2a030512895c350ccb775d7f69"
   dependencies:
     "@civ-clone/base-city-yield-research" "^0.1.0"
     "@civ-clone/base-science-advance-advancedflight" "^0.1.0"
@@ -1604,7 +1614,7 @@
     "@civ-clone/base-science-advance-university" "^0.1.0"
     "@civ-clone/base-science-advance-writing" "^0.1.0"
     "@civ-clone/core-city" "^0.1.0"
-    "@civ-clone/core-city-happiness" "github:civ-clone/core-city-happiness"
+    "@civ-clone/core-city-happiness" "^0.1.0"
     "@civ-clone/core-engine" "^0.1.0"
     "@civ-clone/core-player" "^0.1.0"
     "@civ-clone/core-registry" "^0.1.0"
@@ -1614,7 +1624,7 @@
 
 "@civ-clone/civ1-unit@github:civ-clone/civ1-unit":
   version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/civ1-unit/tar.gz/f07453a457eecfc730c7d3024e77526ce1e51ac0"
+  resolved "https://codeload.github.com/civ-clone/civ1-unit/tar.gz/1122cf333dacb40d78bdb446da54e5f8294ced12"
   dependencies:
     "@civ-clone/base-player-action-active-unit" "^0.1.0"
     "@civ-clone/base-player-action-inactive-unit" "^0.1.0"
@@ -1695,7 +1705,7 @@
 
 "@civ-clone/civ1-world@github:civ-clone/civ1-world":
   version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/civ1-world/tar.gz/916726db913590b890660b920540cef2a20fa857"
+  resolved "https://codeload.github.com/civ-clone/civ1-world/tar.gz/bdfbbcb23a56ee3f9c8ea15cd81b18b63874cc54"
   dependencies:
     "@civ-clone/base-terrain-arctic" "^0.1.0"
     "@civ-clone/base-terrain-desert" "^0.1.0"
@@ -1764,18 +1774,19 @@
     "@civ-clone/core-rule" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
-"@civ-clone/core-city-happiness@github:civ-clone/core-city-happiness":
-  version "0.1.0"
-  resolved "https://codeload.github.com/civ-clone/core-city-happiness/tar.gz/96ed9470d5b169cd7856752b062963b94c42778c"
+"@civ-clone/core-city-happiness@^0.1.0":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-city-happiness/-/core-city-happiness-0.1.1.tgz#81d405c9649f7325ebe02c3f93d0677013dddb51"
+  integrity sha512-EYWs808f5W8Fha+3GUDIc3Eyht3jpkVo8J1tHkyj4lddBHZ5XNXFian5JTLscikFGInsunQQ4gzGr6AmJ9KeIw==
   dependencies:
     "@civ-clone/core-city" "^0.1.0"
     "@civ-clone/core-rule" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
 "@civ-clone/core-city-improvement@^0.1.0", "@civ-clone/core-city-improvement@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@civ-clone/core-city-improvement/-/core-city-improvement-0.1.2.tgz#816aa1a163197dfa83bc3f920581c74a4e2f696b"
-  integrity sha512-tvcng3MgnpUOOe0Og6qUIEb6W5GZ2Av5mnWoihA8QDtUxgZ08MZm/c1mtJAOpPJm7xx0CX1DUFWQEYtq7jJqEQ==
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-city-improvement/-/core-city-improvement-0.1.3.tgz#6c3f20f65268d616985507af90d68bb5905edb2e"
+  integrity sha512-arzpn4G7sPOLbhBduA2fYTWSGy03Oaq3jT55m1mItQbrCYALRK/usOVtoS3pLvGWir8JI59HqCPtorChuG+9aA==
   dependencies:
     "@civ-clone/core-city" "^0.1.0"
     "@civ-clone/core-city-build" "^0.1.3"
@@ -1805,10 +1816,10 @@
     "@civ-clone/core-registry" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
 
-"@civ-clone/core-data-object@^0.1.0":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@civ-clone/core-data-object/-/core-data-object-0.1.9.tgz#1fa9f6973540cd41f16190ead4ea36ec18b2dd89"
-  integrity sha512-Oerj84VLp2LGL/M46KUKizDRXRSTG3riM1us32h18N8XEuGIjHOmottE6YLiI7p/60d4NXq3alPLbV4ejpQtEw==
+"@civ-clone/core-data-object@^0.1.0", "@civ-clone/core-data-object@^0.1.9":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-data-object/-/core-data-object-0.1.10.tgz#ed5d08ddbf0ca6b400a3f343714140cea8225239"
+  integrity sha512-Aawcaty9n3+4mCWDYCknHQ3MfV2Kv1/KzBcjGT1A56mZinXq8XHEWmfKCY/CfJ37r3/qoGpTH4vPsUBGj73EGA==
   dependencies:
     "@civ-clone/core-registry" "^0.1.0"
 
@@ -1832,9 +1843,9 @@
     "@civ-clone/core-rule" "^0.1.0"
 
 "@civ-clone/core-player-world@^0.1.0":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@civ-clone/core-player-world/-/core-player-world-0.1.8.tgz#b8d77a70029c43cfecf23e297346473163496d41"
-  integrity sha512-BjQOpoVMbbBW1OGNKRK7IpWU6fM4efimZHfW+0qtheaakk2sGHgRHaDlUZt+h237KuDJHhl9kZMmb4GPaUoxGg==
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-player-world/-/core-player-world-0.1.9.tgz#53a8157735b1ff2221bf3de85acef4fe4879fd82"
+  integrity sha512-iJxt2Aznhaq6S+N+po+0egRx2sMTuJazTNjra6NqNxoao/zN3zgxxBml3Ng+Coh7g1XD9tN4i/uYf2nO/eliMQ==
   dependencies:
     "@civ-clone/core-data-object" "^0.1.0"
     "@civ-clone/core-player" "^0.1.0"
@@ -1878,9 +1889,9 @@
     "@civ-clone/core-yield" "^0.1.0"
 
 "@civ-clone/core-terrain-feature@^0.1.0":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@civ-clone/core-terrain-feature/-/core-terrain-feature-0.1.1.tgz#d4353cbf6340e4a7203d4ed02c72c583e08f9bad"
-  integrity sha512-g2l+sHHikaBP1zLX2vDs6yIOwwCgnIUjdX0rx1pOzprKVXNqbGP4FdZkWG+fquERH5SJvC4yyxDPLcCASvBlFg==
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-terrain-feature/-/core-terrain-feature-0.1.2.tgz#62813deb05ee44e5105055bd8d0d3d9cc1705c1a"
+  integrity sha512-AWrrcVTmAPtgYs04vmpWaT0R7beWcMvoGgWNdYCMmkga5zH2T2q95ZQ3fef94BCihMptYCkICtS9ARRRXbzflA==
   dependencies:
     "@civ-clone/core-registry" "^0.1.0"
     "@civ-clone/core-rule" "^0.1.0"
@@ -1908,10 +1919,11 @@
     "@civ-clone/core-world" "^0.1.0"
 
 "@civ-clone/core-turn-based-game@^0.1.0":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@civ-clone/core-turn-based-game/-/core-turn-based-game-0.1.3.tgz#52ac2ccae09495233ce2e97ca24f841a7d3bd252"
-  integrity sha512-CwmaAHzv09gxfz9MLktc1pdbSWcV8TuugFc1aDGb84bMeCOXnVYz2aIc066/0N5xtFBgtqA1xwYvozCVnL1Raw==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@civ-clone/core-turn-based-game/-/core-turn-based-game-0.1.4.tgz#cd6d45fc5694f185b30fdc343b8f49e1f57d642d"
+  integrity sha512-kV3rDgkiWF+K0ndU+rn9yuYLoLurElHETUkEAkjOy7tsphcwM5oOsfpwGbHL9627mPYgvXYmblmbCiBYjDGUMg==
   dependencies:
+    "@civ-clone/core-data-object" "^0.1.9"
     "@civ-clone/core-engine" "^0.1.0"
     "@civ-clone/core-rule" "^0.1.0"
     "@civ-clone/core-yield" "^0.1.0"
@@ -1934,7 +1946,7 @@
     "@civ-clone/core-rule" "^0.1.2"
     "@civ-clone/core-unit" "^0.1.0"
 
-"@civ-clone/core-unit@^0.1.0", "@civ-clone/core-unit@^0.1.12":
+"@civ-clone/core-unit@^0.1.0", "@civ-clone/core-unit@^0.1.12", "@civ-clone/core-unit@^0.1.15":
   version "0.1.15"
   resolved "https://registry.yarnpkg.com/@civ-clone/core-unit/-/core-unit-0.1.15.tgz#0daf4742cb3d6c4aa85708e1764fb852aa423846"
   integrity sha512-xP5tG5aZ1im4rOboqcu0UYl0vubh298uRufeBg47s5pwjeSGrYgwH2A1q0eEkuUwM3VjfJiWzyjX++/qL3QXgw==
@@ -1981,7 +1993,7 @@
 
 "@civ-clone/simple-world-generator@github:civ-clone/simple-world-generator":
   version "0.1.2"
-  resolved "https://codeload.github.com/civ-clone/simple-world-generator/tar.gz/6ba4d4fe78c298878469ee332500d27feb40d5db"
+  resolved "https://codeload.github.com/civ-clone/simple-world-generator/tar.gz/2cba459ec5f204f9df5e3ac90578ec0f94409ae2"
   dependencies:
     "@civ-clone/civ1-world" "github:civ-clone/civ1-world"
     "@civ-clone/core-rule" "^0.1.0"
@@ -2012,9 +2024,9 @@
     "@jridgewell/sourcemap-codec" "1.4.14"
 
 "@types/chai@^4.0.0":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.3.tgz#3c90752792660c4b562ad73b3fbd68bf3bc7ae07"
-  integrity sha512-hC7OMnszpxhZPduX+m+nrx+uFoLkWOMiR4oa/AZF3MuSETYTZmFfJAHqZEM8MVlvfG7BEUcgvtwoCTxBp6hm3g==
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.4.tgz#e913e8175db8307d78b4e8fa690408ba6b65dee4"
+  integrity sha512-KnRanxnpfpjUTqTCXslZSEdLfXExwgNxYPdiO2WGUj8+HDjFi8R3k5RVKPeSCzLjCcshCAtVO2QBbVuAV4kTnw==
 
 "@types/glob@^7.1.3":
   version "7.2.0"
@@ -2158,13 +2170,13 @@ camelcase@^6.0.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 chai@^4.0.0:
-  version "4.3.6"
-  resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.6.tgz#ffe4ba2d9fa9d6680cc0b370adae709ec9011e9c"
-  integrity sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==
+  version "4.3.7"
+  resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.7.tgz#ec63f6df01829088e8bf55fca839bcd464a8ec51"
+  integrity sha512-HLnAzZ2iupm25PlN0xFreAlBA5zaBSv3og0DdeGA4Ar6h6rJ3A0rolRUKJhSF2V10GZKDgWF/VmAEsNWjCRB+A==
   dependencies:
     assertion-error "^1.1.0"
     check-error "^1.0.2"
-    deep-eql "^3.0.1"
+    deep-eql "^4.1.2"
     get-func-name "^2.0.0"
     loupe "^2.3.1"
     pathval "^1.1.1"
@@ -2250,10 +2262,10 @@ decamelize@^4.0.0:
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-4.0.0.tgz#aa472d7bf660eb15f3494efd531cab7f2a709837"
   integrity sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==
 
-deep-eql@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/deep-eql/-/deep-eql-3.0.1.tgz#dfc9404400ad1c8fe023e7da1df1c147c4b444df"
-  integrity sha512-+QeIQyN5ZuO+3Uk5DYh6/1eKO0m0YmJFGNmFHGACpf1ClL1nmlV/p4gNgbl2pJGxgXb4faqo6UE+M5ACEMyVcw==
+deep-eql@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/deep-eql/-/deep-eql-4.1.2.tgz#270ceb902f87724077e6f6449aed81463f42fc1c"
+  integrity sha512-gT18+YW4CcW/DBNTwAmqTtkJh7f9qqScu2qFVlx7kCoeY9tlBu9cUcr7+I+Z/noG8INehS3xQgLpTtd/QUTn4w==
   dependencies:
     type-detect "^4.0.0"
 
@@ -2490,9 +2502,9 @@ log-symbols@4.1.0:
     is-unicode-supported "^0.1.0"
 
 loupe@^2.3.1:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/loupe/-/loupe-2.3.4.tgz#7e0b9bffc76f148f9be769cb1321d3dcf3cb25f3"
-  integrity sha512-OvKfgCC2Ndby6aSTREl5aCCPTNIzlDfQZvZxNUrBrihDhL3xcrYegTblhmEiCrg2kKQz4XsFIaemE5BF4ybSaQ==
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/loupe/-/loupe-2.3.6.tgz#76e4af498103c532d1ecc9be102036a21f787b53"
+  integrity sha512-RaPMZKiMy8/JruncMU5Bt6na1eftNoo++R4Y+N2FrxkDVTrGvcyzFTsaGif4QTeKESheMGegbhw6iUAq+5A8zA==
   dependencies:
     get-func-name "^2.0.0"
 

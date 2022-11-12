@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Unload = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.Unload = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
 var Attack_1 = require("@civ-clone/base-unit-action-attack/Attack");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Attack_1.Attack; } });
 var BuildIrrigation_1 = require("@civ-clone/base-unit-action-build-irrigation/BuildIrrigation");
@@ -19,6 +19,8 @@ var ClearJungle_1 = require("@civ-clone/base-unit-action-clear-jungle/ClearJungl
 Object.defineProperty(exports, "ClearJungle", { enumerable: true, get: function () { return ClearJungle_1.ClearJungle; } });
 var ClearSwamp_1 = require("@civ-clone/base-unit-action-clear-swamp/ClearSwamp");
 Object.defineProperty(exports, "ClearSwamp", { enumerable: true, get: function () { return ClearSwamp_1.ClearSwamp; } });
+var Disband_1 = require("@civ-clone/base-unit-action-disband/Disband");
+Object.defineProperty(exports, "Disband", { enumerable: true, get: function () { return Disband_1.Disband; } });
 var Disembark_1 = require("@civ-clone/base-unit-action-disembark/Disembark");
 Object.defineProperty(exports, "Disembark", { enumerable: true, get: function () { return Disembark_1.Disembark; } });
 var Embark_1 = require("@civ-clone/base-unit-action-embark/Embark");

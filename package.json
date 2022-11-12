@@ -44,6 +44,7 @@
     "@civ-clone/base-unit-action-clear-forest": "^0.1.0",
     "@civ-clone/base-unit-action-clear-jungle": "^0.1.0",
     "@civ-clone/base-unit-action-clear-swamp": "^0.1.0",
+    "@civ-clone/base-unit-action-disband": "^0.1.0",
     "@civ-clone/base-unit-action-disembark": "^0.1.0",
     "@civ-clone/base-unit-action-embark": "^0.1.0",
     "@civ-clone/base-unit-action-fortify": "^0.1.0",
