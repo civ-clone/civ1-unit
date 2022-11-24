@@ -30,9 +30,6 @@ export const getRules: (
     })
   ),
   new Destroyed(
-    new Effect((unit: Unit): void => unitRegistry.unregister(unit))
-  ),
-  new Destroyed(
     new Effect((unit: Unit): void => {
       unit.setActive(false);
       unit.setDestroyed();

@@ -10,12 +10,12 @@ import { expect } from 'chai';
 import movementCost from '../Rules/Unit/movementCost';
 import validateMove from '../Rules/Unit/validateMove';
 
-describe('unit:validateMove', (): void => {
+describe('unit:validateMove', async (): Promise<void> => {
   const world = new World(new FillGenerator(5, 5, Grassland)),
     tileImprovementRegistry = new TileImprovementRegistry(),
     player = new Player();
 
-  world.build();
+  await world.build();
 
   it('should allow moves when not enough moves remain when the generated number is low enough', (): void => {
     const ruleRegistry = new RuleRegistry();

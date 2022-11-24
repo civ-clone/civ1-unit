@@ -91,7 +91,7 @@ import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import Effect from '@civ-clone/core-rule/Effect';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
-import { Settlers } from '../../Units';
+import { Fighter, Settlers, Submarine } from '../../Units';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
@@ -253,34 +253,60 @@ export const getRules: (
   new Action(
     isNeighbouringTile,
     hasMovesLeft,
-    new Or(
-      new Criterion((unit: Unit): boolean => unit instanceof Air),
-      new And(
-        isLandUnit,
-        new Criterion((unit: Unit, to: Tile): boolean => to.isLand())
-      ),
-      new And(
-        isNavalUnit,
-        new Or(
-          new Criterion((unit: Unit, to: Tile): boolean => to.isWater()),
-          new And(
-            new Criterion((unit: Unit, to: Tile): boolean =>
-              unitRegistry
-                .getByTile(to)
-                .some(
-                  (tileUnit: Unit): boolean =>
-                    tileUnit.player() !== unit.player()
-                )
-            )
-          )
-        )
-      )
-    ),
     new Criterion((unit: Unit, to: Tile): boolean =>
       unitRegistry
         .getByTile(to)
-        // this will return false if there are no other units on the tile
         .some((tileUnit: Unit): boolean => tileUnit.player() !== unit.player())
+    ),
+    // Where the Unit is either...
+    new Or(
+      new And(
+        // ...an Air Unit...
+        new Criterion((unit: Unit): boolean => unit instanceof Air),
+        // ...and either...
+        new Or(
+          // ...not every Unit on the Tile is another Air Unit...
+          new Criterion(
+            (unit: Unit, to: Tile): boolean =>
+              !unitRegistry
+                .getByTile(to)
+                .every((tileUnit: Unit): boolean => tileUnit instanceof Air)
+          ),
+          // ...or the Unit is a Fighter.
+          // TODO: `AirAttacker` type? This would allow Mobile SAM etc
+          new Criterion(
+            (unit: Unit, to: Tile): boolean => unit instanceof Fighter
+          )
+        )
+      ),
+      new And(
+        // ...or a Land Unit...
+        isLandUnit,
+        // ...and either...
+        new Or(
+          // ...the Tile has a City....
+          new Criterion((unit: Unit, to: Tile): boolean =>
+            tileHasCity(to, cityRegistry)
+          ),
+          // ...or it's attacking another Land Unit.
+          new Criterion((unit: Unit, to: Tile): boolean =>
+            unitRegistry
+              .getByTile(to)
+              .some((tileUnit: Unit): boolean => tileUnit instanceof LandUnit)
+          )
+        )
+      ),
+      new And(
+        // ...or a Naval Unit...
+        isNavalUnit,
+        new Or(
+          // ...that is either, not a `Submarine` (as they can only attack other `Naval` `Unit`s...
+          // TODO: Add a type for this? NavalBombardier?
+          new Criterion((unit: Unit, to: Tile) => !(unit instanceof Submarine)),
+          // ...or the `Tile` is `Water`.
+          new Criterion((unit: Unit, to: Tile) => to.isWater())
+        )
+      )
     ),
     new Effect(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>

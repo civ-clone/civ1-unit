@@ -63,9 +63,9 @@ describe('unit:activate', () => {
   ).forEach(([UnitType, ActionType, UnitImprovementType]) => {
     it(`should clear ${UnitImprovementType.name} when activated`, async () => {
       const player = new Player(),
-        world = new World(new StaticWorldGenerator());
+        world = new World(new StaticWorldGenerator(), ruleRegistry);
 
-      await world.build(ruleRegistry);
+      await world.build();
 
       const unit = new UnitType(null, player, world.get(0, 0), ruleRegistry),
         [action] = unit
@@ -117,10 +117,10 @@ describe('unit:activate', () => {
     ([UnitType, ActionType]) => {
       it(`should set Busy when triggered`, async () => {
         const player = new Player(),
-          world = new World(new StaticWorldGenerator());
+          world = new World(new StaticWorldGenerator(), ruleRegistry);
 
         playerResearchRegistry.register(new PlayerResearch(player));
-        await world.build(ruleRegistry);
+        await world.build();
 
         const unit = new UnitType(null, player, world.get(18, 0), ruleRegistry),
           [action] = unit

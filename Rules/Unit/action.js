@@ -72,12 +72,39 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     }), new Criterion_1.default((unit, to) => !unitRegistry
         .getByTile(to)
         .some((tileUnit) => tileUnit.player() !== unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
-    new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.Air), new And_1.default(isLandUnit, new Criterion_1.default((unit, to) => to.isLand())), new And_1.default(isNavalUnit, new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new And_1.default(new Criterion_1.default((unit, to) => unitRegistry
+    new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => unitRegistry
         .getByTile(to)
-        .some((tileUnit) => tileUnit.player() !== unit.player())))))), new Criterion_1.default((unit, to) => unitRegistry
+        .some((tileUnit) => tileUnit.player() !== unit.player())), 
+    // Where the Unit is either...
+    new Or_1.default(new And_1.default(
+    // ...an Air Unit...
+    new Criterion_1.default((unit) => unit instanceof Types_1.Air), 
+    // ...and either...
+    new Or_1.default(
+    // ...not every Unit on the Tile is another Air Unit...
+    new Criterion_1.default((unit, to) => !unitRegistry
         .getByTile(to)
-        // this will return false if there are no other units on the tile
-        .some((tileUnit) => tileUnit.player() !== unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry))),
+        .every((tileUnit) => tileUnit instanceof Types_1.Air)), 
+    // ...or the Unit is a Fighter.
+    // TODO: `AirAttacker` type? This would allow Mobile SAM etc
+    new Criterion_1.default((unit, to) => unit instanceof Units_1.Fighter))), new And_1.default(
+    // ...or a Land Unit...
+    isLandUnit, 
+    // ...and either...
+    new Or_1.default(
+    // ...the Tile has a City....
+    new Criterion_1.default((unit, to) => tileHasCity(to, cityRegistry)), 
+    // ...or it's attacking another Land Unit.
+    new Criterion_1.default((unit, to) => unitRegistry
+        .getByTile(to)
+        .some((tileUnit) => tileUnit instanceof Types_1.Land)))), new And_1.default(
+    // ...or a Naval Unit...
+    isNavalUnit, new Or_1.default(
+    // ...that is either, not a `Submarine` (as they can only attack other `Naval` `Unit`s...
+    // TODO: Add a type for this? NavalBombardier?
+    new Criterion_1.default((unit, to) => !(unit instanceof Units_1.Submarine)), 
+    // ...or the `Tile` is `Water`.
+    new Criterion_1.default((unit, to) => to.isWater())))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry))),
     new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, isLandUnit, new Criterion_1.default((unit, to) => tileHasCity(to, cityRegistry)), new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()), new Effect_1.default((unit, to, from = unit.tile()) => {
         const city = cityRegistry.getByTile(to);
         return new Actions_1.CaptureCity(from, to, unit, city, ruleRegistry);

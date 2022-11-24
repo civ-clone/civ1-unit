@@ -25,14 +25,14 @@ import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
 import action from '../Rules/Unit/action';
 import created from '../Rules/Unit/created';
-import { expect } from 'chai';
 import destroyed from '../Rules/Unit/destroyed';
+import { expect } from 'chai';
 import lostAtSea from '../Rules/Unit/lostAtSea';
 import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
+import stowed from '../Rules/Unit/stowed';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
-import stowed from '../Rules/Unit/stowed';
 
 export const generateIslands: (
   ruleRegistry: RuleRegistry
@@ -103,9 +103,9 @@ export const generateIslands: (
       [new Ocean()],
       [new Ocean()],
     ]),
-    world = new World(generator);
+    world = new World(generator, ruleRegistry);
 
-  await world.build(ruleRegistry);
+  await world.build();
 
   for (let i = 0; i < 64; i++) {
     expect(world.get(i % 8, Math.floor(i / 8)).terrain()).to.instanceof(

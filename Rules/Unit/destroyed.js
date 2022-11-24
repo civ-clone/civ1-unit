@@ -10,7 +10,6 @@ const getRules = (unitRegistry = UnitRegistry_1.instance, unitImprovementRegistr
     new Destroyed_1.default(new Effect_1.default((unit, player) => {
         engine.emit('unit:destroyed', unit, player);
     })),
-    new Destroyed_1.default(new Effect_1.default((unit) => unitRegistry.unregister(unit))),
     new Destroyed_1.default(new Effect_1.default((unit) => {
         unit.setActive(false);
         unit.setDestroyed();

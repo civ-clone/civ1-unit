@@ -2,7 +2,7 @@ import {
   CityGrowthRegistry,
   instance as cityGrowthRegistryInstance,
 } from '@civ-clone/core-city-growth/CityGrowthRegistry';
-import Buildable from '@civ-clone/core-city-build/Buildable';
+import { BuildableInstance } from '@civ-clone/core-city-build/Buildable';
 import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
@@ -16,7 +16,7 @@ export const getRules: (
 ): BuildingComplete[] => [
   new BuildingComplete(
     new Criterion(
-      (cityBuild: CityBuild, buildItem: Buildable) =>
+      (cityBuild: CityBuild, buildItem: BuildableInstance) =>
         buildItem instanceof Settlers
     ),
     new Effect((cityBuild: CityBuild) =>

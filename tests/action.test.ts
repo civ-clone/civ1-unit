@@ -126,9 +126,9 @@ describe('Action', (): void => {
       width?: number;
     } = {}): Promise<World> => {
       const generator = new FillGenerator(height, width, TerrainType),
-        world = new World(generator);
+        world = new World(generator, rulesRegistry);
 
-      await world.build(rulesRegistry);
+      await world.build();
 
       return world;
     };
