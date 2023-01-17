@@ -11,31 +11,40 @@ import {
   TransportRegistry,
   instance as transportRegistryInstance,
 } from '@civ-clone/core-unit-transport/TransportRegistry';
+import {
+  Turn,
+  instance as turnInstance,
+} from '@civ-clone/core-turn-based-game/Turn';
 import Action from '@civ-clone/core-unit/Action';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
+import High from '@civ-clone/core-rule/Priorities/High';
 import LostAtSea from '@civ-clone/core-unit-transport/Rules/LostAtSea';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
 import Unit from '@civ-clone/core-unit/Unit';
 import { NavalTransport } from '../../Types';
-import { Fighter, Trireme } from '../../Units';
+import { Bomber, Fighter, Nuclear, Trireme } from '../../Units';
 import CityRegistry, {
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
+
+const unitMoveStore: Map<Unit, number> = new Map();
 
 export const getRules: (
   transportRegistry?: TransportRegistry,
   ruleRegistry?: RuleRegistry,
   randomNumberGenerator?: () => number,
   engine?: Engine,
-  cityRegistry?: CityRegistry
+  cityRegistry?: CityRegistry,
+  turn?: Turn
 ) => Moved[] = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   randomNumberGenerator: () => number = (): number => Math.random(),
   engine: Engine = engineInstance,
-  cityRegistry: CityRegistry = cityRegistryInstance
+  cityRegistry: CityRegistry = cityRegistryInstance,
+  turn: Turn = turnInstance
 ): Moved[] => [
   new Moved(
     new Effect((unit: Unit, action: Action): void => {
@@ -84,16 +93,50 @@ export const getRules: (
       ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
     })
   ),
-  new Moved(
-    new Criterion((unit: Unit): boolean => unit instanceof Fighter),
-    new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-    new Criterion(
-      (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
+
+  ...(
+    [
+      [Bomber, 1],
+      [Fighter, 0],
+      [Nuclear, 0],
+    ] as [typeof Unit, number][]
+  ).flatMap(([UnitType, numberOfTurns]) => [
+    new Moved(
+      new High(),
+      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
+      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
+      new Criterion((unit: Unit): boolean => !unitMoveStore.has(unit)),
+      new Effect((unit: Unit): void => {
+        unitMoveStore.set(unit, turn.value());
+      })
     ),
-    new Effect((unit: Unit): void => {
-      ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
-    })
-  ),
+    new Moved(
+      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
+      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
+      new Criterion(
+        (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
+      ),
+      new Effect((unit: Unit): void => {
+        unitMoveStore.delete(unit);
+      })
+    ),
+    new Moved(
+      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
+      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
+      new Criterion(
+        (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) === null
+      ),
+      new Criterion(
+        (unit: Unit) =>
+          (unitMoveStore.get(unit) ?? turn.value()) + numberOfTurns <=
+          turn.value()
+      ),
+      new Effect((unit: Unit): void => {
+        // TODO: New `Rule` here
+        ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
+      })
+    ),
+  ]),
 ];
 
 export default getRules;

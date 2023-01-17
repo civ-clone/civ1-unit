@@ -28,10 +28,6 @@ import {
   Pillage,
   PlantForest,
 } from '../Actions';
-import {
-  BridgeBuilding,
-  Railroad as RailroadAdvance,
-} from '@civ-clone/civ1-science/Advances';
 import { Caravan, Diplomat, Sail, Settlers, Warrior } from '../Units';
 import {
   Irrigation,
@@ -42,6 +38,7 @@ import {
 import Action from '@civ-clone/core-unit/Action';
 import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
+import BridgeBuilding from '@civ-clone/base-science-advance-bridgebuilding/BridgeBuilding';
 import City from '@civ-clone/core-city/City';
 import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
@@ -49,6 +46,7 @@ import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGener
 import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
+import RailroadAdvance from '@civ-clone/base-science-advance-railroad/Railroad';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import TerrainFeatureRegistry from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import TerrainRegistry from '@civ-clone/core-terrain/TerrainRegistry';

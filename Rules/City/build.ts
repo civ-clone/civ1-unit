@@ -1,30 +1,3 @@
-import {
-  AdvancedFlight,
-  Automobile,
-  BronzeWorking,
-  Chivalry,
-  Combustion,
-  Conscription,
-  Flight,
-  Gunpowder,
-  HorsebackRiding,
-  Industrialization,
-  IronWorking,
-  LaborUnion,
-  Magnetism,
-  MapMaking,
-  MassProduction,
-  Mathematics,
-  Metallurgy,
-  Navigation,
-  Robotics,
-  Rocketry,
-  SteamEngine,
-  Steel,
-  TheWheel,
-  Trade,
-  Writing,
-} from '@civ-clone/civ1-science/Advances';
 import { Build, IBuildCriterion } from '@civ-clone/core-city-build/Rules/Build';
 import {
   Artillery,
@@ -60,12 +33,37 @@ import {
   instance as playerResearchRegistryInstance,
 } from '@civ-clone/core-science/PlayerResearchRegistry';
 import Advance from '@civ-clone/core-science/Advance';
+import AdvancedFlight from '@civ-clone/base-science-advance-advancedflight/AdvancedFlight';
+import Automobile from '@civ-clone/base-science-advance-automobile/Automobile';
+import BronzeWorking from '@civ-clone/base-science-advance-bronzeworking/BronzeWorking';
+import Chivalry from '@civ-clone/base-science-advance-chivalry/Chivalry';
 import City from '@civ-clone/core-city/City';
+import Combustion from '@civ-clone/base-science-advance-combustion/Combustion';
+import Conscription from '@civ-clone/base-science-advance-conscription/Conscription';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
+import Flight from '@civ-clone/base-science-advance-flight/Flight';
+import Gunpowder from '@civ-clone/base-science-advance-gunpowder/Gunpowder';
+import HorsebackRiding from '@civ-clone/base-science-advance-horsebackriding/HorsebackRiding';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
+import Industrialization from '@civ-clone/base-science-advance-industrialization/Industrialization';
+import IronWorking from '@civ-clone/base-science-advance-ironworking/IronWorking';
+import LaborUnion from '@civ-clone/base-science-advance-laborunion/LaborUnion';
+import Magnetism from '@civ-clone/base-science-advance-magnetism/Magnetism';
+import MapMaking from '@civ-clone/base-science-advance-mapmaking/MapMaking';
+import MassProduction from '@civ-clone/base-science-advance-massproduction/MassProduction';
+import Mathematics from '@civ-clone/base-science-advance-mathematics/Mathematics';
+import Metallurgy from '@civ-clone/base-science-advance-metallurgy/Metallurgy';
 import { Naval } from '../../Types';
+import Navigation from '@civ-clone/base-science-advance-navigation/Navigation';
+import Robotics from '@civ-clone/base-science-advance-robotics/Robotics';
+import Rocketry from '@civ-clone/base-science-advance-rocketry/Rocketry';
+import SteamEngine from '@civ-clone/base-science-advance-steamengine/SteamEngine';
+import Steel from '@civ-clone/base-science-advance-steel/Steel';
+import TheWheel from '@civ-clone/base-science-advance-thewheel/TheWheel';
+import Trade from '@civ-clone/base-science-advance-trade/Trade';
 import Unit from '@civ-clone/core-unit/Unit';
+import Writing from '@civ-clone/base-science-advance-writing/Writing';
 
 export const getRules: (
   playerResearchRegistry?: PlayerResearchRegistry
