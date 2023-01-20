@@ -1,3 +1,8 @@
+import { Bomber, Fighter, Nuclear, Trireme } from '../../Units';
+import {
+  CityRegistry,
+  instance as cityRegistryInstance,
+} from '@civ-clone/core-city/CityRegistry';
 import { Disembark, Move } from '../../Actions';
 import {
   Engine,
@@ -16,18 +21,16 @@ import {
   instance as turnInstance,
 } from '@civ-clone/core-turn-based-game/Turn';
 import Action from '@civ-clone/core-unit/Action';
+import And from '@civ-clone/core-rule/Criteria/And';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import High from '@civ-clone/core-rule/Priorities/High';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import LostAtSea from '@civ-clone/core-unit-transport/Rules/LostAtSea';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
-import Unit from '@civ-clone/core-unit/Unit';
+import Or from '@civ-clone/core-rule/Criteria/Or';
 import { NavalTransport } from '../../Types';
-import { Bomber, Fighter, Nuclear, Trireme } from '../../Units';
-import CityRegistry, {
-  instance as cityRegistryInstance,
-} from '@civ-clone/core-city/CityRegistry';
-import { ITransport } from '@civ-clone/core-unit-transport/Transport';
+import Unit from '@civ-clone/core-unit/Unit';
 
 const unitMoveStore: Map<Unit, number> = new Map();
 
@@ -113,8 +116,15 @@ export const getRules: (
     new Moved(
       new Criterion((unit: Unit): boolean => unit instanceof UnitType),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-      new Criterion(
-        (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
+      new Or(
+        // If the `Unit` is in a `City`....
+        new Criterion(
+          (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
+        ),
+        // ...or is being `Transport`ed.
+        new Criterion(
+          (unit: Unit): boolean => !!transportRegistry.getByUnit(unit)
+        )
       ),
       new Effect((unit: Unit): void => {
         unitMoveStore.delete(unit);
@@ -123,8 +133,15 @@ export const getRules: (
     new Moved(
       new Criterion((unit: Unit): boolean => unit instanceof UnitType),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-      new Criterion(
-        (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) === null
+      new And(
+        // If the `Unit` is not in a `City`....
+        new Criterion(
+          (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) === null
+        ),
+        // ...and isn't being `Transport`ed.
+        new Criterion(
+          (unit: Unit): boolean => !transportRegistry.getByUnit(unit)
+        )
       ),
       new Criterion(
         (unit: Unit) =>
