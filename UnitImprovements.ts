@@ -1,2 +1,1 @@
-export { Fortified } from '@civ-clone/base-unit-improvement-fortified/UnitImprovements';
-export { Veteran } from '@civ-clone/base-unit-improvement-veteran/UnitImprovements';
+export { Fortified, Veteran } from '@civ-clone/library-unit/UnitImprovements';

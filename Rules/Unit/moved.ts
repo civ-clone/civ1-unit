@@ -3,11 +3,15 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Disembark, Move } from '../../Actions';
+import { Disembark, Move, SneakAttack } from '../../Actions';
 import {
   Engine,
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
+import {
+  InteractionRegistry,
+  instance as interactionRegistryInstance,
+} from '@civ-clone/core-diplomacy/InteractionRegistry';
 import {
   RuleRegistry,
   instance as ruleRegistryInstance,
@@ -31,23 +35,18 @@ import Moved from '@civ-clone/core-unit/Rules/Moved';
 import Or from '@civ-clone/core-rule/Criteria/Or';
 import { NavalTransport } from '../../Types';
 import Unit from '@civ-clone/core-unit/Unit';
+import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 
 const unitMoveStore: Map<Unit, number> = new Map();
 
-export const getRules: (
-  transportRegistry?: TransportRegistry,
-  ruleRegistry?: RuleRegistry,
-  randomNumberGenerator?: () => number,
-  engine?: Engine,
-  cityRegistry?: CityRegistry,
-  turn?: Turn
-) => Moved[] = (
+export const getRules = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   randomNumberGenerator: () => number = (): number => Math.random(),
   engine: Engine = engineInstance,
   cityRegistry: CityRegistry = cityRegistryInstance,
-  turn: Turn = turnInstance
+  turn: Turn = turnInstance,
+  interactionRegistry: InteractionRegistry = interactionRegistryInstance
 ): Moved[] => [
   new Moved(
     new Effect((unit: Unit, action: Action): void => {
@@ -56,12 +55,11 @@ export const getRules: (
   ),
   new Moved(new Effect((unit: Unit): void => unit.applyVisibility())),
   new Moved(
-    new Criterion((unit: Unit): boolean => unit.moves().value() <= 0.1),
-    new Effect((unit: Unit): void => unit.moves().set(0))
-  ),
-  new Moved(
-    new Criterion((unit: Unit): boolean => unit.moves().value() < 0.1),
-    new Effect((unit: Unit): void => unit.setActive(false))
+    new Criterion((unit: Unit): boolean => unit.moves().value() < 0.3),
+    new Effect((unit: Unit): void => {
+      unit.moves().set(0);
+      unit.setActive(false);
+    })
   ),
   new Moved(
     new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
@@ -154,6 +152,25 @@ export const getRules: (
       })
     ),
   ]),
+
+  new Moved(
+    new Criterion(
+      (unit: Unit, action: Action) => action instanceof SneakAttack
+    ),
+    new Effect((unit: Unit, action: Action) => {
+      const peaceTreaties = interactionRegistry.filter(
+        (interaction): interaction is Peace =>
+          interaction instanceof Peace &&
+          interaction.isBetween(
+            unit.player(),
+            (action as SneakAttack).enemy()
+          ) &&
+          interaction.active()
+      ) as Peace[];
+
+      peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+    })
+  ),
 ];
 
 export default getRules;

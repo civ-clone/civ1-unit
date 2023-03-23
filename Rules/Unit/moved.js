@@ -5,6 +5,7 @@ const Units_1 = require("../../Units");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Actions_1 = require("../../Actions");
 const Engine_1 = require("@civ-clone/core-engine/Engine");
+const InteractionRegistry_1 = require("@civ-clone/core-diplomacy/InteractionRegistry");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const Turn_1 = require("@civ-clone/core-turn-based-game/Turn");
@@ -16,14 +17,17 @@ const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Types_1 = require("../../Types");
+const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const unitMoveStore = new Map();
-const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = () => Math.random(), engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance) => [
+const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = () => Math.random(), engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
     new Moved_1.default(new Effect_1.default((unit, action) => {
         engine.emit('unit:moved', unit, action);
     })),
     new Moved_1.default(new Effect_1.default((unit) => unit.applyVisibility())),
-    new Moved_1.default(new Criterion_1.default((unit) => unit.moves().value() <= 0.1), new Effect_1.default((unit) => unit.moves().set(0))),
-    new Moved_1.default(new Criterion_1.default((unit) => unit.moves().value() < 0.1), new Effect_1.default((unit) => unit.setActive(false))),
+    new Moved_1.default(new Criterion_1.default((unit) => unit.moves().value() < 0.3), new Effect_1.default((unit) => {
+        unit.moves().set(0);
+        unit.setActive(false);
+    })),
     new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit.hasCargo()), new Effect_1.default((unit, action) => unit
         .cargo()
         .forEach((unit) => unit.action(action.forUnit(unit))))),
@@ -63,6 +67,12 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
             ruleRegistry.process(LostAtSea_1.default, unit);
         })),
     ]),
+    new Moved_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack), new Effect_1.default((unit, action) => {
+        const peaceTreaties = interactionRegistry.filter((interaction) => interaction instanceof Declarations_1.Peace &&
+            interaction.isBetween(unit.player(), action.enemy()) &&
+            interaction.active());
+        peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+    })),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

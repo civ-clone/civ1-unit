@@ -23,15 +23,15 @@
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
     "@civ-clone/core-player-world": "^0.1.0",
     "@civ-clone/simple-world-generator": "github:civ-clone/simple-world-generator",
-    "@types/chai": "^4.0.0",
-    "@types/mocha": "^10.0.0",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^14.0.0",
-    "c8": "^7.0.0",
-    "chai": "^4.0.0",
-    "mocha": "^10.0.0",
+    "c8": "^7.13.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
     "prettier": "^2.0.0",
     "ts-mocha": "^10.0.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "@civ-clone/base-player-action-active-unit": "^0.1.0",
@@ -122,6 +122,7 @@
     "@civ-clone/core-city-build": "^0.1.0",
     "@civ-clone/core-city-growth": "^0.1.0",
     "@civ-clone/core-civilization": "^0.1.0",
+    "@civ-clone/core-diplomacy": "^0.1.0",
     "@civ-clone/core-engine": "^0.1.0",
     "@civ-clone/core-player": "^0.1.0",
     "@civ-clone/core-registry": "^0.1.0",
@@ -134,6 +135,8 @@
     "@civ-clone/core-unit-improvement": "^0.1.0",
     "@civ-clone/core-unit-transport": "^0.1.0",
     "@civ-clone/core-world": "^0.1.0",
-    "@civ-clone/core-yield": "^0.1.0"
+    "@civ-clone/core-yield": "^0.1.0",
+    "@civ-clone/library-diplomacy": "^0.1.0",
+    "@civ-clone/library-unit": "^0.1.0"
   }
 }

@@ -27,6 +27,8 @@ import {
   Move,
   Pillage,
   PlantForest,
+  SneakAttack,
+  SneakCaptureCity,
 } from '../Actions';
 import { Caravan, Diplomat, Sail, Settlers, Warrior } from '../Units';
 import {
@@ -43,6 +45,8 @@ import City from '@civ-clone/core-city/City';
 import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
+import InteractionRegistry from '@civ-clone/core-diplomacy/InteractionRegistry';
+import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
@@ -74,6 +78,7 @@ describe('Action', (): void => {
     advanceRegistry = new AdvanceRegistry(),
     cityNameRegistry = new CityNameRegistry(),
     cityRegistry = new CityRegistry(),
+    interactionRegistry = new InteractionRegistry(),
     terrainRegistry = new TerrainRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
     playerResearchRegistry = new PlayerResearchRegistry(),
@@ -140,7 +145,9 @@ describe('Action', (): void => {
       unitImprovementRegistry,
       unitRegistry,
       terrainFeatureRegistry,
-      transportRegistry
+      transportRegistry,
+      undefined,
+      interactionRegistry
     ),
     ...available(playerResearchRegistry, tileImprovementRegistry),
     ...built(tileImprovementRegistry),
@@ -174,6 +181,56 @@ describe('Action', (): void => {
     expect(actions.some((action) => action instanceof Attack)).to.true;
 
     unitRegistry.unregister(unit, enemyUnit);
+  });
+
+  it('should not be able to `Attack` enemy `Unit` next to it, if there is an `active` `Peace` `Declaration`', async (): Promise<void> => {
+    const unit = await getUnit(),
+      enemyUnit = await getUnit(getPlayer(), unit.tile().getNeighbour('e')),
+      actions = unit.actions(enemyUnit.tile());
+
+    expect(actions.some((action) => action instanceof Attack)).to.true;
+    expect(actions.some((action) => action instanceof SneakAttack)).to.false;
+
+    const peaceTreaty = new Peace(
+      unit.player(),
+      enemyUnit.player(),
+      ruleRegistry
+    );
+
+    interactionRegistry.register(peaceTreaty);
+
+    const peaceActions = unit.actions(enemyUnit.tile());
+
+    expect(peaceActions.some((action) => action instanceof SneakAttack)).to
+      .true;
+    expect(peaceActions.some((action) => action.constructor === Attack)).to
+      .false;
+
+    peaceTreaty.expire();
+
+    const postPeaceActions = unit.actions(enemyUnit.tile());
+
+    expect(postPeaceActions.some((action) => action instanceof Attack)).to.true;
+    expect(postPeaceActions.some((action) => action instanceof SneakAttack)).to
+      .false;
+
+    const secondPeaceTreaty = new Peace(
+      unit.player(),
+      enemyUnit.player(),
+      ruleRegistry
+    );
+
+    interactionRegistry.register(secondPeaceTreaty);
+
+    const secondPeaceActions = unit.actions(enemyUnit.tile());
+
+    expect(secondPeaceActions.some((action) => action instanceof SneakAttack))
+      .to.true;
+    expect(secondPeaceActions.some((action) => action.constructor === Attack))
+      .to.false;
+
+    unitRegistry.unregister(unit, enemyUnit);
+    interactionRegistry.unregister(peaceTreaty, secondPeaceTreaty);
   });
 
   it('should be able to `Fortify`', async (): Promise<void> => {
@@ -233,6 +290,61 @@ describe('Action', (): void => {
 
     cityRegistry.unregister(city);
     unitRegistry.unregister(unit);
+  });
+
+  it('should not be able to capture an unprotected enemy `City`, if there is an `active` `Peace` `Declaration`', async (): Promise<void> => {
+    const unit = await getUnit(),
+      city = new City(getPlayer(), unit.tile().getNeighbour('se'), '');
+
+    cityRegistry.register(city);
+
+    const actions = unit.actions(city.tile());
+
+    expect(actions.some((action) => action instanceof CaptureCity)).to.true;
+    expect(actions.some((action) => action instanceof SneakCaptureCity)).to
+      .false;
+
+    const peaceTreaty = new Peace(unit.player(), city.player(), ruleRegistry);
+
+    interactionRegistry.register(peaceTreaty);
+
+    const peaceActions = unit.actions(city.tile());
+
+    expect(peaceActions.some((action) => action instanceof SneakCaptureCity)).to
+      .true;
+    expect(peaceActions.some((action) => action.constructor === CaptureCity)).to
+      .false;
+
+    peaceTreaty.expire();
+
+    const postPeaceActions = unit.actions(city.tile());
+
+    expect(postPeaceActions.some((action) => action instanceof CaptureCity)).to
+      .true;
+    expect(
+      postPeaceActions.some((action) => action instanceof SneakCaptureCity)
+    ).to.false;
+
+    const secondPeaceTreaty = new Peace(
+      unit.player(),
+      city.player(),
+      ruleRegistry
+    );
+
+    interactionRegistry.register(secondPeaceTreaty);
+
+    const secondPeaceActions = unit.actions(city.tile());
+
+    expect(
+      secondPeaceActions.some((action) => action instanceof SneakCaptureCity)
+    ).to.true;
+    expect(
+      secondPeaceActions.some((action) => action.constructor === CaptureCity)
+    ).to.false;
+
+    unitRegistry.unregister(unit);
+    cityRegistry.unregister(city);
+    interactionRegistry.unregister(peaceTreaty, secondPeaceTreaty);
   });
 
   it('should be possible to move into your own `City` or with another of your own `Unit` even if adjacency rules would normally block that', async (): Promise<void> => {
