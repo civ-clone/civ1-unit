@@ -18,6 +18,7 @@ const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportReg
 const Turn_1 = require("@civ-clone/core-turn-based-game/Turn");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
+const WorkedTileRegistry_1 = require("@civ-clone/core-city/WorkedTileRegistry");
 const And_1 = require("@civ-clone/core-rule/Criteria/And");
 const Available_1 = require("@civ-clone/core-tile-improvement/Rules/Available");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
@@ -25,7 +26,7 @@ const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
-const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => {
+const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance) => {
     const attackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
@@ -169,7 +170,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
         new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
         new Action_1.Action(Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry))),
+        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
         ...[
             [
                 TileImprovements_1.Irrigation,

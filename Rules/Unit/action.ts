@@ -91,6 +91,10 @@ import {
   UnitImprovementRegistry,
   instance as unitImprovementRegistryInstance,
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import {
+  WorkedTileRegistry,
+  instance as workedTileRegistryInstance,
+} from '@civ-clone/core-city/WorkedTileRegistry';
 import And from '@civ-clone/core-rule/Criteria/And';
 import Available from '@civ-clone/core-tile-improvement/Rules/Available';
 import Criterion from '@civ-clone/core-rule/Criterion';
@@ -114,18 +118,7 @@ const isLandUnit = new Criterion(
   tileHasCity = (tile: Tile, cityRegistry: CityRegistry): boolean =>
     cityRegistry.getByTile(tile) !== null;
 
-export const getRules: (
-  cityNameRegistry?: CityNameRegistry,
-  cityRegistry?: CityRegistry,
-  ruleRegistry?: RuleRegistry,
-  tileImprovementRegistry?: TileImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry,
-  unitRegistry?: UnitRegistry,
-  terrainFeatureRegistry?: TerrainFeatureRegistry,
-  transportRegistry?: TransportRegistry,
-  turn?: Turn,
-  interactionRegistry?: InteractionRegistry
-) => Action[] = (
+export const getRules = (
   cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
   cityRegistry: CityRegistry = cityRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
@@ -135,8 +128,9 @@ export const getRules: (
   terrainFeatureRegistry: TerrainFeatureRegistry = terrainFeatureRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance,
   turn: Turn = turnInstance,
-  interactionRegistry: InteractionRegistry = interactionRegistryInstance
-) => {
+  interactionRegistry: InteractionRegistry = interactionRegistryInstance,
+  workedTileRegistry: WorkedTileRegistry = workedTileRegistryInstance
+): Action[] => {
   const attackCriteria = [
       isNeighbouringTile,
       hasMovesLeft,
@@ -552,7 +546,14 @@ export const getRules: (
       ),
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          new FoundCity(from, to, unit, cityNameRegistry, ruleRegistry)
+          new FoundCity(
+            from,
+            to,
+            unit,
+            cityNameRegistry,
+            ruleRegistry,
+            workedTileRegistry
+          )
       )
     ),
 
