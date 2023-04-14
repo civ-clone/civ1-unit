@@ -3,7 +3,7 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Disembark, Move, SneakAttack } from '../../Actions';
+import { Disembark, Move, SneakAttack, SneakCaptureCity } from '../../Actions';
 import {
   Engine,
   instance as engineInstance,
@@ -155,18 +155,19 @@ export const getRules = (
 
   new Moved(
     new Criterion(
-      (unit: Unit, action: Action) => action instanceof SneakAttack
+      (unit: Unit, action: Action) =>
+        action instanceof SneakAttack || action instanceof SneakCaptureCity
     ),
     new Effect((unit: Unit, action: Action) => {
-      const peaceTreaties = interactionRegistry.filter(
-        (interaction): interaction is Peace =>
-          interaction instanceof Peace &&
-          interaction.isBetween(
-            unit.player(),
-            (action as SneakAttack).enemy()
-          ) &&
-          interaction.active()
-      ) as Peace[];
+      const peaceTreaties = interactionRegistry
+        .getByPlayers(
+          unit.player(),
+          (action as SneakAttack | SneakCaptureCity).enemy()
+        )
+        .filter(
+          (interaction): interaction is Peace =>
+            interaction instanceof Peace && interaction.active()
+        );
 
       peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
     })

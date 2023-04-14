@@ -67,10 +67,10 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
             ruleRegistry.process(LostAtSea_1.default, unit);
         })),
     ]),
-    new Moved_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack), new Effect_1.default((unit, action) => {
-        const peaceTreaties = interactionRegistry.filter((interaction) => interaction instanceof Declarations_1.Peace &&
-            interaction.isBetween(unit.player(), action.enemy()) &&
-            interaction.active());
+    new Moved_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack || action instanceof Actions_1.SneakCaptureCity), new Effect_1.default((unit, action) => {
+        const peaceTreaties = interactionRegistry
+            .getByPlayers(unit.player(), action.enemy())
+            .filter((interaction) => interaction instanceof Declarations_1.Peace && interaction.active());
         peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
     })),
 ];

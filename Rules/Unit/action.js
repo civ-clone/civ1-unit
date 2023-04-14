@@ -124,16 +124,16 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             .getByPlayers(unit.player(), tileUnit.player())
             .filter((interaction) => interaction instanceof Declarations_1.Peace)
             .every((interaction) => interaction.expired()))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry))),
-        new Action_1.Action(...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).every((tileUnit) => interactionRegistry
+        new Action_1.Action(...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry
+            .getByTile(to)
+            .every((tileUnit) => interactionRegistry
             .getByPlayers(unit.player(), tileUnit.player())
-            .filter((interaction) => interaction instanceof Declarations_1.Peace)
-            .some((interaction) => interaction.active()))), new Effect_1.default((unit, to, from = unit.tile()) => {
+            .some((interaction) => interaction instanceof Declarations_1.Peace && interaction.active()))), new Effect_1.default((unit, to, from = unit.tile()) => {
             const enemies = Array.from(new Set(unitRegistry
                 .getByTile(to)
                 .filter((tileUnit) => interactionRegistry
                 .getByPlayers(unit.player(), tileUnit.player())
-                .filter((interaction) => interaction instanceof Declarations_1.Peace)
-                .some((interaction) => interaction.active()))
+                .some((interaction) => interaction instanceof Declarations_1.Peace && interaction.active()))
                 .map((unit) => unit.player())));
             if (enemies.length > 1) {
                 console.warn('Multiple targets for declaring war:');

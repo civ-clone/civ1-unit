@@ -356,15 +356,16 @@ export const getRules = (
     new Action(
       ...attackCriteria,
       new Criterion((unit: Unit, to: Tile): boolean =>
-        unitRegistry.getByTile(to).every((tileUnit) =>
-          interactionRegistry
-            .getByPlayers(unit.player(), tileUnit.player())
-            .filter(
-              (interaction): interaction is Peace =>
-                interaction instanceof Peace
-            )
-            .some((interaction) => interaction.active())
-        )
+        unitRegistry
+          .getByTile(to)
+          .every((tileUnit) =>
+            interactionRegistry
+              .getByPlayers(unit.player(), tileUnit.player())
+              .some(
+                (interaction): interaction is Peace =>
+                  interaction instanceof Peace && interaction.active()
+              )
+          )
       ),
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
@@ -375,11 +376,10 @@ export const getRules = (
                 .filter((tileUnit) =>
                   interactionRegistry
                     .getByPlayers(unit.player(), tileUnit.player())
-                    .filter(
+                    .some(
                       (interaction): interaction is Peace =>
-                        interaction instanceof Peace
+                        interaction instanceof Peace && interaction.active()
                     )
-                    .some((interaction) => interaction.active())
                 )
                 .map((unit) => unit.player())
             )
