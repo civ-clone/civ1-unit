@@ -29,6 +29,7 @@ import {
   Trireme,
   Warrior,
 } from '../../Units';
+import { Capacity, CargoWeight } from '@civ-clone/core-unit-transport/Yields';
 import {
   Fortified as FortifiedUnitImprovement,
   Veteran as VeteranUnitImprovement,
@@ -37,6 +38,10 @@ import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
+import {
+  TransportRegistry,
+  instance as transportRegistryInstance,
+} from '@civ-clone/core-unit-transport/TransportRegistry';
 import {
   UnitImprovementRegistry,
   instance as unitImprovementRegistryInstance,
@@ -48,16 +53,15 @@ import {
 import { BaseYield } from '@civ-clone/core-unit/Rules/Yield';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
 import Yield from '@civ-clone/core-yield/Yield';
 
-export const getRules: (
-  unitImprovementRegistry?: UnitImprovementRegistry,
-  ruleRegistry?: RuleRegistry
-) => (UnitYield | BaseYield)[] = (
+export const getRules = (
   unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
-  ruleRegistry: RuleRegistry = ruleRegistryInstance
+  ruleRegistry: RuleRegistry = ruleRegistryInstance,
+  transportRegistry: TransportRegistry = transportRegistryInstance
 ): (UnitYield | BaseYield)[] => [
   ...(
     [
@@ -144,6 +148,38 @@ export const getRules: (
           )
       )
   ),
+
+  ...(
+    [
+      [Trireme, 2],
+      [Sail, 3],
+      [Frigate, 4],
+      [Transport, 8],
+      [Carrier, 8],
+    ] as [typeof Unit, number][]
+  ).flatMap(([UnitType, capacity]) => [
+    new UnitYield(
+      new Criterion(
+        (unit: Unit, unitYield: Yield): unitYield is Capacity =>
+          unitYield instanceof Capacity
+      ),
+      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
+      new Effect((unit: Unit, unitYield: Yield): void =>
+        unitYield.set(capacity)
+      )
+    ),
+    new UnitYield(
+      new Criterion(
+        (unit: Unit, unitYield: Yield): unitYield is CargoWeight =>
+          unitYield instanceof CargoWeight
+      ),
+      new Effect((unit: Unit | ITransport, unitYield: Yield): void =>
+        unitYield.set(
+          transportRegistry.getByTransport(unit as ITransport).length
+        )
+      )
+    ),
+  ]),
 ];
 
 export default getRules;

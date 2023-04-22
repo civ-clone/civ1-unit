@@ -3,14 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = void 0;
 const Yields_1 = require("@civ-clone/core-unit/Yields");
 const Units_1 = require("../../Units");
+const Yields_2 = require("@civ-clone/core-unit-transport/Yields");
 const UnitImprovements_1 = require("../../UnitImprovements");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
+const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const Yield_1 = require("@civ-clone/core-unit/Rules/Yield");
 const Yield_2 = require("@civ-clone/core-unit/Rules/Yield");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
-const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance) => [
+const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, transportRegistry = TransportRegistry_1.instance) => [
     ...[
         [Units_1.Artillery, 12, 2, 2],
         [Units_1.Battleship, 18, 12, 4, 2],
@@ -51,6 +53,16 @@ const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, 
         ruleRegistry.process(Yield_2.BaseYield, unit.constructor, baseYield);
         unitYield.add(baseYield.value() * yieldModifier, UnitImprovementType.name);
     })))),
+    ...[
+        [Units_1.Trireme, 2],
+        [Units_1.Sail, 3],
+        [Units_1.Frigate, 4],
+        [Units_1.Transport, 8],
+        [Units_1.Carrier, 8],
+    ].flatMap(([UnitType, capacity]) => [
+        new Yield_1.Yield(new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.Capacity), new Criterion_1.default((unit) => unit instanceof UnitType), new Effect_1.default((unit, unitYield) => unitYield.set(capacity))),
+        new Yield_1.Yield(new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.CargoWeight), new Effect_1.default((unit, unitYield) => unitYield.set(transportRegistry.getByTransport(unit).length))),
+    ]),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;
