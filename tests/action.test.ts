@@ -24,6 +24,7 @@ import {
   ClearSwamp,
   Fortify,
   FoundCity,
+  GoTo,
   Move,
   Pillage,
   PlantForest,
@@ -72,6 +73,8 @@ import movementCost from '../Rules/Unit/movementCost';
 import unitCreated from '../Rules/Unit/created';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import { PathFinderRegistry } from '@civ-clone/core-world-path/PathFinderRegistry';
+import BasePathFinder from '@civ-clone/simple-world-path/BasePathFinder';
 
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -81,6 +84,7 @@ describe('Action', (): void => {
     interactionRegistry = new InteractionRegistry(),
     terrainRegistry = new TerrainRegistry(),
     tileImprovementRegistry = new TileImprovementRegistry(),
+    pathFinderRegistry = new PathFinderRegistry(),
     playerResearchRegistry = new PlayerResearchRegistry(),
     terrainFeatureRegistry = new TerrainFeatureRegistry(),
     transportRegistry = new TransportRegistry(),
@@ -147,7 +151,9 @@ describe('Action', (): void => {
       terrainFeatureRegistry,
       transportRegistry,
       undefined,
-      interactionRegistry
+      interactionRegistry,
+      undefined,
+      pathFinderRegistry
     ),
     ...available(playerResearchRegistry, tileImprovementRegistry),
     ...built(tileImprovementRegistry),
@@ -171,6 +177,8 @@ describe('Action', (): void => {
     Swamp,
     Tundra
   );
+
+  pathFinderRegistry.register(BasePathFinder);
 
   it('should be able to `Attack` enemy `Unit` next to it', async (): Promise<void> => {
     const unit = await getUnit(),
@@ -602,4 +610,19 @@ describe('Action', (): void => {
       expect(unit.actions().some((action) => action instanceof Pillage));
     })
   );
+
+  it(`should be possible for a Unit to GoTo another Tile if there's a valid Path`, async (): Promise<void> => {
+    const world = await generateFixedWorld(),
+      unit = await getUnit(getPlayer(), world.get(0, 0), Warrior);
+
+    expect(unit.actions().some((action) => action instanceof GoTo)).false;
+    expect(
+      unit.actions(world.get(1, 1)).some((action) => action instanceof GoTo)
+    ).false;
+    expect(
+      unit.actions(world.get(2, 2)).some((action) => action instanceof GoTo)
+    ).true;
+
+    unitRegistry.unregister(unit);
+  });
 });

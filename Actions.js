@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "BuildIrrigation", { enumerable: true, get: function () { return Actions_1.BuildIrrigation; } });
@@ -16,6 +16,7 @@ Object.defineProperty(exports, "Disembark", { enumerable: true, get: function ()
 Object.defineProperty(exports, "Embark", { enumerable: true, get: function () { return Actions_1.Embark; } });
 Object.defineProperty(exports, "Fortify", { enumerable: true, get: function () { return Actions_1.Fortify; } });
 Object.defineProperty(exports, "FoundCity", { enumerable: true, get: function () { return Actions_1.FoundCity; } });
+Object.defineProperty(exports, "GoTo", { enumerable: true, get: function () { return Actions_1.GoTo; } });
 Object.defineProperty(exports, "Move", { enumerable: true, get: function () { return Actions_1.Move; } });
 Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () { return Actions_1.NoOrders; } });
 Object.defineProperty(exports, "Pillage", { enumerable: true, get: function () { return Actions_1.Pillage; } });

@@ -27,6 +27,7 @@ import {
   Embark,
   Fortify,
   FoundCity,
+  GoTo,
   Move,
   NoOrders,
   Pillage,
@@ -64,9 +65,17 @@ import {
 } from '@civ-clone/civ1-world/TileImprovements';
 import { Land, Water } from '@civ-clone/core-terrain/Types';
 import {
+  PathFinderRegistry,
+  instance as pathFinderRegistryInstance,
+} from '@civ-clone/core-world-path/PathFinderRegistry';
+import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
+import {
+  StrategyNoteRegistry,
+  instance as strategyNoteRegistryInstance,
+} from '@civ-clone/core-strategy/StrategyNoteRegistry';
 import {
   TerrainFeatureRegistry,
   instance as terrainFeatureRegistryInstance,
@@ -102,6 +111,7 @@ import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import Effect from '@civ-clone/core-rule/Effect';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
+import Path from '@civ-clone/core-world-path/Path';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
@@ -129,7 +139,9 @@ export const getRules = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   turn: Turn = turnInstance,
   interactionRegistry: InteractionRegistry = interactionRegistryInstance,
-  workedTileRegistry: WorkedTileRegistry = workedTileRegistryInstance
+  workedTileRegistry: WorkedTileRegistry = workedTileRegistryInstance,
+  pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance,
+  strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance
 ): Action[] => {
   const attackCriteria = [
       isNeighbouringTile,
@@ -772,6 +784,36 @@ export const getRules = (
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Unload(from, to, unit, ruleRegistry)
+      )
+    ),
+
+    new Action(
+      hasMovesLeft,
+      new Criterion(
+        (unit: Unit, to: Tile, from: Tile) =>
+          to !== from && !to.isNeighbourOf(from)
+      ),
+      new Criterion((unit: Unit, to: Tile, from: Tile) => {
+        const [PathFinder] = pathFinderRegistry.entries();
+
+        if (!PathFinder) {
+          return false;
+        }
+
+        const path = new PathFinder(unit, from, to).generate();
+
+        return path instanceof Path;
+      }),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile): UnitAction =>
+          new GoTo(
+            from,
+            to,
+            unit,
+            ruleRegistry,
+            pathFinderRegistry,
+            strategyNoteRegistry
+          )
       )
     ),
   ];

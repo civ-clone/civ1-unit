@@ -13,6 +13,7 @@ export {
   Embark,
   Fortify,
   FoundCity,
+  GoTo,
   Move,
   NoOrders,
   Pillage,
