@@ -18,6 +18,7 @@ export {
   NoOrders,
   Pillage,
   PlantForest,
+  SetHomeCity,
   Sleep,
   SneakAttack,
   SneakCaptureCity,

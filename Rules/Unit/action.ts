@@ -32,6 +32,7 @@ import {
   NoOrders,
   Pillage,
   PlantForest,
+  SetHomeCity,
   Sleep,
   SneakAttack,
   SneakCaptureCity,
@@ -106,6 +107,7 @@ import {
 } from '@civ-clone/core-city/WorkedTileRegistry';
 import And from '@civ-clone/core-rule/Criteria/And';
 import Available from '@civ-clone/core-tile-improvement/Rules/Available';
+import City from '@civ-clone/core-city/City';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import Effect from '@civ-clone/core-rule/Effect';
@@ -275,7 +277,8 @@ export const getRules = (
       new Or(
         new Criterion(
           // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-          (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
+          (unit: Unit, to: Tile, from: Tile): boolean =>
+            !(unit instanceof LandUnit)
         ),
         // new Criterion(
         //   // ...it's a `Diplomatic` `Unit`...
@@ -306,26 +309,24 @@ export const getRules = (
             )
         ),
         new Criterion(
-          (unit: Unit, to: Tile): boolean =>
+          // ...unless you're moving to a `Tile` that already has one of your `Unit`s on...
+          (unit: Unit, to: Tile, from: Tile): boolean =>
             unitRegistry
               .getByTile(to)
               .filter(
                 (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
               ).length > 0
         ),
-        new Criterion((unit: Unit, to: Tile): boolean => {
-          // ...or one of your `City`s.
-          const city = cityRegistry.getByTile(to);
-
-          if (city === null) {
-            return false;
-          }
-
-          return city.player() === unit.player();
-        })
+        new Criterion((unit: Unit, to: Tile, from: Tile): boolean =>
+          // ...or to, or from, one of your `City`s.
+          [from, to]
+            .map((tile) => cityRegistry.getByTile(tile))
+            .some(
+              (city) => city instanceof City && city.player() === unit.player()
+            )
+        )
       ),
       new Criterion((unit: Unit, to: Tile): boolean => {
-        // ...or one of your `City`s.
         const city = cityRegistry.getByTile(to);
 
         if (city === null) {
@@ -814,6 +815,24 @@ export const getRules = (
             pathFinderRegistry,
             strategyNoteRegistry
           )
+      )
+    ),
+
+    new Action(
+      hasMovesLeft,
+      isCurrentTile,
+      new Criterion((unit: Unit, to: Tile, from: Tile): boolean => {
+        const city = cityRegistry.getByTile(from);
+
+        if (!(city instanceof City)) {
+          return false;
+        }
+
+        return city.player() === unit.player();
+      }),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile): UnitAction =>
+          new SetHomeCity(from, to, unit, ruleRegistry, cityRegistry)
       )
     ),
   ];

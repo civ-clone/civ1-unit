@@ -23,6 +23,7 @@ const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/Unit
 const WorkedTileRegistry_1 = require("@civ-clone/core-city/WorkedTileRegistry");
 const And_1 = require("@civ-clone/core-rule/Criteria/And");
 const Available_1 = require("@civ-clone/core-tile-improvement/Rules/Available");
+const City_1 = require("@civ-clone/core-city/City");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
@@ -90,7 +91,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // You may only move your `Unit` to the `Tile` if...
         new Or_1.default(new Criterion_1.default(
         // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-        (unit, to) => !(unit instanceof Types_1.Land)), 
+        (unit, to, from) => !(unit instanceof Types_1.Land)), 
         // new Criterion(
         //   // ...it's a `Diplomatic` `Unit`...
         //   (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
@@ -104,17 +105,15 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             to.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => tileUnit instanceof Types_1.Land &&
                 // Ignore `LandUnit`s in `Transport` on `Water`
                 tileUnit.tile().terrain() instanceof Types_2.Land &&
-                tileUnit.player() !== unit.player())))), new Criterion_1.default((unit, to) => unitRegistry
+                tileUnit.player() !== unit.player())))), new Criterion_1.default(
+        // ...unless you're moving to a `Tile` that already has one of your `Unit`s on...
+        (unit, to, from) => unitRegistry
             .getByTile(to)
-            .filter((tileUnit) => tileUnit.player() === unit.player()).length > 0), new Criterion_1.default((unit, to) => {
-            // ...or one of your `City`s.
-            const city = cityRegistry.getByTile(to);
-            if (city === null) {
-                return false;
-            }
-            return city.player() === unit.player();
-        })), new Criterion_1.default((unit, to) => {
-            // ...or one of your `City`s.
+            .filter((tileUnit) => tileUnit.player() === unit.player()).length > 0), new Criterion_1.default((unit, to, from) => 
+        // ...or to, or from, one of your `City`s.
+        [from, to]
+            .map((tile) => cityRegistry.getByTile(tile))
+            .some((city) => city instanceof City_1.default && city.player() === unit.player()))), new Criterion_1.default((unit, to) => {
             const city = cityRegistry.getByTile(to);
             if (city === null) {
                 return true;
@@ -240,6 +239,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const path = new PathFinder(unit, from, to).generate();
             return path instanceof Path_1.default;
         }), new Effect_1.default((unit, to, from) => new Actions_1.GoTo(from, to, unit, ruleRegistry, pathFinderRegistry, strategyNoteRegistry))),
+        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
+            const city = cityRegistry.getByTile(from);
+            if (!(city instanceof City_1.default)) {
+                return false;
+            }
+            return city.player() === unit.player();
+        }), new Effect_1.default((unit, to, from) => new Actions_1.SetHomeCity(from, to, unit, ruleRegistry, cityRegistry))),
     ];
 };
 exports.getRules = getRules;

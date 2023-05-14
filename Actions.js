@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "BuildIrrigation", { enumerable: true, get: function () { return Actions_1.BuildIrrigation; } });
@@ -21,6 +21,7 @@ Object.defineProperty(exports, "Move", { enumerable: true, get: function () { re
 Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () { return Actions_1.NoOrders; } });
 Object.defineProperty(exports, "Pillage", { enumerable: true, get: function () { return Actions_1.Pillage; } });
 Object.defineProperty(exports, "PlantForest", { enumerable: true, get: function () { return Actions_1.PlantForest; } });
+Object.defineProperty(exports, "SetHomeCity", { enumerable: true, get: function () { return Actions_1.SetHomeCity; } });
 Object.defineProperty(exports, "Sleep", { enumerable: true, get: function () { return Actions_1.Sleep; } });
 Object.defineProperty(exports, "SneakAttack", { enumerable: true, get: function () { return Actions_1.SneakAttack; } });
 Object.defineProperty(exports, "SneakCaptureCity", { enumerable: true, get: function () { return Actions_1.SneakCaptureCity; } });
