@@ -4,7 +4,8 @@ exports.getRules = void 0;
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const ValidateMove_1 = require("@civ-clone/core-unit/Rules/ValidateMove");
-const getRules = (randomNumberGenerator = () => Math.random()) => [
+const core_random_1 = require("@civ-clone/core-random");
+const getRules = (randomNumberGenerator = core_random_1.instance) => [
     new ValidateMove_1.default(new Criterion_1.default((unit, movementCost) => unit.moves().value() >= movementCost), new Effect_1.default((unit, movementCost) => {
         unit.moves().subtract(movementCost);
         return true;

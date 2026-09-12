@@ -36,13 +36,14 @@ import Or from '@civ-clone/core-rule/Criteria/Or';
 import { NavalTransport } from '../../Types';
 import Unit from '@civ-clone/core-unit/Unit';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
+import { instance as rngInstance } from '@civ-clone/core-random';
 
 const unitMoveStore: Map<Unit, number> = new Map();
 
 export const getRules = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
-  randomNumberGenerator: () => number = (): number => Math.random(),
+  randomNumberGenerator: () => number = rngInstance,
   engine: Engine = engineInstance,
   cityRegistry: CityRegistry = cityRegistryInstance,
   turn: Turn = turnInstance,

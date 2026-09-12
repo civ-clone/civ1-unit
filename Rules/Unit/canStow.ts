@@ -12,7 +12,7 @@ export const getRules = (): CanStow[] => [
     [
       [Land, Trireme, Sail, Frigate, Transport],
       [Air, Carrier],
-    ] as [typeof Unit, ...typeof Unit[]][]
+    ] as [typeof Unit, ...(typeof Unit)[]][]
   ).map(
     ([StowableUnitType, ...transportTypes]) =>
       new CanStow(

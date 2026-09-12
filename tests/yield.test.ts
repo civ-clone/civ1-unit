@@ -50,11 +50,11 @@ describe('unit:yield', (): void => {
       [Attack, [FortifiedImprovement], 1],
       [Attack, [VeteranImprovement], 1.5],
       [Attack, [FortifiedImprovement, VeteranImprovement], 1.5],
-    ] as [typeof Yield, typeof UnitImprovement[], number][]
+    ] as [typeof Yield, (typeof UnitImprovement)[], number][]
   ).forEach(
     ([YieldType, UnitImprovements, expectedValue]: [
       typeof Yield,
-      typeof UnitImprovement[],
+      (typeof UnitImprovement)[],
       number
     ]): void => {
       it(`should modify ${YieldType.name} appropriately when improvements applied to the unit`, async (): Promise<void> => {

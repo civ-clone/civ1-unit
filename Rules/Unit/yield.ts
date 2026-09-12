@@ -109,12 +109,12 @@ export const getRules = (
     [
       [FortifiedUnitImprovement, 1, Defence],
       [VeteranUnitImprovement, 0.5, Attack, Defence],
-    ] as [typeof UnitImprovement, number, ...typeof Yield[]][]
+    ] as [typeof UnitImprovement, number, ...(typeof Yield)[]][]
   ).flatMap(
     ([UnitImprovementType, yieldModifier, ...YieldTypes]: [
       typeof UnitImprovement,
       number,
-      ...typeof Yield[]
+      ...(typeof Yield)[]
     ]): (UnitYield | BaseYield)[] =>
       YieldTypes.map(
         (YieldType: typeof Yield): UnitYield =>

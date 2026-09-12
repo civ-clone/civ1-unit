@@ -18,8 +18,9 @@ const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Types_1 = require("../../Types");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
+const core_random_1 = require("@civ-clone/core-random");
 const unitMoveStore = new Map();
-const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = () => Math.random(), engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
+const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
     new Moved_1.default(new Effect_1.default((unit, action) => {
         engine.emit('unit:moved', unit, action);
     })),

@@ -2,12 +2,11 @@ import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import Unit from '@civ-clone/core-unit/Unit';
 import ValidateMove from '@civ-clone/core-unit/Rules/ValidateMove';
+import { instance as rngInstance } from '@civ-clone/core-random';
 
 export const getRules: (
   randomNumberGenerator?: () => number
-) => ValidateMove[] = (
-  randomNumberGenerator: () => number = (): number => Math.random()
-) => [
+) => ValidateMove[] = (randomNumberGenerator: () => number = rngInstance) => [
   new ValidateMove(
     new Criterion(
       (unit: Unit, movementCost: number): boolean =>

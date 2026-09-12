@@ -126,6 +126,7 @@
     "@civ-clone/core-diplomacy": "^0.1.0",
     "@civ-clone/core-engine": "^0.1.0",
     "@civ-clone/core-player": "^0.1.0",
+    "@civ-clone/core-random": "^0.1.0",
     "@civ-clone/core-registry": "^0.1.0",
     "@civ-clone/core-rule": "^0.1.0",
     "@civ-clone/core-science": "^0.1.0",

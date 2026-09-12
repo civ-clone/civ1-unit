@@ -435,11 +435,11 @@ describe('Action', (): void => {
         Tundra,
       ],
       [PlantForest, Plains],
-    ] as [typeof UnitAction, ...typeof Terrain[]][]
+    ] as [typeof UnitAction, ...(typeof Terrain)[]][]
   ).forEach(
     ([ActionType, ...validTerrains]: [
       typeof UnitAction,
-      ...typeof Terrain[]
+      ...(typeof Terrain)[]
     ]) => {
       validTerrains.forEach((TerrainType: typeof Terrain): void => {
         it(`should be possible for Settlers to ${ActionType.name} on ${TerrainType.name}`, async (): Promise<void> => {
@@ -534,8 +534,8 @@ describe('Action', (): void => {
     [[BuildRailroad, Grassland, [RailroadAdvance], [Road]]] as [
       typeof Action,
       typeof Terrain,
-      typeof Advance[],
-      typeof TileImprovement[]
+      (typeof Advance)[],
+      (typeof TileImprovement)[]
     ][]
   ).forEach(
     ([
