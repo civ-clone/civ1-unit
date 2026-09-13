@@ -167,7 +167,7 @@ describe('Trireme', (): void => {
         .some((action: Action): boolean => action instanceof Move)
     ).to.true;
 
-    unitRegistry.unregister(<Unit>transport);
+    unitRegistry.unregister(transport as Unit);
   });
 
   it('should be possible to stow other units on it', async (): Promise<void> => {
@@ -183,7 +183,7 @@ describe('Trireme', (): void => {
       ),
       unit = new Warrior(null, player, world.get(1, 1), ruleRegistry);
 
-    unitRegistry.register(<Unit>transport, unit);
+    unitRegistry.register(transport as Unit, unit);
 
     const [embark] = unit
       .actions(tile)
@@ -197,7 +197,7 @@ describe('Trireme', (): void => {
     expect(transport.cargo().includes(unit)).to.true;
     expect(transportRegistry.getByUnit(unit).transport()).to.equal(transport);
 
-    unitRegistry.unregister(<Unit>transport, unit);
+    unitRegistry.unregister(transport as Unit, unit);
   });
 
   it('should be possible to transport units', async (): Promise<void> => {
@@ -214,7 +214,7 @@ describe('Trireme', (): void => {
       unit = new Warrior(null, player, world.get(1, 1), ruleRegistry),
       to = world.get(2, 2);
 
-    unitRegistry.register(<Unit>transport, unit);
+    unitRegistry.register(transport as Unit, unit);
 
     const [embark] = unit
       .actions(to)
@@ -276,7 +276,7 @@ describe('Trireme', (): void => {
 
     expect(unit.tile()).to.equal(world.get(6, 6));
 
-    unitRegistry.unregister(<Unit>transport, unit);
+    unitRegistry.unregister(transport as Unit, unit);
   });
 
   it('should be possible to Attack a defended enemy city', async (): Promise<void> => {
@@ -295,7 +295,7 @@ describe('Trireme', (): void => {
       unit = new Warrior(null, enemy, world.get(1, 1), ruleRegistry);
 
     cityRegistry.register(city);
-    unitRegistry.register(<Unit>transport, unit);
+    unitRegistry.register(transport as Unit, unit);
 
     expect(
       transport
@@ -304,7 +304,7 @@ describe('Trireme', (): void => {
     ).to.true;
 
     cityRegistry.unregister(city);
-    unitRegistry.unregister(<Unit>transport, unit);
+    unitRegistry.unregister(transport as Unit, unit);
   });
 
   it('should be possible to Attack an enemy unit', async (): Promise<void> => {
@@ -315,7 +315,7 @@ describe('Trireme', (): void => {
       transport = new Trireme(null, player, tile, ruleRegistry),
       unit = new Warrior(null, enemy, world.get(1, 1), ruleRegistry);
 
-    unitRegistry.register(<Unit>transport, unit);
+    unitRegistry.register(transport as Unit, unit);
 
     expect(
       transport
@@ -323,7 +323,7 @@ describe('Trireme', (): void => {
         .some((action: Action): boolean => action instanceof Attack)
     ).to.true;
 
-    unitRegistry.unregister(<Unit>transport, unit);
+    unitRegistry.unregister(transport as Unit, unit);
   });
 
   it('should not be possible to Attack an undefended enemy city', async (): Promise<void> => {
@@ -335,7 +335,7 @@ describe('Trireme', (): void => {
       city = new City(enemy, world.get(1, 1), '', ruleRegistry);
 
     cityRegistry.register(city);
-    unitRegistry.register(<Unit>transport);
+    unitRegistry.register(transport as Unit);
 
     expect(
       transport
@@ -350,7 +350,7 @@ describe('Trireme', (): void => {
     ).to.false;
 
     cityRegistry.unregister(city);
-    unitRegistry.unregister(<Unit>transport);
+    unitRegistry.unregister(transport as Unit);
   });
 
   it('should be possible to enter a friendly city', async (): Promise<void> => {
@@ -417,7 +417,7 @@ describe('Trireme', (): void => {
     const move1 = new Move(
       unit.tile(),
       world.get(3, 3),
-      <Unit>unit,
+      unit as Unit,
       ruleRegistry
     );
 
@@ -426,7 +426,7 @@ describe('Trireme', (): void => {
     const move2 = new Move(
       unit.tile(),
       world.get(4, 4),
-      <Unit>unit,
+      unit as Unit,
       ruleRegistry
     );
 
@@ -467,7 +467,7 @@ describe('Trireme', (): void => {
     const move1 = new Move(
       unit.tile(),
       world.get(3, 3),
-      <Unit>unit,
+      unit as Unit,
       ruleRegistry
     );
 
@@ -476,7 +476,7 @@ describe('Trireme', (): void => {
     const move2 = new Move(
       unit.tile(),
       world.get(4, 4),
-      <Unit>unit,
+      unit as Unit,
       ruleRegistry
     );
 
