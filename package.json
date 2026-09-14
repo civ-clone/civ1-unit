@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/civ1-unit",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": "git@github.com:civ-clone/civ1-unit.git",
   "keywords": [
     "typescript",
