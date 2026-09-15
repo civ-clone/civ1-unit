@@ -11,6 +11,7 @@ export const getRules: (engine?: Engine) => Unsupported[] = (
   engine: Engine = engineInstance
 ): Unsupported[] => [
   new Unsupported(
+    'civ1-unit:unit/unsupported/emit',
     new Effect((city: City, unit: Unit): void => {
       engine.emit('unit:unsupported', city, unit);
     })

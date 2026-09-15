@@ -7,9 +7,9 @@ const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const UnitImprovements_1 = require("../../UnitImprovements");
 const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance) => [
-    new Activate_1.default(new Criterion_1.default((unit) => unit.moves().value() > 0), new Effect_1.default((unit) => unit.setActive())),
-    new Activate_1.default(new Criterion_1.default((unit) => unit.busy() !== null), new Effect_1.default((unit) => unit.setBusy())),
-    ...[UnitImprovements_1.Fortified].map((UnitImprovementType) => new Activate_1.default(new Criterion_1.default((unit) => unitImprovementRegistry
+    new Activate_1.default('civ1-unit:unit/activate/has-moves', new Criterion_1.default((unit) => unit.moves().value() > 0), new Effect_1.default((unit) => unit.setActive())),
+    new Activate_1.default('civ1-unit:unit/activate/clear-busy', new Criterion_1.default((unit) => unit.busy() !== null), new Effect_1.default((unit) => unit.setBusy())),
+    ...[UnitImprovements_1.Fortified].map((UnitImprovementType) => new Activate_1.default(`civ1-unit:unit/activate/remove-improvement/${UnitImprovementType.name}`, new Criterion_1.default((unit) => unitImprovementRegistry
         .getByUnit(unit)
         .some((unitImprovement) => unitImprovement instanceof UnitImprovementType)), new Effect_1.default((unit) => unitImprovementRegistry.unregister(...unitImprovementRegistry
         .getByUnit(unit)

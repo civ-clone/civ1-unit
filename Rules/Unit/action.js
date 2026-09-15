@@ -76,7 +76,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()),
     ];
     return [
-        new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(
+        new Action_1.Action('civ1-unit:unit/action/move', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Or_1.default(
         // `LandUnit`s can move to other `Land` `Tile`s.
         new And_1.default(isLandUnit, new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => to.isLand()), 
         // Either there are no units, or they're the same `Player`.
@@ -122,11 +122,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         }), new Criterion_1.default((unit, to) => !unitRegistry
             .getByTile(to)
             .some((tileUnit) => tileUnit.player() !== unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
-        new Action_1.Action(...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).every((tileUnit) => interactionRegistry
+        new Action_1.Action('civ1-unit:unit/action/attack', ...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).every((tileUnit) => interactionRegistry
             .getByPlayers(unit.player(), tileUnit.player())
             .filter((interaction) => interaction instanceof Declarations_1.Peace)
             .every((interaction) => interaction.expired()))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry))),
-        new Action_1.Action(...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry
+        new Action_1.Action('civ1-unit:unit/action/sneak-attack', ...attackCriteria, new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .every((tileUnit) => interactionRegistry
             .getByPlayers(unit.player(), tileUnit.player())
@@ -144,7 +144,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             }
             return new Actions_1.SneakAttack(from, to, unit, enemies[0], ruleRegistry, unitRegistry);
         })),
-        new Action_1.Action(...captureCityCriteria, new Criterion_1.default((unit, to) => {
+        new Action_1.Action('civ1-unit:unit/action/capture-city', ...captureCityCriteria, new Criterion_1.default((unit, to) => {
             const city = cityRegistry.getByTile(to);
             return interactionRegistry
                 .getByPlayers(unit.player(), city.player())
@@ -154,7 +154,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const city = cityRegistry.getByTile(to);
             return new Actions_1.CaptureCity(from, to, unit, city, ruleRegistry);
         })),
-        new Action_1.Action(...captureCityCriteria, new Criterion_1.default((unit, to) => {
+        new Action_1.Action('civ1-unit:unit/action/sneak-capture-city', ...captureCityCriteria, new Criterion_1.default((unit, to) => {
             const city = cityRegistry.getByTile(to);
             return interactionRegistry
                 .getByPlayers(unit.player(), city.player())
@@ -164,15 +164,15 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const city = cityRegistry.getByTile(to);
             return new Actions_1.SneakCaptureCity(from, to, unit, city, city.player(), ruleRegistry);
         })),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to) => tileImprovementRegistry
+        new Action_1.Action('civ1-unit:unit/action/pillage', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to) => tileImprovementRegistry
             .getByTile(to)
             // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
             .filter((improvement) => [TileImprovements_1.Irrigation, TileImprovements_1.Mine, TileImprovements_1.Railroad, TileImprovements_1.Road].some((Improvement) => improvement instanceof Improvement)).length > 0), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
-        new Action_1.Action(Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/fortify', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/sleep', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
+        new Action_1.Action('civ1-unit:unit/action/disband', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/no-orders', Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/found-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
         ...[
             [
                 TileImprovements_1.Irrigation,
@@ -195,7 +195,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                     .getByTile(to)
                     .some((tileImprovement) => tileImprovement instanceof TileImprovements_1.Road)),
             ],
-        ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(new Criterion_1.default((unit) => unit instanceof Types_1.Worker), Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => ruleRegistry
+        ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(`civ1-unit:unit/action/improvement/${Improvement.name}`, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => ruleRegistry
             .get(Available_1.default)
             .some((rule) => rule.validate(from, Improvement, unit.player()))), Action_1.isCurrentTile, ...additionalCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn)))),
         ...[
@@ -203,8 +203,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             [Terrains_1.Forest, Actions_1.ClearForest],
             [Terrains_1.Plains, Actions_1.PlantForest],
             [Terrains_1.Swamp, Actions_1.ClearSwamp],
-        ].map(([TerrainType, ActionType]) => new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof TerrainType), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
-        new Action_1.Action(Action_1.isNeighbouringTile, Action_1.hasMovesLeft, isLandUnit, new Criterion_1.default((unit, to) => to.terrain() instanceof Types_2.Water), new Criterion_1.default((unit, to) => unitRegistry
+        ].map(([TerrainType, ActionType]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof TerrainType), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
+        new Action_1.Action('civ1-unit:unit/action/embark', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, isLandUnit, new Criterion_1.default((unit, to) => to.terrain() instanceof Types_2.Water), new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .every((tileUnit) => tileUnit.player() === unit.player())), new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
@@ -218,7 +218,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 tileUnit.canStow(unit));
             return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
         })),
-        new Action_1.Action(Action_1.isNeighbouringTile, new Criterion_1.default((unit) => {
+        new Action_1.Action('civ1-unit:unit/action/disembark', Action_1.isNeighbouringTile, new Criterion_1.default((unit) => {
             try {
                 transportRegistry.getByUnit(unit);
                 return true;
@@ -230,8 +230,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const transport = transportRegistry.getByUnit(unit).transport();
             return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
         })),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit) => unit.hasCargo()), new Criterion_1.default((unit, to) => to.getNeighbours().some((tile) => tile.isLand())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry))),
-        new Action_1.Action(Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), new Criterion_1.default((unit, to, from) => {
+        new Action_1.Action('civ1-unit:unit/action/unload', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit) => unit.hasCargo()), new Criterion_1.default((unit, to) => to.getNeighbours().some((tile) => tile.isLand())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/goto', Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), new Criterion_1.default((unit, to, from) => {
             const [PathFinder] = pathFinderRegistry.entries();
             if (!PathFinder) {
                 return false;
@@ -239,7 +239,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const path = new PathFinder(unit, from, to).generate();
             return path instanceof Path_1.default;
         }), new Effect_1.default((unit, to, from) => new Actions_1.GoTo(from, to, unit, ruleRegistry, pathFinderRegistry, strategyNoteRegistry))),
-        new Action_1.Action(Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
+        new Action_1.Action('civ1-unit:unit/action/set-home-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
             const city = cityRegistry.getByTile(from);
             if (!(city instanceof City_1.default)) {
                 return false;

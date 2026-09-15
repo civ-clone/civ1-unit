@@ -16,6 +16,7 @@ export const getRules = (): CanStow[] => [
   ).map(
     ([StowableUnitType, ...transportTypes]) =>
       new CanStow(
+        `civ1-unit:unit/can-stow/${StowableUnitType.name}`,
         new Criterion((transport: ITransport) =>
           transportTypes.some(
             (TransportType) => transport instanceof TransportType

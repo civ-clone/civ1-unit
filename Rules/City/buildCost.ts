@@ -69,7 +69,11 @@ export const getRules: () => BuildCost[] = (): BuildCost[] => [
     ] as [typeof Unit, number][]
   ).flatMap(([UnitType, cost]: [typeof Unit, number]): BuildCost[] =>
     // Why does TS hate this inheritance so much, is this an anti-pattern?
-    buildCost(UnitType as unknown as typeof Buildable, cost)
+    buildCost(
+      UnitType as unknown as typeof Buildable,
+      cost,
+      'civ1-unit:city/build-cost'
+    )
   ),
 ];
 

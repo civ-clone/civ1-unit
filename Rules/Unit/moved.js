@@ -21,23 +21,23 @@ const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const core_random_1 = require("@civ-clone/core-random");
 const unitMoveStore = new Map();
 const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
-    new Moved_1.default(new Effect_1.default((unit, action) => {
+    new Moved_1.default('civ1-unit:unit/moved/emit', new Effect_1.default((unit, action) => {
         engine.emit('unit:moved', unit, action);
     })),
-    new Moved_1.default(new Effect_1.default((unit) => unit.applyVisibility())),
-    new Moved_1.default(new Criterion_1.default((unit) => unit.moves().value() < 0.3), new Effect_1.default((unit) => {
+    new Moved_1.default('civ1-unit:unit/moved/apply-visibility', new Effect_1.default((unit) => unit.applyVisibility())),
+    new Moved_1.default('civ1-unit:unit/moved/end-moves-when-exhausted', new Criterion_1.default((unit) => unit.moves().value() < 0.3), new Effect_1.default((unit) => {
         unit.moves().set(0);
         unit.setActive(false);
     })),
-    new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit.hasCargo()), new Effect_1.default((unit, action) => unit
+    new Moved_1.default('civ1-unit:unit/moved/move-cargo', new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit.hasCargo()), new Effect_1.default((unit, action) => unit
         .cargo()
         .forEach((unit) => unit.action(action.forUnit(unit))))),
-    new Moved_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Disembark), new Effect_1.default((unit) => {
+    new Moved_1.default('civ1-unit:unit/moved/disembark', new Criterion_1.default((unit, action) => action instanceof Actions_1.Disembark), new Effect_1.default((unit) => {
         const manifest = transportRegistry.getByUnit(unit);
         manifest.transport().unload(unit);
         transportRegistry.unregister(manifest);
     })),
-    new Moved_1.default(new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
+    new Moved_1.default('civ1-unit:unit/moved/trireme-lost-at-sea', new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
         ruleRegistry.process(LostAtSea_1.default, unit);
     })),
     ...[
@@ -45,17 +45,17 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
         [Units_1.Fighter, 0],
         [Units_1.Nuclear, 0],
     ].flatMap(([UnitType, numberOfTurns]) => [
-        new Moved_1.default(new High_1.default(), new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unitMoveStore.has(unit)), new Effect_1.default((unit) => {
+        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/record-sortie`, new High_1.default(), new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unitMoveStore.has(unit)), new Effect_1.default((unit) => {
             unitMoveStore.set(unit, turn.value());
         })),
-        new Moved_1.default(new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Or_1.default(
+        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/refuel`, new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Or_1.default(
         // If the `Unit` is in a `City`....
         new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) !== null), 
         // ...or is being `Transport`ed.
         new Criterion_1.default((unit) => !!transportRegistry.getByUnit(unit))), new Effect_1.default((unit) => {
             unitMoveStore.delete(unit);
         })),
-        new Moved_1.default(new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new And_1.default(
+        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/crash`, new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new And_1.default(
         // If the `Unit` is not in a `City`....
         new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
         // ...and isn't being `Transport`ed.
@@ -68,7 +68,7 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
             ruleRegistry.process(LostAtSea_1.default, unit);
         })),
     ]),
-    new Moved_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack || action instanceof Actions_1.SneakCaptureCity), new Effect_1.default((unit, action) => {
+    new Moved_1.default('civ1-unit:unit/moved/break-peace-treaty', new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack || action instanceof Actions_1.SneakCaptureCity), new Effect_1.default((unit, action) => {
         const peaceTreaties = interactionRegistry
             .getByPlayers(unit.player(), action.enemy())
             .filter((interaction) => interaction instanceof Declarations_1.Peace && interaction.active());

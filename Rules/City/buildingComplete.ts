@@ -15,6 +15,7 @@ export const getRules: (
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
 ): BuildingComplete[] => [
   new BuildingComplete(
+    'civ1-unit:city/building-complete/settlers-shrink-city',
     new Criterion(
       (cityBuild: CityBuild, buildItem: BuildableInstance) =>
         buildItem instanceof Settlers

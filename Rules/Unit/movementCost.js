@@ -26,14 +26,14 @@ exports.baseTerrainMovementCost = [
     [Terrains_1.Tundra, 1],
 ];
 const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, transportRegistry = TransportRegistry_1.instance) => [
-    ...exports.baseTerrainMovementCost.map(([TerrainType, cost]) => new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => action.to().terrain() instanceof TerrainType), new Effect_1.default(() => cost))),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Air || unit instanceof Types_1.Naval), new Effect_1.default(() => 1)),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
+    ...exports.baseTerrainMovementCost.map(([TerrainType, cost]) => new MovementCost_1.default(`civ1-unit:unit/movement-cost/move/${TerrainType.name}`, new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => action.to().terrain() instanceof TerrainType), new Effect_1.default(() => cost))),
+    new MovementCost_1.default('civ1-unit:unit/movement-cost/air-and-naval', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Air || unit instanceof Types_1.Naval), new Effect_1.default(() => 1)),
+    new MovementCost_1.default('civ1-unit:unit/movement-cost/road', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.from())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 1 / 3)),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
+    new MovementCost_1.default('civ1-unit:unit/movement-cost/railroad', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.from())
         .some((improvement) => improvement instanceof TileImprovements_1.Railroad)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
@@ -42,7 +42,7 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     //  the moves and if a loop is detected auto-cancelling - this is pretty primitive.
     // new Criterion((unit) => ! (unit.player() instanceof AIPlayer)),
     new Effect_1.default(() => 0)),
-    new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit) => {
+    new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit) => {
         try {
             transportRegistry.getByUnit(unit);
             return true;
@@ -63,7 +63,7 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
         [Actions_1.Pillage, 1],
         [Actions_1.PlantForest, 3],
         [Actions_1.Sleep, 0],
-    ].flatMap(([Action, moveCost]) => exports.baseTerrainMovementCost.map(([TerrainType, terrainCost]) => new MovementCost_1.default(new Criterion_1.default((unit, action) => action instanceof Action), new Criterion_1.default((unit) => unit.tile().terrain() instanceof TerrainType), new Effect_1.default(() => moveCost * terrainCost)))),
+    ].flatMap(([Action, moveCost]) => exports.baseTerrainMovementCost.map(([TerrainType, terrainCost]) => new MovementCost_1.default(`civ1-unit:unit/movement-cost/action/${Action.name}/${TerrainType.name}`, new Criterion_1.default((unit, action) => action instanceof Action), new Criterion_1.default((unit) => unit.tile().terrain() instanceof TerrainType), new Effect_1.default(() => moveCost * terrainCost)))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

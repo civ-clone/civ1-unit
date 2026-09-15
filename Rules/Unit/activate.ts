@@ -15,16 +15,19 @@ export const getRules: (
   unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance
 ): Activate[] => [
   new Activate(
+    'civ1-unit:unit/activate/has-moves',
     new Criterion((unit: Unit): boolean => unit.moves().value() > 0),
     new Effect((unit: Unit): void => unit.setActive())
   ),
   new Activate(
+    'civ1-unit:unit/activate/clear-busy',
     new Criterion((unit: Unit): boolean => unit.busy() !== null),
     new Effect((unit: Unit): void => unit.setBusy())
   ),
   ...([Fortified] as [typeof UnitImprovement]).map(
     (UnitImprovementType): Activate =>
       new Activate(
+        `civ1-unit:unit/activate/remove-improvement/${UnitImprovementType.name}`,
         new Criterion((unit: Unit): boolean =>
           unitImprovementRegistry
             .getByUnit(unit)

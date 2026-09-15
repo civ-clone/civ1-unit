@@ -11,7 +11,7 @@ const getRules = () => [
     ...[
         [Types_2.Land, Units_1.Trireme, Units_1.Sail, Units_1.Frigate, Units_1.Transport],
         [Types_1.Air, Units_1.Carrier],
-    ].map(([StowableUnitType, ...transportTypes]) => new CanStow_1.default(new Criterion_1.default((transport) => transportTypes.some((TransportType) => transport instanceof TransportType)), new Effect_1.default((transport, unit) => unit instanceof StowableUnitType))),
+    ].map(([StowableUnitType, ...transportTypes]) => new CanStow_1.default(`civ1-unit:unit/can-stow/${StowableUnitType.name}`, new Criterion_1.default((transport) => transportTypes.some((TransportType) => transport instanceof TransportType)), new Effect_1.default((transport, unit) => unit instanceof StowableUnitType))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

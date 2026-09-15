@@ -11,11 +11,11 @@ const Defeated_1 = require("@civ-clone/core-unit/Rules/Defeated");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance) => [
-    new Defeated_1.default(new Effect_1.default((unit, by) => {
+    new Defeated_1.default('civ1-unit:unit/defeated/emit-and-destroy', new Effect_1.default((unit, by) => {
         engine.emit('unit:defeated', unit, by);
         ruleRegistry.process(Destroyed_1.default, unit, by.player());
     })),
-    new Defeated_1.default(new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
+    new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>
     //   !tileImprovementRegistry.getByTile(unit.tile())

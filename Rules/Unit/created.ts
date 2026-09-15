@@ -17,12 +17,20 @@ export const getRules: (
   unitRegistry: UnitRegistry = unitRegistryInstance,
   engine: Engine = engineInstance
 ): Created[] => [
-  new Created(new Effect((unit: Unit): void => unitRegistry.register(unit))),
-  new Created(new Effect((unit: Unit): void => unit.applyVisibility())),
   new Created(
+    'civ1-unit:unit/created/register',
+    new Effect((unit: Unit): void => unitRegistry.register(unit))
+  ),
+  new Created(
+    'civ1-unit:unit/created/apply-visibility',
+    new Effect((unit: Unit): void => unit.applyVisibility())
+  ),
+  new Created(
+    'civ1-unit:unit/created/set-moves',
     new Effect((unit: Unit): void => unit.moves().set(unit.movement()))
   ),
   new Created(
+    'civ1-unit:unit/created/emit',
     new Effect((unit: Unit): void => {
       engine.emit('unit:created', unit);
     })

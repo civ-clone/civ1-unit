@@ -5,6 +5,7 @@ import Unit from '@civ-clone/core-unit/Unit';
 
 export const getRules = (): Stowed[] => [
   new Stowed(
+    'civ1-unit:unit/stowed/sleep',
     new Effect((unit: Unit) =>
       unit.action(new Sleep(unit.tile(), unit.tile(), unit))
     )

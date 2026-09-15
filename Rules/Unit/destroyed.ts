@@ -25,17 +25,20 @@ export const getRules: (
   engine: Engine = engineInstance
 ): Destroyed[] => [
   new Destroyed(
+    'civ1-unit:unit/destroyed/emit',
     new Effect((unit: Unit, player: Player | null): void => {
       engine.emit('unit:destroyed', unit, player);
     })
   ),
   new Destroyed(
+    'civ1-unit:unit/destroyed/deactivate',
     new Effect((unit: Unit): void => {
       unit.setActive(false);
       unit.setDestroyed();
     })
   ),
   new Destroyed(
+    'civ1-unit:unit/destroyed/remove-improvements',
     new Effect((unit: Unit): void =>
       unitImprovementRegistry
         .getByUnit(unit)

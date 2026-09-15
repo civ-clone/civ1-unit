@@ -10,11 +10,15 @@ export const getRules: (engine?: Engine) => LostAtSea[] = (
   engine: Engine = engineInstance
 ): LostAtSea[] => [
   new LostAtSea(
+    'civ1-unit:unit/lost-at-sea/emit',
     new Effect((unit: ITransport): void => {
       engine.emit('unit:lost-at-sea', unit);
     })
   ),
-  new LostAtSea(new Effect((unit: ITransport): void => unit.destroy(null))),
+  new LostAtSea(
+    'civ1-unit:unit/lost-at-sea/destroy',
+    new Effect((unit: ITransport): void => unit.destroy(null))
+  ),
 ];
 
 export default getRules;

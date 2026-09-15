@@ -38,7 +38,7 @@ const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance) =>
     //     (): boolean => (city.production - city.units.length) > 0
     //   ))
     // ),
-    new Build_1.Build(new Criterion_1.default((city, BuildItem) => Object.prototype.isPrototypeOf.call(Types_1.Naval, BuildItem)), new Effect_1.default((city) => new Criterion_1.default(() => city.tile().isCoast()))),
+    new Build_1.Build('civ1-unit:city/build/naval-needs-coast', new Criterion_1.default((city, BuildItem) => Object.prototype.isPrototypeOf.call(Types_1.Naval, BuildItem)), new Effect_1.default((city) => new Criterion_1.default(() => city.tile().isCoast()))),
     ...[
         [Units_1.Artillery, Robotics_1.default],
         [Units_1.Battleship, Steel_1.default],
@@ -66,7 +66,7 @@ const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance) =>
         [Units_1.Tank, Automobile_1.default],
         [Units_1.Transport, Industrialization_1.default],
         [Units_1.Trireme, MapMaking_1.default],
-    ].map(([UnitType, RequiredAdvance]) => new Build_1.Build(new Criterion_1.default((city, BuildItem) => BuildItem === UnitType), new Effect_1.default((city) => new Criterion_1.default(() => playerResearchRegistry
+    ].map(([UnitType, RequiredAdvance]) => new Build_1.Build(`civ1-unit:city/build/requires-advance/${UnitType.name}`, new Criterion_1.default((city, BuildItem) => BuildItem === UnitType), new Effect_1.default((city) => new Criterion_1.default(() => playerResearchRegistry
         .getByPlayer(city.player())
         .completed(RequiredAdvance))))),
     ...[
@@ -83,7 +83,7 @@ const getRules = (playerResearchRegistry = PlayerResearchRegistry_1.instance) =>
         [Units_1.Swordman, Conscription_1.default],
         [Units_1.Trireme, Navigation_1.default],
         [Units_1.Warrior, Gunpowder_1.default],
-    ].map(([UnitType, ObseletionAdvance]) => new Build_1.Build(new Criterion_1.default((city, BuildItem) => BuildItem === UnitType), new Effect_1.default((city) => new Criterion_1.default(() => !playerResearchRegistry
+    ].map(([UnitType, ObseletionAdvance]) => new Build_1.Build(`civ1-unit:city/build/obsolete/${UnitType.name}`, new Criterion_1.default((city, BuildItem) => BuildItem === UnitType), new Effect_1.default((city) => new Criterion_1.default(() => !playerResearchRegistry
         .getByPlayer(city.player())
         .completed(ObseletionAdvance))))),
 ];

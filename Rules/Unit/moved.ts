@@ -50,12 +50,17 @@ export const getRules = (
   interactionRegistry: InteractionRegistry = interactionRegistryInstance
 ): Moved[] => [
   new Moved(
+    'civ1-unit:unit/moved/emit',
     new Effect((unit: Unit, action: Action): void => {
       engine.emit('unit:moved', unit, action);
     })
   ),
-  new Moved(new Effect((unit: Unit): void => unit.applyVisibility())),
   new Moved(
+    'civ1-unit:unit/moved/apply-visibility',
+    new Effect((unit: Unit): void => unit.applyVisibility())
+  ),
+  new Moved(
+    'civ1-unit:unit/moved/end-moves-when-exhausted',
     new Criterion((unit: Unit): boolean => unit.moves().value() < 0.3),
     new Effect((unit: Unit): void => {
       unit.moves().set(0);
@@ -63,6 +68,7 @@ export const getRules = (
     })
   ),
   new Moved(
+    'civ1-unit:unit/moved/move-cargo',
     new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
     new Criterion(
       (unit: Unit, action: Action): boolean => action instanceof Move
@@ -75,6 +81,7 @@ export const getRules = (
     )
   ),
   new Moved(
+    'civ1-unit:unit/moved/disembark',
     new Criterion(
       (unit: Unit, action: Action): boolean => action instanceof Disembark
     ),
@@ -87,6 +94,7 @@ export const getRules = (
     })
   ),
   new Moved(
+    'civ1-unit:unit/moved/trireme-lost-at-sea',
     new Criterion((unit: Unit): boolean => unit instanceof Trireme),
     new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
     new Criterion((unit: Unit): boolean => !unit.tile().isCoast()),
@@ -104,6 +112,7 @@ export const getRules = (
     ] as [typeof Unit, number][]
   ).flatMap(([UnitType, numberOfTurns]) => [
     new Moved(
+      `civ1-unit:unit/moved/aircraft/${UnitType.name}/record-sortie`,
       new High(),
       new Criterion((unit: Unit): boolean => unit instanceof UnitType),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
@@ -113,6 +122,7 @@ export const getRules = (
       })
     ),
     new Moved(
+      `civ1-unit:unit/moved/aircraft/${UnitType.name}/refuel`,
       new Criterion((unit: Unit): boolean => unit instanceof UnitType),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
       new Or(
@@ -130,6 +140,7 @@ export const getRules = (
       })
     ),
     new Moved(
+      `civ1-unit:unit/moved/aircraft/${UnitType.name}/crash`,
       new Criterion((unit: Unit): boolean => unit instanceof UnitType),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
       new And(
@@ -155,6 +166,7 @@ export const getRules = (
   ]),
 
   new Moved(
+    'civ1-unit:unit/moved/break-peace-treaty',
     new Criterion(
       (unit: Unit, action: Action) =>
         action instanceof SneakAttack || action instanceof SneakCaptureCity

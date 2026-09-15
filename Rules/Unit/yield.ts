@@ -119,6 +119,7 @@ export const getRules = (
       YieldTypes.map(
         (YieldType: typeof Yield): UnitYield =>
           new UnitYield(
+            `civ1-unit:unit/yield/improvement/${UnitImprovementType.name}/${YieldType.name}`,
             new Criterion(
               (unit: Unit, unitYield: Yield): boolean =>
                 unitYield instanceof YieldType
@@ -159,6 +160,7 @@ export const getRules = (
     ] as [typeof Unit, number][]
   ).flatMap(([UnitType, capacity]) => [
     new UnitYield(
+      `civ1-unit:unit/yield/capacity/${UnitType.name}`,
       new Criterion(
         (unit: Unit, unitYield: Yield): unitYield is Capacity =>
           unitYield instanceof Capacity
@@ -169,6 +171,7 @@ export const getRules = (
       )
     ),
     new UnitYield(
+      `civ1-unit:unit/yield/cargo-weight/${UnitType.name}`,
       new Criterion(
         (unit: Unit, unitYield: Yield): unitYield is CargoWeight =>
           unitYield instanceof CargoWeight

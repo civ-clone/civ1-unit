@@ -46,7 +46,7 @@ const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, 
     ...[
         [UnitImprovements_1.Fortified, 1, Yields_1.Defence],
         [UnitImprovements_1.Veteran, 0.5, Yields_1.Attack, Yields_1.Defence],
-    ].flatMap(([UnitImprovementType, yieldModifier, ...YieldTypes]) => YieldTypes.map((YieldType) => new Yield_1.Yield(new Criterion_1.default((unit, unitYield) => unitYield instanceof YieldType), new Criterion_1.default((unit) => unitImprovementRegistry
+    ].flatMap(([UnitImprovementType, yieldModifier, ...YieldTypes]) => YieldTypes.map((YieldType) => new Yield_1.Yield(`civ1-unit:unit/yield/improvement/${UnitImprovementType.name}/${YieldType.name}`, new Criterion_1.default((unit, unitYield) => unitYield instanceof YieldType), new Criterion_1.default((unit) => unitImprovementRegistry
         .getByUnit(unit)
         .some((unitImprovement) => unitImprovement instanceof UnitImprovementType)), new Effect_1.default((unit, unitYield) => {
         const baseYield = new YieldType();
@@ -60,8 +60,8 @@ const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, 
         [Units_1.Transport, 8],
         [Units_1.Carrier, 8],
     ].flatMap(([UnitType, capacity]) => [
-        new Yield_1.Yield(new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.Capacity), new Criterion_1.default((unit) => unit instanceof UnitType), new Effect_1.default((unit, unitYield) => unitYield.set(capacity))),
-        new Yield_1.Yield(new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.CargoWeight), new Effect_1.default((unit, unitYield) => unitYield.set(transportRegistry.getByTransport(unit).length))),
+        new Yield_1.Yield(`civ1-unit:unit/yield/capacity/${UnitType.name}`, new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.Capacity), new Criterion_1.default((unit) => unit instanceof UnitType), new Effect_1.default((unit, unitYield) => unitYield.set(capacity))),
+        new Yield_1.Yield(`civ1-unit:unit/yield/cargo-weight/${UnitType.name}`, new Criterion_1.default((unit, unitYield) => unitYield instanceof Yields_2.CargoWeight), new Effect_1.default((unit, unitYield) => unitYield.set(transportRegistry.getByTransport(unit).length))),
     ]),
 ];
 exports.getRules = getRules;

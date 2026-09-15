@@ -227,6 +227,7 @@ export const getRules = (
 
   return [
     new Action(
+      'civ1-unit:unit/action/move',
       isNeighbouringTile,
       hasMovesLeft,
       new Or(
@@ -348,6 +349,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/attack',
       ...attackCriteria,
       new Criterion((unit: Unit, to: Tile): boolean =>
         unitRegistry.getByTile(to).every((tileUnit) =>
@@ -367,6 +369,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/sneak-attack',
       ...attackCriteria,
       new Criterion((unit: Unit, to: Tile): boolean =>
         unitRegistry
@@ -417,6 +420,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/capture-city',
       ...captureCityCriteria,
       new Criterion((unit: Unit, to: Tile): boolean => {
         const city = cityRegistry.getByTile(to)!;
@@ -444,6 +448,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/sneak-capture-city',
       ...captureCityCriteria,
       new Criterion((unit: Unit, to: Tile): boolean => {
         const city = cityRegistry.getByTile(to)!;
@@ -472,6 +477,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/pillage',
       hasMovesLeft,
       isCurrentTile,
       new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
@@ -501,6 +507,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/fortify',
       hasMovesLeft,
       isCurrentTile,
       new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
@@ -521,6 +528,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/sleep',
       hasMovesLeft,
       isCurrentTile,
       new Effect(
@@ -530,6 +538,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/disband',
       hasMovesLeft,
       isCurrentTile,
       new Effect(
@@ -539,6 +548,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/no-orders',
       isCurrentTile,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -547,6 +557,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/found-city',
       hasMovesLeft,
       isCurrentTile,
       new Criterion((unit: Unit): boolean => unit instanceof Settlers),
@@ -621,6 +632,7 @@ export const getRules = (
         ...Criterion[]
       ]): Action =>
         new Action(
+          `civ1-unit:unit/action/improvement/${Improvement.name}`,
           new Criterion((unit: Unit): boolean => unit instanceof Worker),
           hasMovesLeft,
           new Criterion(
@@ -665,6 +677,7 @@ export const getRules = (
         )
       ]): Action =>
         new Action(
+          `civ1-unit:unit/action/terrain/${ActionType.name}`,
           hasMovesLeft,
           isCurrentTile,
           new Criterion((unit: Unit): boolean => unit instanceof Worker),
@@ -687,6 +700,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/embark',
       isNeighbouringTile,
       hasMovesLeft,
       isLandUnit,
@@ -737,6 +751,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/disembark',
       isNeighbouringTile,
       new Criterion((unit: Unit): boolean => {
         try {
@@ -773,6 +788,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/unload',
       hasMovesLeft,
       isCurrentTile,
       new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
@@ -789,6 +805,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/goto',
       hasMovesLeft,
       new Criterion(
         (unit: Unit, to: Tile, from: Tile) =>
@@ -819,6 +836,7 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/set-home-city',
       hasMovesLeft,
       isCurrentTile,
       new Criterion((unit: Unit, to: Tile, from: Tile): boolean => {

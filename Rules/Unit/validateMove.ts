@@ -8,6 +8,7 @@ export const getRules: (
   randomNumberGenerator?: () => number
 ) => ValidateMove[] = (randomNumberGenerator: () => number = rngInstance) => [
   new ValidateMove(
+    'civ1-unit:unit/validate-move/enough-moves',
     new Criterion(
       (unit: Unit, movementCost: number): boolean =>
         unit.moves().value() >= movementCost
@@ -20,6 +21,7 @@ export const getRules: (
   ),
 
   new ValidateMove(
+    'civ1-unit:unit/validate-move/not-enough-moves',
     new Criterion(
       (unit: Unit, movementCost: number): boolean =>
         unit.moves().value() < movementCost

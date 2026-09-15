@@ -8,14 +8,14 @@ const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (unitRegistry = UnitRegistry_1.instance) => {
     return [
-        new Action_1.default(new Criterion_1.default((player) => unitRegistry
+        new Action_1.default('civ1-unit:player/action/active-units', new Criterion_1.default((player) => unitRegistry
             .getByPlayer(player)
             .some((unit) => unit.active() && unit.moves().value())), new Effect_1.default((player) => unitRegistry
             .getByPlayer(player)
             .filter((unit) => unit.active() && unit.moves().value() > 0)
             .sort((a, b) => (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0))
             .map((unit) => new PlayerActions_1.ActiveUnit(player, unit)))),
-        new Action_1.default(new Criterion_1.default((player) => unitRegistry
+        new Action_1.default('civ1-unit:player/action/inactive-units', new Criterion_1.default((player) => unitRegistry
             .getByPlayer(player)
             .some((unit) => !unit.active() || !unit.moves().value())), new Effect_1.default((player) => unitRegistry
             .getByPlayer(player)

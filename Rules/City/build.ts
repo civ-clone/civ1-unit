@@ -77,6 +77,7 @@ export const getRules: (
   // ),
 
   new Build(
+    'civ1-unit:city/build/naval-needs-coast',
     new Criterion((city: City, BuildItem: IConstructor): boolean =>
       Object.prototype.isPrototypeOf.call(Naval, BuildItem)
     ),
@@ -117,6 +118,7 @@ export const getRules: (
   ).map(
     ([UnitType, RequiredAdvance]): Build =>
       new Build(
+        `civ1-unit:city/build/requires-advance/${UnitType.name}`,
         new Criterion(
           (city: City, BuildItem: IConstructor): boolean =>
             BuildItem === UnitType
@@ -150,6 +152,7 @@ export const getRules: (
   ).map(
     ([UnitType, ObseletionAdvance]): Build =>
       new Build(
+        `civ1-unit:city/build/obsolete/${UnitType.name}`,
         new Criterion(
           (city: City, BuildItem: IConstructor): boolean =>
             BuildItem === UnitType

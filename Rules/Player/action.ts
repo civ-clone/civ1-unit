@@ -14,6 +14,7 @@ export const getRules: (unitRegistry?: UnitRegistry) => Action[] = (
 ): Action[] => {
   return [
     new Action(
+      'civ1-unit:player/action/active-units',
       new Criterion((player: Player): boolean =>
         unitRegistry
           .getByPlayer(player)
@@ -33,6 +34,7 @@ export const getRules: (unitRegistry?: UnitRegistry) => Action[] = (
       )
     ),
     new Action(
+      'civ1-unit:player/action/inactive-units',
       new Criterion((player: Player): boolean =>
         unitRegistry
           .getByPlayer(player)

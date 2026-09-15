@@ -71,6 +71,7 @@ export const getRules: (
   ...baseTerrainMovementCost.map(
     ([TerrainType, cost]: [typeof Terrain, number]): MovementCost =>
       new MovementCost(
+        `civ1-unit:unit/movement-cost/move/${TerrainType.name}`,
         new Criterion(
           (unit: Unit, action: UnitAction) => action instanceof Move
         ),
@@ -83,11 +84,13 @@ export const getRules: (
       )
   ),
   new MovementCost(
+    'civ1-unit:unit/movement-cost/air-and-naval',
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Air || unit instanceof Naval),
     new Effect(() => 1)
   ),
   new MovementCost(
+    'civ1-unit:unit/movement-cost/road',
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action) =>
@@ -108,6 +111,7 @@ export const getRules: (
   ),
 
   new MovementCost(
+    'civ1-unit:unit/movement-cost/railroad',
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action): boolean =>
@@ -133,6 +137,7 @@ export const getRules: (
   ),
 
   new MovementCost(
+    'civ1-unit:unit/movement-cost/transported',
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit): boolean => unit instanceof Land),
     new Criterion((unit: Unit): boolean => {
@@ -169,6 +174,7 @@ export const getRules: (
     baseTerrainMovementCost.map(
       ([TerrainType, terrainCost]: [typeof Terrain, number]): MovementCost =>
         new MovementCost(
+          `civ1-unit:unit/movement-cost/action/${Action.name}/${TerrainType.name}`,
           new Criterion(
             (unit: Unit, action: UnitAction) => action instanceof Action
           ),

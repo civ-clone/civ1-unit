@@ -38,6 +38,7 @@ export const getRules: (
   engine: Engine = engineInstance
 ): Defeated[] => [
   new Defeated(
+    'civ1-unit:unit/defeated/emit-and-destroy',
     new Effect((unit: Unit, by: Unit): void => {
       engine.emit('unit:defeated', unit, by);
 
@@ -45,6 +46,7 @@ export const getRules: (
     })
   ),
   new Defeated(
+    'civ1-unit:unit/defeated/destroy-stack',
     new Criterion((unit: Unit) => cityRegistry.getByTile(unit.tile()) === null),
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>
