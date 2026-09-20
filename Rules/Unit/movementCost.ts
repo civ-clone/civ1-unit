@@ -61,6 +61,51 @@ export const baseTerrainMovementCost: [typeof Terrain, number][] = [
   [Tundra, 1],
 ];
 
+/**
+ * The table above, as a lookup, cached by the terrain's own constructor.
+ *
+ * This used to be expressed as one `MovementCost` rule per cell — one per
+ * terrain for moving, and one per (action, terrain) pair for everything else,
+ * 132 of those. That reads well and is how rules are meant to compose, but it
+ * put a 12-way and a 132-way linear scan on the hottest path in the engine:
+ * `RuleRegistry.process(MovementCost, …)` is 98.5% of every rule validation a
+ * game performs, the path finder calls it once per neighbouring tile it
+ * considers, and it walked 148 rules to find the one that applied. The other
+ * 147 were answering "no" — most of them on `action instanceof Action`, before
+ * terrain was ever consulted.
+ *
+ * A lookup is the same answer without the scan, because the twelve terrains
+ * are siblings: `Arctic`…`Tundra` all extend `Land` or `Water` and none
+ * extends another, so at most one row can ever match a given terrain and
+ * "which rows match" was never a meaningful question.
+ *
+ * `instanceof` rather than an identity check on the constructor, so a mod's
+ * `class Steppe extends Plains` still costs what `Plains` costs, as it did
+ * when this was 132 rules. Where such a subclass could match two rows the
+ * first row wins, whereas 132 rules would have matched twice and left the
+ * caller to choose; nothing in the table can do that today, and a terrain that
+ * wants its own cost should have its own row.
+ */
+const cachedTerrainMovementCost = new Map<Function, number | null>();
+
+export const terrainMovementCost = (terrain: Terrain): number | null => {
+  const cached = cachedTerrainMovementCost.get(terrain.constructor);
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const match = baseTerrainMovementCost.find(
+      ([TerrainType]: [typeof Terrain, number]): boolean =>
+        terrain instanceof TerrainType
+    ),
+    cost = match === undefined ? null : match[1];
+
+  cachedTerrainMovementCost.set(terrain.constructor, cost);
+
+  return cost;
+};
+
 export const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   transportRegistry?: TransportRegistry
@@ -68,20 +113,20 @@ export const getRules: (
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance
 ) => [
-  ...baseTerrainMovementCost.map(
-    ([TerrainType, cost]: [typeof Terrain, number]): MovementCost =>
-      new MovementCost(
-        `civ1-unit:unit/movement-cost/move/${TerrainType.name}`,
-        new Criterion(
-          (unit: Unit, action: UnitAction) => action instanceof Move
-        ),
-        new Criterion((unit: Unit) => unit instanceof Land),
-        new Criterion(
-          (unit: Unit, action: Action): boolean =>
-            action.to().terrain() instanceof TerrainType
-        ),
-        new Effect((): number => cost)
-      )
+  // One rule, not one per terrain: see `terrainMovementCost`. Was
+  // `civ1-unit:unit/movement-cost/move/<Terrain>`.
+  new MovementCost(
+    'civ1-unit:unit/movement-cost/move',
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
+    new Criterion((unit: Unit) => unit instanceof Land),
+    new Criterion(
+      (unit: Unit, action: Action): boolean =>
+        terrainMovementCost(action.to().terrain()) !== null
+    ),
+    new Effect(
+      (unit: Unit, action: Action): number =>
+        terrainMovementCost(action.to().terrain()) as number
+    )
   ),
   new MovementCost(
     'civ1-unit:unit/movement-cost/air-and-naval',
@@ -153,6 +198,10 @@ export const getRules: (
     new Effect((): number => 0)
   ),
 
+  // One rule per action, not one per (action, terrain) pair: 11 rules where
+  // there were 132, all but one of which used to be rejected on the
+  // `instanceof` below. Was
+  // `civ1-unit:unit/movement-cost/action/<Action>/<Terrain>`.
   ...(
     [
       [BuildIrrigation, 2],
@@ -167,20 +216,22 @@ export const getRules: (
       [PlantForest, 3],
       [Sleep, 0],
     ] as [typeof UnitAction, number][]
-  ).flatMap(([Action, moveCost]: [typeof UnitAction, number]): MovementCost[] =>
-    baseTerrainMovementCost.map(
-      ([TerrainType, terrainCost]: [typeof Terrain, number]): MovementCost =>
-        new MovementCost(
-          `civ1-unit:unit/movement-cost/action/${Action.name}/${TerrainType.name}`,
-          new Criterion(
-            (unit: Unit, action: UnitAction) => action instanceof Action
-          ),
-          new Criterion(
-            (unit: Unit) => unit.tile().terrain() instanceof TerrainType
-          ),
-          new Effect(() => moveCost * terrainCost)
+  ).map(
+    ([Action, moveCost]: [typeof UnitAction, number]): MovementCost =>
+      new MovementCost(
+        `civ1-unit:unit/movement-cost/action/${Action.name}`,
+        new Criterion(
+          (unit: Unit, action: UnitAction) => action instanceof Action
+        ),
+        new Criterion(
+          (unit: Unit): boolean =>
+            terrainMovementCost(unit.tile().terrain()) !== null
+        ),
+        new Effect(
+          (unit: Unit): number =>
+            moveCost * (terrainMovementCost(unit.tile().terrain()) as number)
         )
-    )
+      )
   ),
 ];
 
