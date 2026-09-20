@@ -42,15 +42,13 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     //  the moves and if a loop is detected auto-cancelling - this is pretty primitive.
     // new Criterion((unit) => ! (unit.player() instanceof AIPlayer)),
     new Effect_1.default(() => 0)),
-    new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit) => {
-        try {
-            transportRegistry.getByUnit(unit);
-            return true;
-        }
-        catch (e) {
-            return false;
-        }
-    }), new Criterion_1.default((unit) => transportRegistry.getByUnit(unit).transport() instanceof Types_1.NavalTransport), new Effect_1.default(() => 0)),
+    new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
+    // `hasUnit`, not `getByUnit` in a `try`: the latter answers "no" by
+    // throwing, and this criterion is evaluated for every land unit on every
+    // move. A 150-turn game spent 23% of its time in `getByUnit`, nearly all
+    // of it scanning every manifest and then constructing a `TypeError` to say
+    // the unit was not aboard anything.
+    new Criterion_1.default((unit) => transportRegistry.hasUnit(unit)), new Criterion_1.default((unit) => transportRegistry.getByUnit(unit).transport() instanceof Types_1.NavalTransport), new Effect_1.default(() => 0)),
     ...[
         [Actions_1.BuildIrrigation, 2],
         [Actions_1.BuildMine, 3],

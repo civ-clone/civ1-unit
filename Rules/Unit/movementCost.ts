@@ -140,15 +140,12 @@ export const getRules: (
     'civ1-unit:unit/movement-cost/transported',
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit): boolean => unit instanceof Land),
-    new Criterion((unit: Unit): boolean => {
-      try {
-        transportRegistry.getByUnit(unit);
-
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }),
+    // `hasUnit`, not `getByUnit` in a `try`: the latter answers "no" by
+    // throwing, and this criterion is evaluated for every land unit on every
+    // move. A 150-turn game spent 23% of its time in `getByUnit`, nearly all
+    // of it scanning every manifest and then constructing a `TypeError` to say
+    // the unit was not aboard anything.
+    new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
     new Criterion(
       (unit: Unit): boolean =>
         transportRegistry.getByUnit(unit).transport() instanceof NavalTransport
