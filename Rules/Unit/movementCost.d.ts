@@ -3,6 +3,7 @@ import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegis
 import MovementCost from '@civ-clone/core-unit/Rules/MovementCost';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 export declare const baseTerrainMovementCost: [typeof Terrain, number][];
+export declare const terrainMovementCost: (terrain: Terrain) => number | null;
 export declare const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   transportRegistry?: TransportRegistry
