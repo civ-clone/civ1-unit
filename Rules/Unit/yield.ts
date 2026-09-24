@@ -81,7 +81,7 @@ export const getRules = (
       [Ironclad, 4, 4, 4],
       [Knight, 4, 2, 2],
       [MechanizedInfantry, 6, 6, 3],
-      [Musketman, 3, 2],
+      [Musketman, 2, 3],
       [Nuclear, 99, 0, 16],
       [Rifleman, 3, 5],
       [Sail, 1, 1, 3],
