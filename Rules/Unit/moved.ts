@@ -1,9 +1,15 @@
-import { Bomber, Fighter, Nuclear, Trireme } from '../../Units';
+import { Bomber, Trireme } from '../../Units';
 import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Disembark, Move, SneakAttack, SneakCaptureCity } from '../../Actions';
+import {
+  Attack,
+  Disembark,
+  Move,
+  SneakAttack,
+  SneakCaptureCity,
+} from '../../Actions';
 import {
   Engine,
   instance as engineInstance,
@@ -25,26 +31,24 @@ import {
   instance as turnInstance,
 } from '@civ-clone/core-turn-based-game/Turn';
 import Action from '@civ-clone/core-unit/Action';
-import And from '@civ-clone/core-rule/Criteria/And';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import High from '@civ-clone/core-rule/Priorities/High';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import LostAtSea from '@civ-clone/core-unit-transport/Rules/LostAtSea';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
-import Or from '@civ-clone/core-rule/Criteria/Or';
 import { NavalTransport } from '../../Types';
 import Unit from '@civ-clone/core-unit/Unit';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import { instance as rngInstance } from '@civ-clone/core-random';
-
-const unitMoveStore: Map<Unit, number> = new Map();
 
 export const getRules = (
   transportRegistry: TransportRegistry = transportRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   randomNumberGenerator: () => number = rngInstance,
   engine: Engine = engineInstance,
+  // No longer used: aircraft fuel is checked at the end of the turn (`Rules/Player/turnEnd`). Kept so the positional
+  // arguments after them still line up for existing callers.
   cityRegistry: CityRegistry = cityRegistryInstance,
   turn: Turn = turnInstance,
   interactionRegistry: InteractionRegistry = interactionRegistryInstance
@@ -104,66 +108,20 @@ export const getRules = (
     })
   ),
 
-  ...(
-    [
-      [Bomber, 1],
-      [Fighter, 0],
-      [Nuclear, 0],
-    ] as [typeof Unit, number][]
-  ).flatMap(([UnitType, numberOfTurns]) => [
-    new Moved(
-      `civ1-unit:unit/moved/aircraft/${UnitType.name}/record-sortie`,
-      new High(),
-      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
-      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-      new Criterion((unit: Unit): boolean => !unitMoveStore.has(unit)),
-      new Effect((unit: Unit): void => {
-        unitMoveStore.set(unit, turn.value());
-      })
+  new Moved(
+    // A `Bomber` drops its whole payload in one attack, so it can't attack again until next turn.
+    'civ1-unit:unit/moved/bomber/end-turn-after-attack',
+    new High(),
+    new Criterion((unit: Unit): boolean => unit instanceof Bomber),
+    new Criterion(
+      (unit: Unit, action: Action): boolean =>
+        action instanceof Attack || action instanceof SneakAttack
     ),
-    new Moved(
-      `civ1-unit:unit/moved/aircraft/${UnitType.name}/refuel`,
-      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
-      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-      new Or(
-        // If the `Unit` is in a `City`....
-        new Criterion(
-          (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) !== null
-        ),
-        // ...or is being `Transport`ed.
-        new Criterion(
-          (unit: Unit): boolean => !!transportRegistry.getByUnit(unit)
-        )
-      ),
-      new Effect((unit: Unit): void => {
-        unitMoveStore.delete(unit);
-      })
-    ),
-    new Moved(
-      `civ1-unit:unit/moved/aircraft/${UnitType.name}/crash`,
-      new Criterion((unit: Unit): boolean => unit instanceof UnitType),
-      new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
-      new And(
-        // If the `Unit` is not in a `City`....
-        new Criterion(
-          (unit: Unit): boolean => cityRegistry.getByTile(unit.tile()) === null
-        ),
-        // ...and isn't being `Transport`ed.
-        new Criterion(
-          (unit: Unit): boolean => !transportRegistry.getByUnit(unit)
-        )
-      ),
-      new Criterion(
-        (unit: Unit) =>
-          (unitMoveStore.get(unit) ?? turn.value()) + numberOfTurns <=
-          turn.value()
-      ),
-      new Effect((unit: Unit): void => {
-        // TODO: New `Rule` here
-        ruleRegistry.process(LostAtSea, unit as unknown as ITransport);
-      })
-    ),
-  ]),
+    new Effect((unit: Unit): void => {
+      unit.moves().set(0);
+      unit.setActive(false);
+    })
+  ),
 
   new Moved(
     'civ1-unit:unit/moved/break-peace-treaty',

@@ -9,18 +9,18 @@ const InteractionRegistry_1 = require("@civ-clone/core-diplomacy/InteractionRegi
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const Turn_1 = require("@civ-clone/core-turn-based-game/Turn");
-const And_1 = require("@civ-clone/core-rule/Criteria/And");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const High_1 = require("@civ-clone/core-rule/Priorities/High");
 const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
-const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Types_1 = require("../../Types");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const core_random_1 = require("@civ-clone/core-random");
-const unitMoveStore = new Map();
-const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
+const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, 
+// No longer used: aircraft fuel is checked at the end of the turn (`Rules/Player/turnEnd`). Kept so the positional
+// arguments after them still line up for existing callers.
+cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance) => [
     new Moved_1.default('civ1-unit:unit/moved/emit', new Effect_1.default((unit, action) => {
         engine.emit('unit:moved', unit, action);
     })),
@@ -40,34 +40,12 @@ const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry
     new Moved_1.default('civ1-unit:unit/moved/trireme-lost-at-sea', new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
         ruleRegistry.process(LostAtSea_1.default, unit);
     })),
-    ...[
-        [Units_1.Bomber, 1],
-        [Units_1.Fighter, 0],
-        [Units_1.Nuclear, 0],
-    ].flatMap(([UnitType, numberOfTurns]) => [
-        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/record-sortie`, new High_1.default(), new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unitMoveStore.has(unit)), new Effect_1.default((unit) => {
-            unitMoveStore.set(unit, turn.value());
-        })),
-        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/refuel`, new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new Or_1.default(
-        // If the `Unit` is in a `City`....
-        new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) !== null), 
-        // ...or is being `Transport`ed.
-        new Criterion_1.default((unit) => !!transportRegistry.getByUnit(unit))), new Effect_1.default((unit) => {
-            unitMoveStore.delete(unit);
-        })),
-        new Moved_1.default(`civ1-unit:unit/moved/aircraft/${UnitType.name}/crash`, new Criterion_1.default((unit) => unit instanceof UnitType), new Criterion_1.default((unit) => unit.moves().value() === 0), new And_1.default(
-        // If the `Unit` is not in a `City`....
-        new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
-        // ...and isn't being `Transport`ed.
-        new Criterion_1.default((unit) => !transportRegistry.getByUnit(unit))), new Criterion_1.default((unit) => {
-            var _a;
-            return ((_a = unitMoveStore.get(unit)) !== null && _a !== void 0 ? _a : turn.value()) + numberOfTurns <=
-                turn.value();
-        }), new Effect_1.default((unit) => {
-            // TODO: New `Rule` here
-            ruleRegistry.process(LostAtSea_1.default, unit);
-        })),
-    ]),
+    new Moved_1.default(
+    // A `Bomber` drops its whole payload in one attack, so it can't attack again until next turn.
+    'civ1-unit:unit/moved/bomber/end-turn-after-attack', new High_1.default(), new Criterion_1.default((unit) => unit instanceof Units_1.Bomber), new Criterion_1.default((unit, action) => action instanceof Actions_1.Attack || action instanceof Actions_1.SneakAttack), new Effect_1.default((unit) => {
+        unit.moves().set(0);
+        unit.setActive(false);
+    })),
     new Moved_1.default('civ1-unit:unit/moved/break-peace-treaty', new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack || action instanceof Actions_1.SneakCaptureCity), new Effect_1.default((unit, action) => {
         const peaceTreaties = interactionRegistry
             .getByPlayers(unit.player(), action.enemy())

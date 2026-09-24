@@ -11,6 +11,7 @@ import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
+import turnEnd from './Rules/Player/turnEnd';
 import unitYield from './Rules/Unit/yield';
 import unsupported from './Rules/Unit/unsupported';
 import validateMove from './Rules/Unit/validateMove';
@@ -59,6 +60,13 @@ export const register = (game: Game): void =>
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
     ...stowed(),
+    ...turnEnd(
+      game.units,
+      game.cities,
+      game.transports,
+      game.strategyNotes,
+      game.rules
+    ),
     ...unitYield(game.unitImprovements, game.rules, game.transports),
     ...unsupported(game.engine),
     ...validateMove(game.rng)
