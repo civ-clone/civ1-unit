@@ -31,6 +31,19 @@ const Path_1 = require("@civ-clone/core-world-path/Path");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance) => {
+    // Where an aircraft moving onto `to` would land. Shared by `land-aircraft`, which offers the landing, and `move`,
+    // which leaves these tiles out for `Air` units, so the two can't disagree.
+    const landsInCity = (unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }, landingTransport = (unit, to) => {
+        var _a;
+        const [transport] = unitRegistry
+            .getByTile(to)
+            .filter((tileUnit) => tileUnit instanceof Types_1.NavalTransport &&
+            tileUnit.player() === unit.player() &&
+            tileUnit.hasCapacity() &&
+            tileUnit.canStow(unit));
+        return (_a = transport) !== null && _a !== void 0 ? _a : null;
+    }, canLandAircraft = (unit, to) => unit instanceof Types_1.Air &&
+        (landsInCity(unit, to) || landingTransport(unit, to) !== null);
     const attackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
@@ -86,7 +99,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // `Naval` `Unit`s can either move from `Water` or a friendly `City`...
         new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.isWater()), new Criterion_1.default((unit, to, from = unit.tile()) => { var _a; return ((_a = cityRegistry.getByTile(from)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); })), 
         // ...to `Water` or a friendly `City`.
-        new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new Criterion_1.default((unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }))), new Criterion_1.default((unit) => unit instanceof Types_1.Air)), 
+        new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new Criterion_1.default((unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }))), 
+        // `Air` `Unit`s can move anywhere, except where they would land: that's `LandAircraft`.
+        new Criterion_1.default((unit, to) => unit instanceof Types_1.Air && !canLandAircraft(unit, to))), 
         // This is analogous to the original Civilization unit adjacency rules.
         // You may only move your `Unit` to the `Tile` if...
         new Or_1.default(new Criterion_1.default(
@@ -218,6 +233,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 tileUnit.canStow(unit));
             return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
         })),
+        new Action_1.Action('civ1-unit:unit/action/land-aircraft', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => canLandAircraft(unit, to)), new Criterion_1.default((unit, to) => unitRegistry
+            .getByTile(to)
+            .every((tileUnit) => tileUnit.player() === unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.LandAircraft(from, to, unit, 
+        // A city with a Carrier in it: land in the city.
+        landsInCity(unit, to) ? null : landingTransport(unit, to), ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/disembark', Action_1.isNeighbouringTile, new Criterion_1.default((unit) => {
             try {
                 transportRegistry.getByUnit(unit);
@@ -226,7 +246,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             catch (e) {
                 return false;
             }
-        }), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
+        }), 
+        // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
+        // unit's turn, and an aircraft that has just taken off needs its moves.
+        new Criterion_1.default((unit) => !(unit instanceof Types_1.Air)), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
             const transport = transportRegistry.getByUnit(unit).transport();
             return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
         })),

@@ -15,6 +15,7 @@ const High_1 = require("@civ-clone/core-rule/Priorities/High");
 const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Types_1 = require("../../Types");
+const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const core_random_1 = require("@civ-clone/core-random");
 const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, 
@@ -36,6 +37,16 @@ cityRegistry = CityRegistry_1.instance, turn = Turn_1.instance, interactionRegis
         const manifest = transportRegistry.getByUnit(unit);
         manifest.transport().unload(unit);
         transportRegistry.unregister(manifest);
+    })),
+    new Moved_1.default(
+    // An aircraft takes off from a Carrier with a plain `Move`, so it keeps its moves (`Disembark` would end its turn).
+    // Once it has left the Carrier's tile it is no longer aboard. A Move that takes it along with the Carrier
+    // (`moved/move-cargo`) leaves it on the Carrier's tile, so doesn't unload it.
+    'civ1-unit:unit/moved/take-off', new Criterion_1.default((unit) => unit instanceof Types_1.Air), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => transportRegistry.hasUnit(unit)), new Criterion_1.default((unit) => transportRegistry.getByUnit(unit).transport().tile() !== unit.tile()), new Effect_1.default((unit) => {
+        transportRegistry.getByUnit(unit).transport().unload(unit);
+        if (unit.busy() instanceof Stowed_1.default) {
+            unit.setBusy();
+        }
     })),
     new Moved_1.default('civ1-unit:unit/moved/trireme-lost-at-sea', new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
         ruleRegistry.process(LostAtSea_1.default, unit);

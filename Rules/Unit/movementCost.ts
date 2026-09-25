@@ -198,6 +198,20 @@ export const getRules: (
     new Effect((): number => 0)
   ),
 
+  new MovementCost(
+    // An aircraft aboard a Carrier moves with it for free, even after landing has used up its moves. Taking off (a
+    // `Move` away from the Carrier's tile) costs as normal.
+    'civ1-unit:unit/movement-cost/transported/air',
+    new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
+    new Criterion((unit: Unit): boolean => unit instanceof Air),
+    new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
+    new Criterion(
+      (unit: Unit, action: Action): boolean =>
+        transportRegistry.getByUnit(unit).transport().tile() === action.to()
+    ),
+    new Effect((): number => 0)
+  ),
+
   // One rule per action, not one per (action, terrain) pair: 11 rules where
   // there were 132, all but one of which used to be rejected on the
   // `instanceof` below. Was

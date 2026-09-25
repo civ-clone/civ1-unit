@@ -28,6 +28,7 @@ import {
   Fortify,
   FoundCity,
   GoTo,
+  LandAircraft,
   Move,
   NoOrders,
   Pillage,
@@ -145,6 +146,27 @@ export const getRules = (
   pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance,
   strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance
 ): Action[] => {
+  // Where an aircraft moving onto `to` would land. Shared by `land-aircraft`, which offers the landing, and `move`,
+  // which leaves these tiles out for `Air` units, so the two can't disagree.
+  const landsInCity = (unit: Unit, to: Tile): boolean =>
+      cityRegistry.getByTile(to)?.player() === unit.player(),
+    landingTransport = (unit: Unit, to: Tile): ITransport | null => {
+      const [transport] = unitRegistry
+        .getByTile(to)
+        .filter(
+          (tileUnit: Unit): boolean =>
+            tileUnit instanceof NavalTransport &&
+            tileUnit.player() === unit.player() &&
+            tileUnit.hasCapacity() &&
+            tileUnit.canStow(unit)
+        );
+
+      return (transport as unknown as ITransport) ?? null;
+    },
+    canLandAircraft = (unit: Unit, to: Tile): boolean =>
+      unit instanceof Air &&
+      (landsInCity(unit, to) || landingTransport(unit, to) !== null);
+
   const attackCriteria = [
       isNeighbouringTile,
       hasMovesLeft,
@@ -270,7 +292,11 @@ export const getRules = (
             )
           )
         ),
-        new Criterion((unit: Unit): boolean => unit instanceof Air)
+        // `Air` `Unit`s can move anywhere, except where they would land: that's `LandAircraft`.
+        new Criterion(
+          (unit: Unit, to: Tile): boolean =>
+            unit instanceof Air && !canLandAircraft(unit, to)
+        )
       ),
 
       // This is analogous to the original Civilization unit adjacency rules.
@@ -751,6 +777,33 @@ export const getRules = (
     ),
 
     new Action(
+      'civ1-unit:unit/action/land-aircraft',
+      isNeighbouringTile,
+      hasMovesLeft,
+      new Criterion((unit: Unit, to: Tile): boolean =>
+        canLandAircraft(unit, to)
+      ),
+      new Criterion((unit: Unit, to: Tile): boolean =>
+        unitRegistry
+          .getByTile(to)
+          .every(
+            (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
+          )
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new LandAircraft(
+            from,
+            to,
+            unit,
+            // A city with a Carrier in it: land in the city.
+            landsInCity(unit, to) ? null : landingTransport(unit, to),
+            ruleRegistry
+          ) as UnitAction
+      )
+    ),
+
+    new Action(
       'civ1-unit:unit/action/disembark',
       isNeighbouringTile,
       new Criterion((unit: Unit): boolean => {
@@ -762,6 +815,9 @@ export const getRules = (
           return false;
         }
       }),
+      // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
+      // unit's turn, and an aircraft that has just taken off needs its moves.
+      new Criterion((unit: Unit): boolean => !(unit instanceof Air)),
       new Or(
         new Criterion(
           (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
