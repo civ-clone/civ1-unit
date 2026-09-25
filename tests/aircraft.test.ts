@@ -17,6 +17,7 @@ import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprov
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
 import action from '../Rules/Unit/action';
+import moveAlongPath from '@civ-clone/base-unit-action-goto/lib/moveAlongPath';
 import canStow from '../Rules/Unit/canStow';
 import defeated from '../Rules/Unit/defeated';
 import destroyed from '../Rules/Unit/destroyed';
@@ -267,11 +268,10 @@ describe('aircraft', (): void => {
 
     expect(landAircraft).instanceof(LandAircraft);
     expect((landAircraft as LandAircraft).transport() === carrier).true;
+    // Moving is still offered, second, to fly over the Carrier instead.
     expect(
-      fighter
-        .actions(carrier.tile())
-        .some((action) => action.constructor === Move)
-    ).false;
+      fighter.actions(carrier.tile()).map((action) => action.constructor)
+    ).eql([LandAircraft, Move]);
 
     landAircraft!.perform();
 
@@ -349,8 +349,8 @@ describe('aircraft', (): void => {
     expect(landAircraft).instanceof(LandAircraft);
     expect((landAircraft as LandAircraft).transport()).null;
     expect(
-      fighter.actions(city.tile()).some((action) => action.constructor === Move)
-    ).false;
+      fighter.actions(city.tile()).map((action) => action.constructor)
+    ).eql([LandAircraft, Move]);
 
     landAircraft!.perform();
 
@@ -502,5 +502,148 @@ describe('aircraft', (): void => {
     endTurn();
 
     expect(fighter.destroyed()).true;
+  });
+  it('should fly over one of its cities with a plain Move, keeping its moves', async (): Promise<void> => {
+    const { cityRegistry, player, ruleRegistry, unitRegistry, world } =
+        await setUp(),
+      city = new City(player, world.get(6, 5), '', ruleRegistry),
+      fighter = new Fighter(null, player, world.get(5, 5), ruleRegistry);
+
+    cityRegistry.register(city);
+    unitRegistry.register(fighter);
+
+    fighter.moves().set(fighter.movement());
+
+    const move = fighter
+      .actions(city.tile())
+      .find((action) => action.constructor === Move);
+
+    expect(move).not.undefined;
+
+    move!.perform();
+
+    expect(fighter.tile() === city.tile()).true;
+    expect(fighter.moves().value()).equal(fighter.movement().value() - 1);
+    expect(fighter.active()).true;
+  });
+
+  it('should fly over a friendly Carrier with a plain Move, without boarding it', async (): Promise<void> => {
+    const { player, ruleRegistry, transportRegistry, unitRegistry, world } =
+        await setUp(),
+      fighter = new Fighter(null, player, world.get(5, 5), ruleRegistry),
+      carrier = new Carrier(
+        null,
+        player,
+        world.get(6, 5),
+        ruleRegistry,
+        transportRegistry
+      );
+
+    unitRegistry.register(fighter, carrier);
+
+    fighter.moves().set(fighter.movement());
+
+    fighter
+      .actions(carrier.tile())
+      .find((action) => action.constructor === Move)!
+      .perform();
+
+    expect(fighter.tile() === carrier.tile()).true;
+    expect(transportRegistry.hasUnit(fighter)).false;
+    expect(fighter.active()).true;
+  });
+
+  describe('on a GoTo', (): void => {
+    const path = (world: World, ...xs: number[]): Tile[] =>
+      xs.map((x: number): Tile => world.get(x, 5));
+
+    it('should fly over its cities on the way, and not land', async (): Promise<void> => {
+      const {
+          cityRegistry,
+          player,
+          ruleRegistry,
+          strategyNoteRegistry,
+          transportRegistry,
+          unitRegistry,
+          world,
+        } = await setUp(),
+        city = new City(player, world.get(3, 5), '', ruleRegistry),
+        fighter = new Fighter(null, player, world.get(2, 5), ruleRegistry),
+        carrier = new Carrier(
+          null,
+          player,
+          world.get(4, 5),
+          ruleRegistry,
+          transportRegistry
+        );
+
+      cityRegistry.register(city);
+      unitRegistry.register(fighter, carrier);
+
+      fighter.moves().set(fighter.movement());
+
+      moveAlongPath(fighter, path(world, 3, 4, 5, 6), strategyNoteRegistry);
+
+      expect(fighter.tile() === world.get(6, 5)).true;
+      expect(fighter.moves().value()).equal(fighter.movement().value() - 4);
+      expect(transportRegistry.hasUnit(fighter)).false;
+    });
+
+    it('should land on a Carrier at the end of the route', async (): Promise<void> => {
+      const {
+          player,
+          ruleRegistry,
+          strategyNoteRegistry,
+          transportRegistry,
+          unitRegistry,
+          world,
+        } = await setUp(),
+        fighter = new Fighter(null, player, world.get(2, 5), ruleRegistry),
+        carrier = new Carrier(
+          null,
+          player,
+          world.get(5, 5),
+          ruleRegistry,
+          transportRegistry
+        );
+
+      unitRegistry.register(fighter, carrier);
+
+      fighter.moves().set(fighter.movement());
+
+      moveAlongPath(fighter, path(world, 3, 4, 5), strategyNoteRegistry);
+
+      expect(fighter.tile() === carrier.tile()).true;
+      expect(transportRegistry.hasUnit(fighter)).true;
+      expect(fighter.moves().value()).equal(0);
+    });
+
+    it('should land on a Carrier it reaches with its last move, rather than fly on and crash', async (): Promise<void> => {
+      const {
+          player,
+          ruleRegistry,
+          strategyNoteRegistry,
+          transportRegistry,
+          unitRegistry,
+          world,
+        } = await setUp(),
+        fighter = new Fighter(null, player, world.get(2, 5), ruleRegistry),
+        carrier = new Carrier(
+          null,
+          player,
+          world.get(4, 5),
+          ruleRegistry,
+          transportRegistry
+        );
+
+      unitRegistry.register(fighter, carrier);
+
+      fighter.moves().set(2);
+
+      moveAlongPath(fighter, path(world, 3, 4, 5, 6), strategyNoteRegistry);
+
+      expect(fighter.tile() === carrier.tile()).true;
+      expect(transportRegistry.hasUnit(fighter)).true;
+    });
   });
 });
