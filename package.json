@@ -76,6 +76,7 @@
     "@civ-clone/base-unit-action-embark": "^0.1.0",
     "@civ-clone/base-unit-action-fortify": "^0.1.0",
     "@civ-clone/base-unit-action-found-city": "^0.1.0",
+    "@civ-clone/base-unit-action-land-aircraft": "^0.1.0",
     "@civ-clone/base-unit-action-move": "^0.1.0",
     "@civ-clone/base-unit-action-no-orders": "^0.1.0",
     "@civ-clone/base-unit-action-pillage": "^0.1.0",

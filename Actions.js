@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "BuildIrrigation", { enumerable: true, get: function () { return Actions_1.BuildIrrigation; } });
@@ -26,4 +26,6 @@ Object.defineProperty(exports, "Sleep", { enumerable: true, get: function () { r
 Object.defineProperty(exports, "SneakAttack", { enumerable: true, get: function () { return Actions_1.SneakAttack; } });
 Object.defineProperty(exports, "SneakCaptureCity", { enumerable: true, get: function () { return Actions_1.SneakCaptureCity; } });
 Object.defineProperty(exports, "Unload", { enumerable: true, get: function () { return Actions_1.Unload; } });
+var LandAircraft_1 = require("@civ-clone/base-unit-action-land-aircraft/LandAircraft");
+Object.defineProperty(exports, "LandAircraft", { enumerable: true, get: function () { return LandAircraft_1.LandAircraft; } });
 //# sourceMappingURL=Actions.js.map

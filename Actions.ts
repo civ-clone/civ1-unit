@@ -24,3 +24,4 @@ export {
   SneakCaptureCity,
   Unload,
 } from '@civ-clone/library-unit/Actions';
+export { LandAircraft } from '@civ-clone/base-unit-action-land-aircraft/LandAircraft';

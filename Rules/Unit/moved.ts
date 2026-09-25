@@ -37,7 +37,8 @@ import High from '@civ-clone/core-rule/Priorities/High';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import LostAtSea from '@civ-clone/core-unit-transport/Rules/LostAtSea';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
-import { NavalTransport } from '../../Types';
+import { Air, NavalTransport } from '../../Types';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Unit from '@civ-clone/core-unit/Unit';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import { instance as rngInstance } from '@civ-clone/core-random';
@@ -95,6 +96,28 @@ export const getRules = (
       manifest.transport().unload(unit);
 
       transportRegistry.unregister(manifest);
+    })
+  ),
+  new Moved(
+    // An aircraft takes off from a Carrier with a plain `Move`, so it keeps its moves (`Disembark` would end its turn).
+    // Once it has left the Carrier's tile it is no longer aboard. A Move that takes it along with the Carrier
+    // (`moved/move-cargo`) leaves it on the Carrier's tile, so doesn't unload it.
+    'civ1-unit:unit/moved/take-off',
+    new Criterion((unit: Unit): boolean => unit instanceof Air),
+    new Criterion(
+      (unit: Unit, action: Action): boolean => action instanceof Move
+    ),
+    new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
+    new Criterion(
+      (unit: Unit): boolean =>
+        transportRegistry.getByUnit(unit).transport().tile() !== unit.tile()
+    ),
+    new Effect((unit: Unit): void => {
+      transportRegistry.getByUnit(unit).transport().unload(unit);
+
+      if (unit.busy() instanceof Stowed) {
+        unit.setBusy();
+      }
     })
   ),
   new Moved(

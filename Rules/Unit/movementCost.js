@@ -87,6 +87,10 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     // of it scanning every manifest and then constructing a `TypeError` to say
     // the unit was not aboard anything.
     new Criterion_1.default((unit) => transportRegistry.hasUnit(unit)), new Criterion_1.default((unit) => transportRegistry.getByUnit(unit).transport() instanceof Types_1.NavalTransport), new Effect_1.default(() => 0)),
+    new MovementCost_1.default(
+    // An aircraft aboard a Carrier moves with it for free, even after landing has used up its moves. Taking off (a
+    // `Move` away from the Carrier's tile) costs as normal.
+    'civ1-unit:unit/movement-cost/transported/air', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Air), new Criterion_1.default((unit) => transportRegistry.hasUnit(unit)), new Criterion_1.default((unit, action) => transportRegistry.getByUnit(unit).transport().tile() === action.to()), new Effect_1.default(() => 0)),
     // One rule per action, not one per (action, terrain) pair: 11 rules where
     // there were 132, all but one of which used to be rejected on the
     // `instanceof` below. Was
