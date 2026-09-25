@@ -23,11 +23,11 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
     // ),
     new Criterion_1.default((unit) => unitRegistry
         .getByTile(unit.tile())
-        .filter((tileUnit) => tileUnit !== unit && tileUnit.player() === unit.player()).length > 0), new Effect_1.default((unit, by) => unitRegistry.getByTile(unit.tile()).forEach((tileUnit) => {
-        if (!(tileUnit !== unit && tileUnit.player() === unit.player())) {
-            return;
-        }
-        ruleRegistry.process(Destroyed_1.default, unit, by.player());
+        .filter((tileUnit) => tileUnit !== unit && tileUnit.player() === unit.player()).length > 0), new Effect_1.default((unit, by) => unitRegistry
+        .getByTile(unit.tile())
+        .filter((tileUnit) => tileUnit !== unit && tileUnit.player() === unit.player())
+        .forEach((tileUnit) => {
+        ruleRegistry.process(Destroyed_1.default, tileUnit, by.player());
     }))),
 ];
 exports.getRules = getRules;

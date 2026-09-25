@@ -63,13 +63,15 @@ export const getRules: (
           ).length > 0
     ),
     new Effect((unit: Unit, by: Unit): void =>
-      unitRegistry.getByTile(unit.tile()).forEach((tileUnit) => {
-        if (!(tileUnit !== unit && tileUnit.player() === unit.player())) {
-          return;
-        }
-
-        ruleRegistry.process(Destroyed, unit, by.player());
-      })
+      unitRegistry
+        .getByTile(unit.tile())
+        .filter(
+          (tileUnit: Unit): boolean =>
+            tileUnit !== unit && tileUnit.player() === unit.player()
+        )
+        .forEach((tileUnit: Unit): void => {
+          ruleRegistry.process(Destroyed, tileUnit, by.player());
+        })
     )
   ),
 ];
