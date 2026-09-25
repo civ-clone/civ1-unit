@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run ts:compile && npm run prettier:format",
-    "prettier:check": "prettier --config .prettierrc '**/*.ts'",
+    "prettier:check": "prettier --config .prettierrc --check '**/*.ts'",
     "prettier:format": "prettier --config .prettierrc '**/*.ts' --write",
     "test": "ts-mocha ./tests/*.test.ts",
     "test:coverage": "c8 --all -x '**/*.ts' -x 'index.*' -x 'register*.*' ts-mocha ./tests/*.test.ts",
@@ -133,6 +133,7 @@
     "@civ-clone/core-science": "^0.1.0",
     "@civ-clone/core-strategy": "^0.1.0",
     "@civ-clone/core-terrain": "^0.1.0",
+    "@civ-clone/core-terrain-feature": "^0.1.0",
     "@civ-clone/core-tile-improvement": "^0.1.0",
     "@civ-clone/core-turn-based-game": "^0.1.0",
     "@civ-clone/core-unit": "^0.1.0",
