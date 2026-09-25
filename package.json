@@ -19,6 +19,7 @@
   "devDependencies": {
     "@civ-clone/base-science-advance-bridgebuilding": "^0.1.0",
     "@civ-clone/base-science-advance-railroad": "^0.1.0",
+    "@civ-clone/base-unit-action-goto": "^0.1.6",
     "@civ-clone/civ1-city": "github:civ-clone/civ1-city",
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
     "@civ-clone/core-player-world": "^0.1.0",
