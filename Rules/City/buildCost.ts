@@ -38,7 +38,7 @@ import Buildable from '@civ-clone/core-city-build/Buildable';
 export const getRules: () => BuildCost[] = (): BuildCost[] => [
   ...(
     [
-      [Artillery, 80],
+      [Artillery, 60],
       [Battleship, 160],
       [Bomber, 120],
       [Cannon, 40],
@@ -51,7 +51,7 @@ export const getRules: () => BuildCost[] = (): BuildCost[] => [
       [Fighter, 60],
       [Frigate, 40],
       [Horseman, 20],
-      [Ironclad, 50],
+      [Ironclad, 60],
       [Knight, 40],
       [MechanizedInfantry, 50],
       [Musketman, 30],
