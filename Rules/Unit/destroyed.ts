@@ -34,70 +34,76 @@ export const getRules: (
   unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
   engine: Engine = engineInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance
-): Destroyed[] => [
-  new Destroyed(
-    'civ1-unit:unit/destroyed/emit',
-    new Effect((unit: Unit, player: Player | null): void => {
-      engine.emit('unit:destroyed', unit, player);
-    })
-  ),
-  new Destroyed(
-    'civ1-unit:unit/destroyed/deactivate',
-    new Effect((unit: Unit): void => {
-      unit.setActive(false);
-      unit.setDestroyed();
-    })
-  ),
-  new Destroyed(
-    'civ1-unit:unit/destroyed/remove-improvements',
-    new Effect((unit: Unit): void =>
-      unitImprovementRegistry
-        .getByUnit(unit)
-        .forEach((unitImprovement) =>
-          unitImprovementRegistry.unregister(unitImprovement)
-        )
-    )
-  ),
-  new Destroyed(
-    // Cargo goes down with a transport lost at sea, however it was lost. In a city, it stays in the city.
-    'civ1-unit:unit/destroyed/lose-cargo',
-    new Criterion(
-      (unit: Unit): boolean =>
-        transportRegistry.getByTransport(unit as unknown as ITransport).length >
-        0
+): Destroyed[] => {
+  // Nothing clears `Stowed` on its own (its criterion is `() => false`), so a unit taken off a transport, destroyed or
+  // not, would otherwise stay stowed aboard nothing.
+  const leaveTransport = (manifest: TransportManifest): void => {
+    const cargo = manifest.unit();
+
+    transportRegistry.unregister(manifest);
+
+    if (cargo.busy() instanceof Stowed) {
+      cargo.setBusy();
+    }
+  };
+
+  return [
+    new Destroyed(
+      'civ1-unit:unit/destroyed/emit',
+      new Effect((unit: Unit, player: Player | null): void => {
+        engine.emit('unit:destroyed', unit, player);
+      })
     ),
-    new Effect((unit: Unit, player: Player | null): void =>
-      transportRegistry
-        .getByTransport(unit as unknown as ITransport)
-        // A copy: unregistering changes the list.
-        .slice()
-        .forEach((manifest: TransportManifest): void => {
-          const cargo = manifest.unit();
+    new Destroyed(
+      'civ1-unit:unit/destroyed/deactivate',
+      new Effect((unit: Unit): void => {
+        unit.setActive(false);
+        unit.setDestroyed();
+      })
+    ),
+    new Destroyed(
+      'civ1-unit:unit/destroyed/remove-improvements',
+      new Effect((unit: Unit): void =>
+        unitImprovementRegistry
+          .getByUnit(unit)
+          .forEach((unitImprovement) =>
+            unitImprovementRegistry.unregister(unitImprovement)
+          )
+      )
+    ),
+    new Destroyed(
+      // Cargo goes down with a transport lost at sea, however it was lost. In a city, it stays in the city.
+      'civ1-unit:unit/destroyed/lose-cargo',
+      new Criterion(
+        (unit: Unit): boolean =>
+          transportRegistry.getByTransport(unit as unknown as ITransport)
+            .length > 0
+      ),
+      new Effect((unit: Unit, player: Player | null): void =>
+        transportRegistry
+          .getByTransport(unit as unknown as ITransport)
+          // A copy: unregistering changes the list.
+          .slice()
+          .forEach((manifest: TransportManifest): void => {
+            const cargo = manifest.unit();
 
-          transportRegistry.unregister(manifest);
+            leaveTransport(manifest);
 
-          if (unit.tile().terrain() instanceof Water) {
-            if (!cargo.destroyed()) {
+            if (unit.tile().terrain() instanceof Water && !cargo.destroyed()) {
               cargo.destroy(player);
             }
-
-            return;
-          }
-
-          if (cargo.busy() instanceof Stowed) {
-            cargo.setBusy();
-          }
-        })
-    )
-  ),
-  new Destroyed(
-    // Cargo destroyed on its own, or by the stack rule before its transport, is no longer aboard.
-    'civ1-unit:unit/destroyed/leave-transport',
-    new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
-    new Effect((unit: Unit): void =>
-      transportRegistry.unregister(transportRegistry.getByUnit(unit))
-    )
-  ),
-];
+          })
+      )
+    ),
+    new Destroyed(
+      // Cargo destroyed on its own, or by the stack rule before its transport, is no longer aboard.
+      'civ1-unit:unit/destroyed/leave-transport',
+      new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
+      new Effect((unit: Unit): void =>
+        leaveTransport(transportRegistry.getByUnit(unit))
+      )
+    ),
+  ];
+};
 
 export default getRules;
