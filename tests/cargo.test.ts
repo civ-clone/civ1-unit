@@ -114,6 +114,7 @@ describe('cargo', (): void => {
 
     expect(trireme.destroyed()).true;
     expect(warrior.destroyed()).true;
+    expect(warrior.busy()).not.instanceof(Stowed);
     expect(transportRegistry.entries()).empty;
   });
 
@@ -182,6 +183,7 @@ describe('cargo', (): void => {
     expect(carrier.destroyed()).true;
     fighters.forEach((fighter: Unit): void => {
       expect(fighter.destroyed()).true;
+      expect(fighter.busy()).not.instanceof(Stowed);
       expect(destroyedCount.get(fighter)).equal(1);
     });
     expect(transportRegistry.entries()).empty;
@@ -246,6 +248,7 @@ describe('cargo', (): void => {
 
     expect(carrier.destroyed()).false;
     expect(carrier.hasCargo()).false;
+    expect(fighter.busy()).not.instanceof(Stowed);
     expect(transportRegistry.hasUnit(fighter)).false;
   });
 });
