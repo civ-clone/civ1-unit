@@ -6,6 +6,7 @@ import buildingComplete from './Rules/City/buildingComplete';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
+import expectedMovementCost from './Rules/Unit/expectedMovementCost';
 import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
@@ -47,6 +48,7 @@ export const register = (game: Game): void =>
       game.engine
     ),
     ...destroyed(game.units, game.unitImprovements, game.engine),
+    ...expectedMovementCost(),
     ...lostAtSea(game.engine),
     ...moved(
       game.transports,

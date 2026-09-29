@@ -4,6 +4,14 @@ import Unit from '@civ-clone/core-unit/Unit';
 import ValidateMove from '@civ-clone/core-unit/Rules/ValidateMove';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
+/**
+ * A unit short of the moves a step costs gets there when its remaining moves
+ * reach this fraction of the cost, scaled by a random draw: always with at
+ * least half the cost left, otherwise with a chance of `remaining / (cost × this)`.
+ * `expectedMovementCost` prices routes from the same number.
+ */
+export const shortfallFactor = 0.5;
+
 export const getRules: (
   randomNumberGenerator?: () => number
 ) => ValidateMove[] = (randomNumberGenerator: () => number = rngInstance) => [
@@ -31,7 +39,10 @@ export const getRules: (
 
       unit.moves().set(0);
 
-      return remainingMoves >= movementCost * 0.5 * randomNumberGenerator();
+      return (
+        remainingMoves >=
+        movementCost * shortfallFactor * randomNumberGenerator()
+      );
     })
   ),
 ];
