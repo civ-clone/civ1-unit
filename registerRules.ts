@@ -47,7 +47,12 @@ export const register = (game: Game): void =>
       game.units,
       game.engine
     ),
-    ...destroyed(game.units, game.unitImprovements, game.engine),
+    ...destroyed(
+      game.units,
+      game.unitImprovements,
+      game.engine,
+      game.transports
+    ),
     ...expectedMovementCost(),
     ...lostAtSea(game.engine),
     ...moved(
