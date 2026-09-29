@@ -5,7 +5,7 @@ const BuildCost_1 = require("@civ-clone/core-city-build/Rules/BuildCost");
 const Units_1 = require("../../Units");
 const getRules = () => [
     ...[
-        [Units_1.Artillery, 80],
+        [Units_1.Artillery, 60],
         [Units_1.Battleship, 160],
         [Units_1.Bomber, 120],
         [Units_1.Cannon, 40],
@@ -18,7 +18,7 @@ const getRules = () => [
         [Units_1.Fighter, 60],
         [Units_1.Frigate, 40],
         [Units_1.Horseman, 20],
-        [Units_1.Ironclad, 50],
+        [Units_1.Ironclad, 60],
         [Units_1.Knight, 40],
         [Units_1.MechanizedInfantry, 50],
         [Units_1.Musketman, 30],
