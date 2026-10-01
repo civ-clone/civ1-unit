@@ -805,15 +805,10 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/disembark',
       isNeighbouringTile,
-      new Criterion((unit: Unit): boolean => {
-        try {
-          transportRegistry.getByUnit(unit);
-
-          return true;
-        } catch (e) {
-          return false;
-        }
-      }),
+      // `hasUnit`, not `getByUnit` in a `try`, as in `movementCost.ts`: the
+      // answer is nearly always "no", and `getByUnit` gives it by throwing.
+      // It is asked of every tile beside every unit the AI considers moving.
+      new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
       // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
       // unit's turn, and an aircraft that has just taken off needs its moves.
       new Criterion((unit: Unit): boolean => !(unit instanceof Air)),
