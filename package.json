@@ -77,6 +77,7 @@
     "@civ-clone/base-unit-action-embark": "^0.1.0",
     "@civ-clone/base-unit-action-fortify": "^0.1.0",
     "@civ-clone/base-unit-action-found-city": "^0.1.0",
+    "@civ-clone/base-unit-action-join-city": "^0.1.0",
     "@civ-clone/base-unit-action-land-aircraft": "^0.1.0",
     "@civ-clone/base-unit-action-move": "^0.1.0",
     "@civ-clone/base-unit-action-no-orders": "^0.1.0",
@@ -145,6 +146,6 @@
     "@civ-clone/core-world-path": "^0.1.2",
     "@civ-clone/core-yield": "^0.1.0",
     "@civ-clone/library-diplomacy": "^0.1.0",
-    "@civ-clone/library-unit": "^0.1.0"
+    "@civ-clone/library-unit": "^0.1.5"
   }
 }

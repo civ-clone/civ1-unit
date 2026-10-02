@@ -14,6 +14,7 @@ export {
   Fortify,
   FoundCity,
   GoTo,
+  JoinCity,
   Move,
   NoOrders,
   Pillage,

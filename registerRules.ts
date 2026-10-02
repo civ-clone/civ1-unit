@@ -3,6 +3,7 @@ import activate from './Rules/Unit/activate';
 import build from './Rules/City/build';
 import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
+import canJoinCity from './Rules/Unit/canJoinCity';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
@@ -33,12 +34,14 @@ export const register = (game: Game): void =>
       game.interactions,
       game.workedTiles,
       game.pathFinders,
-      game.strategyNotes
+      game.strategyNotes,
+      game.cityGrowth
     ),
     ...activate(game.unitImprovements),
     ...build(game.playerResearch),
     ...buildCost(),
     ...buildingComplete(game.cityGrowth),
+    ...canJoinCity(game.cityGrowth),
     ...created(game.units, game.engine),
     ...defeated(
       game.cities,

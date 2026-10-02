@@ -28,6 +28,7 @@ import {
   Fortify,
   FoundCity,
   GoTo,
+  JoinCity,
   LandAircraft,
   Move,
   NoOrders,
@@ -39,6 +40,10 @@ import {
   SneakCaptureCity,
   Unload,
 } from '../../Actions';
+import {
+  CityGrowthRegistry,
+  instance as cityGrowthRegistryInstance,
+} from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import {
   CityNameRegistry,
   instance as cityNameRegistryInstance,
@@ -115,6 +120,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
 import Path from '@civ-clone/core-world-path/Path';
+import { joinableCity } from '@civ-clone/base-unit-action-join-city/joinableCity';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
@@ -144,7 +150,8 @@ export const getRules = (
   interactionRegistry: InteractionRegistry = interactionRegistryInstance,
   workedTileRegistry: WorkedTileRegistry = workedTileRegistryInstance,
   pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance,
-  strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance
+  strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance,
+  cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const landsInCity = (unit: Unit, to: Tile): boolean =>
@@ -629,6 +636,30 @@ export const getRules = (
             cityNameRegistry,
             ruleRegistry,
             workedTileRegistry
+          )
+      )
+    ),
+
+    // On one of its player's cities, where `found-city` is not offered, so the two can share a key. The size limit is a
+    // `CanJoinCity` rule (`canJoinCity.ts`).
+    new Action(
+      'civ1-unit:unit/action/join-city',
+      hasMovesLeft,
+      isCurrentTile,
+      new Criterion((unit: Unit): boolean => unit instanceof Settlers),
+      new Criterion(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+          joinableCity(unit, from, cityRegistry, ruleRegistry) !== null
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new JoinCity(
+            from,
+            to,
+            unit,
+            joinableCity(unit, from, cityRegistry, ruleRegistry)!,
+            ruleRegistry,
+            cityGrowthRegistry
           )
       )
     ),
