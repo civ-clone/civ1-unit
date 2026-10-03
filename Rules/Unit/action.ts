@@ -52,9 +52,10 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Fighter, Settlers, Submarine } from '../../Units';
+import { Caravan, Diplomat, Fighter, Settlers, Submarine } from '../../Units';
 import {
   Forest,
+  Grassland,
   Jungle,
   Plains,
   River,
@@ -539,7 +540,17 @@ export const getRules = (
       'civ1-unit:unit/action/pillage',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
+      // Every land unit but Diplomats and Caravans can pillage in Civ1, so
+      // Settlers (`Worker`) can as well as the military units. Both of the
+      // exceptions are `Fortifiable`, so they are named.
+      new Criterion(
+        (unit: Unit): boolean =>
+          unit instanceof Fortifiable || unit instanceof Worker
+      ),
+      new Criterion(
+        (unit: Unit): boolean =>
+          !(unit instanceof Caravan || unit instanceof Diplomat)
+      ),
       new Criterion(
         (unit: Unit, to: Tile): boolean =>
           tileImprovementRegistry
@@ -736,28 +747,29 @@ export const getRules = (
     ),
     ...(
       [
-        [Jungle, ClearJungle],
-        [Forest, ClearForest],
-        [Plains, PlantForest],
-        [Swamp, ClearSwamp],
+        [ClearJungle, Jungle],
+        [ClearForest, Forest],
+        // The mine command: Civ1 turns each of these into Forest.
+        [PlantForest, Plains, Grassland, Jungle, Swamp],
+        [ClearSwamp, Swamp],
       ] as [
-        typeof Terrain,
         (
           | typeof ClearJungle
           | typeof ClearForest
           | typeof PlantForest
           | typeof ClearSwamp
-        )
+        ),
+        ...(typeof Terrain)[]
       ][]
     ).map(
-      ([TerrainType, ActionType]: [
-        typeof Terrain,
+      ([ActionType, ...TerrainTypes]: [
         (
           | typeof ClearJungle
           | typeof ClearForest
           | typeof PlantForest
           | typeof ClearSwamp
-        )
+        ),
+        ...(typeof Terrain)[]
       ]): Action =>
         new Action(
           `civ1-unit:unit/action/terrain/${ActionType.name}`,
@@ -766,7 +778,10 @@ export const getRules = (
           new Criterion((unit: Unit): boolean => unit instanceof Worker),
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              from.terrain() instanceof TerrainType
+              TerrainTypes.some(
+                (TerrainType: typeof Terrain): boolean =>
+                  from.terrain() instanceof TerrainType
+              )
           ),
           new Effect(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>

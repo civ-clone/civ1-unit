@@ -188,7 +188,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const city = cityRegistry.getByTile(to);
             return new Actions_1.SneakCaptureCity(from, to, unit, city, city.player(), ruleRegistry);
         })),
-        new Action_1.Action('civ1-unit:unit/action/pillage', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to) => tileImprovementRegistry
+        new Action_1.Action('civ1-unit:unit/action/pillage', Action_1.hasMovesLeft, Action_1.isCurrentTile, 
+        // Every land unit but Diplomats and Caravans can pillage in Civ1, so
+        // Settlers (`Worker`) can as well as the military units. Both of the
+        // exceptions are `Fortifiable`, so they are named.
+        new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable || unit instanceof Types_1.Worker), new Criterion_1.default((unit) => !(unit instanceof Units_1.Caravan || unit instanceof Units_1.Diplomat)), new Criterion_1.default((unit, to) => tileImprovementRegistry
             .getByTile(to)
             // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
             .filter((improvement) => [TileImprovements_1.Irrigation, TileImprovements_1.Mine, TileImprovements_1.Railroad, TileImprovements_1.Road].some((Improvement) => improvement instanceof Improvement)).length > 0), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
@@ -226,11 +230,12 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             .get(Available_1.default)
             .some((rule) => rule.validate(from, Improvement, unit.player()))), Action_1.isCurrentTile, ...additionalCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn)))),
         ...[
-            [Terrains_1.Jungle, Actions_1.ClearJungle],
-            [Terrains_1.Forest, Actions_1.ClearForest],
-            [Terrains_1.Plains, Actions_1.PlantForest],
-            [Terrains_1.Swamp, Actions_1.ClearSwamp],
-        ].map(([TerrainType, ActionType]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof TerrainType), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
+            [Actions_1.ClearJungle, Terrains_1.Jungle],
+            [Actions_1.ClearForest, Terrains_1.Forest],
+            // The mine command: Civ1 turns each of these into Forest.
+            [Actions_1.PlantForest, Terrains_1.Plains, Terrains_1.Grassland, Terrains_1.Jungle, Terrains_1.Swamp],
+            [Actions_1.ClearSwamp, Terrains_1.Swamp],
+        ].map(([ActionType, ...TerrainTypes]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => TerrainTypes.some((TerrainType) => from.terrain() instanceof TerrainType)), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
         new Action_1.Action('civ1-unit:unit/action/embark', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, isLandUnit, new Criterion_1.default((unit, to) => to.terrain() instanceof Types_2.Water), new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .every((tileUnit) => tileUnit.player() === unit.player())), new Criterion_1.default((unit, to) => unitRegistry
