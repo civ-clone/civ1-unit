@@ -434,7 +434,7 @@ describe('Action', (): void => {
         Swamp,
         Tundra,
       ],
-      [PlantForest, Plains],
+      [PlantForest, Plains, Grassland, Jungle, Swamp],
     ] as [typeof UnitAction, ...(typeof Terrain)[]][]
   ).forEach(
     ([ActionType, ...validTerrains]: [
@@ -481,6 +481,26 @@ describe('Action', (): void => {
         });
     }
   );
+
+  [Grassland, Jungle, Plains, Swamp].forEach((TerrainType) => {
+    it(`should turn ${TerrainType.name} into Forest when Settlers finish PlantForest`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
+          TerrainType,
+        }),
+        unit = await getUnit(getPlayer(), world.get(4, 4), Settlers),
+        [action] = unit
+          .actions()
+          .filter(
+            (action: UnitAction): boolean => action instanceof PlantForest
+          );
+
+      PlantForest.complete(action as PlantForest);
+
+      expect(unit.tile().terrain()).to.instanceof(Forest);
+
+      unitRegistry.unregister(unit);
+    });
+  });
 
   [Desert, Grassland, Hills, Plains].forEach((Terrain) => {
     it(`should not be possible for Settlers to BuildIrrigation on ${Terrain.name} without access to water`, async (): Promise<void> => {
@@ -607,7 +627,9 @@ describe('Action', (): void => {
 
       tileImprovementRegistry.register(new Improvement(unit.tile()));
 
-      expect(unit.actions().some((action) => action instanceof Pillage));
+      expect(
+        unit.actions().some((action) => action instanceof Pillage)
+      ).to.equal(expectedResult);
     })
   );
 
