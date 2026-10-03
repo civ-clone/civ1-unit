@@ -256,7 +256,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // It is asked of every tile beside every unit the AI considers moving.
         new Criterion_1.default((unit) => transportRegistry.hasUnit(unit)), 
         // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
-        // unit's turn, and an aircraft that has just taken off needs its moves.
+        // unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also unloads a unit
+        // that walks off a ship in a city with a `Move`.
         new Criterion_1.default((unit) => !(unit instanceof Types_1.Air)), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
             const transport = transportRegistry.getByUnit(unit).transport();
             return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);

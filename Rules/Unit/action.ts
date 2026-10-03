@@ -856,7 +856,8 @@ export const getRules = (
       // It is asked of every tile beside every unit the AI considers moving.
       new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
       // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
-      // unit's turn, and an aircraft that has just taken off needs its moves.
+      // unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also unloads a unit
+      // that walks off a ship in a city with a `Move`.
       new Criterion((unit: Unit): boolean => !(unit instanceof Air)),
       new Or(
         new Criterion(
