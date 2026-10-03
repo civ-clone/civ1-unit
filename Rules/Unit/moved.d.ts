@@ -4,6 +4,7 @@ import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegist
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
 import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
 import { Turn } from '@civ-clone/core-turn-based-game/Turn';
+import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
 export declare const getRules: (
   transportRegistry?: TransportRegistry,
@@ -12,6 +13,7 @@ export declare const getRules: (
   engine?: Engine,
   cityRegistry?: CityRegistry,
   turn?: Turn,
-  interactionRegistry?: InteractionRegistry
+  interactionRegistry?: InteractionRegistry,
+  unitRegistry?: UnitRegistry
 ) => Moved[];
 export default getRules;

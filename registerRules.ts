@@ -4,6 +4,7 @@ import build from './Rules/City/build';
 import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
 import canJoinCity from './Rules/Unit/canJoinCity';
+import canStow from './Rules/Unit/canStow';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
@@ -42,6 +43,7 @@ export const register = (game: Game): void =>
     ...buildCost(),
     ...buildingComplete(game.cityGrowth),
     ...canJoinCity(game.cityGrowth),
+    ...canStow(),
     ...created(game.units, game.engine),
     ...defeated(
       game.cities,
@@ -65,7 +67,8 @@ export const register = (game: Game): void =>
       game.engine,
       game.cities,
       game.turn,
-      game.interactions
+      game.interactions,
+      game.units
     ),
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
