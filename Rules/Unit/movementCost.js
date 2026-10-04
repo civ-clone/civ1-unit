@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
+exports.getRules = exports.terrainJobTurns = exports.civ1TerrainJobTurns = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
@@ -61,6 +61,82 @@ const terrainMovementCost = (terrain) => {
     return cost;
 };
 exports.terrainMovementCost = terrainMovementCost;
+/**
+ * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
+ * v474.05's terrain modification table for irrigating and mining (OpenCivOne
+ * `GameData.cs`), and twice (a road) or four times (a railroad) the terrain's
+ * movement cost. *Rome on 640K a Day*, Table 3-2, agrees.
+ *
+ * A job converting the terrain (`ClearForest`, `PlantForest` and so on) is the
+ * irrigate or mine order on that terrain, so it takes that order's time.
+ */
+exports.civ1TerrainJobTurns = [
+    [
+        Actions_1.BuildIrrigation,
+        [
+            [Terrains_1.Desert, 5],
+            [Terrains_1.Grassland, 5],
+            [Terrains_1.Hills, 10],
+            [Terrains_1.Plains, 5],
+            [Terrains_1.River, 5],
+        ],
+    ],
+    [
+        Actions_1.BuildMine,
+        [
+            [Terrains_1.Desert, 5],
+            [Terrains_1.Hills, 10],
+            [Terrains_1.Mountains, 10],
+        ],
+    ],
+    [
+        Actions_1.BuildRoad,
+        (terrain) => {
+            const cost = (0, exports.terrainMovementCost)(terrain);
+            return cost === null ? null : 2 * cost;
+        },
+    ],
+    [
+        Actions_1.BuildRailroad,
+        (terrain) => {
+            const cost = (0, exports.terrainMovementCost)(terrain);
+            return cost === null ? null : 4 * cost;
+        },
+    ],
+    [Actions_1.ClearForest, [[Terrains_1.Forest, 5]]],
+    [Actions_1.ClearJungle, [[Terrains_1.Jungle, 15]]],
+    [Actions_1.ClearSwamp, [[Terrains_1.Swamp, 15]]],
+    [
+        Actions_1.PlantForest,
+        [
+            [Terrains_1.Grassland, 10],
+            [Terrains_1.Jungle, 15],
+            [Terrains_1.Plains, 15],
+            [Terrains_1.Swamp, 15],
+        ],
+    ],
+];
+/**
+ * The turns a unit is busy with `Action` on `terrain`, or `null` if the job
+ * has no time there.
+ *
+ * One fewer than Civ1's figure: Civ1 counts the turn the order is given on,
+ * and a `DelayedAction` started on turn T finishes at the start of turn
+ * T + turns. So a road on Grassland (2 in Civ1) is there at the start of the
+ * next turn, as it is in Civ1.
+ */
+const terrainJobTurns = (Action, terrain) => {
+    var _a, _b;
+    const job = exports.civ1TerrainJobTurns.find(([JobAction]) => JobAction === Action);
+    if (job === undefined) {
+        return null;
+    }
+    const [, turns] = job, civ1Turns = typeof turns === 'function'
+        ? turns(terrain)
+        : (_b = (_a = turns.find(([TerrainType]) => terrain instanceof TerrainType)) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : null;
+    return civ1Turns === null ? null : civ1Turns - 1;
+};
+exports.terrainJobTurns = terrainJobTurns;
 const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, transportRegistry = TransportRegistry_1.instance) => [
     // One rule, not one per terrain: see `terrainMovementCost`. Was
     // `civ1-unit:unit/movement-cost/move/<Terrain>`.
@@ -96,18 +172,13 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     // `instanceof` below. Was
     // `civ1-unit:unit/movement-cost/action/<Action>/<Terrain>`.
     ...[
-        [Actions_1.BuildIrrigation, 2],
-        [Actions_1.BuildMine, 3],
-        [Actions_1.BuildRoad, 1],
-        [Actions_1.BuildRailroad, 2],
-        [Actions_1.ClearForest, 2],
-        [Actions_1.ClearJungle, 3],
-        [Actions_1.ClearSwamp, 3],
         [Actions_1.Fortify, 1],
         [Actions_1.Pillage, 1],
-        [Actions_1.PlantForest, 3],
         [Actions_1.Sleep, 0],
     ].map(([Action, moveCost]) => new MovementCost_1.default(`civ1-unit:unit/movement-cost/action/${Action.name}`, new Criterion_1.default((unit, action) => action instanceof Action), new Criterion_1.default((unit) => (0, exports.terrainMovementCost)(unit.tile().terrain()) !== null), new Effect_1.default((unit) => moveCost * (0, exports.terrainMovementCost)(unit.tile().terrain())))),
+    // Terrain jobs take the turns in `civ1TerrainJobTurns`, less the turn the
+    // order is given on: see `terrainJobTurns`.
+    ...exports.civ1TerrainJobTurns.map(([Action]) => new MovementCost_1.default(`civ1-unit:unit/movement-cost/action/${Action.name}`, new Criterion_1.default((unit, action) => action instanceof Action), new Criterion_1.default((unit) => (0, exports.terrainJobTurns)(Action, unit.tile().terrain()) !== null), new Effect_1.default((unit) => (0, exports.terrainJobTurns)(Action, unit.tile().terrain())))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;
