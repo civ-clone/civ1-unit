@@ -11,6 +11,11 @@ import Unit from '@civ-clone/core-unit/Unit';
 // instead (OpenCivOne `PlayerTurn.cs`, `ActualSize < 10`).
 export const joinCitySizeLimit = 10;
 
+export const tooLargeToJoin = (
+  city: City,
+  cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
+): boolean => cityGrowthRegistry.getByCity(city).size() >= joinCitySizeLimit;
+
 export const getRules = (
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
 ): CanJoinCity[] => [
@@ -18,7 +23,7 @@ export const getRules = (
     'civ1-unit:unit/can-join-city/size-limit',
     new Effect(
       (unit: Unit, city: City): boolean =>
-        cityGrowthRegistry.getByCity(city).size() < joinCitySizeLimit
+        !tooLargeToJoin(city, cityGrowthRegistry)
     )
   ),
 ];

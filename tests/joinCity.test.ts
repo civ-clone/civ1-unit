@@ -17,6 +17,7 @@ import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import WorkedTileRegistry from '@civ-clone/core-city/WorkedTileRegistry';
 import action from '../Rules/Unit/action';
 import canJoinCity from '../Rules/Unit/canJoinCity';
+import joinCityRefusal from '../AdditionalData/joinCityRefusal';
 import created from '@civ-clone/civ1-city/Rules/City/created';
 import destroyed from '../Rules/Unit/destroyed';
 import { expect } from 'chai';
@@ -169,5 +170,47 @@ describe('JoinCity', (): void => {
     expect(actionsOf(inCity, FoundCity).length).to.equal(0);
     expect(actionsOf(outside, FoundCity).length).to.equal(1);
     expect(actionsOf(outside, JoinCity).length).to.equal(0);
+  });
+
+  describe('joinCityRefusal', (): void => {
+    const [refusal] = joinCityRefusal(cityRegistry, cityGrowthRegistry),
+      refusalOf = (unit: Unit) => refusal.data(unit);
+
+    it('should say Settlers in their own city of size 10 are refused because it is too large', async (): Promise<void> => {
+      const city = await createCity(10),
+        unit = createUnit(city);
+
+      expect(refusalOf(unit)).to.eql({ reason: 'too-large', size: 10 });
+    });
+
+    it('should refuse nothing in a city Settlers can join', async (): Promise<void> => {
+      const city = await createCity(9),
+        unit = createUnit(city);
+
+      expect(refusalOf(unit)).to.null;
+    });
+
+    it("should refuse nothing in another player's city", async (): Promise<void> => {
+      const city = await createCity(10),
+        unit = createUnit(city, Settlers, new Player(ruleRegistry));
+
+      expect(refusalOf(unit)).to.null;
+    });
+
+    it('should refuse nothing to a unit that is not Settlers', async (): Promise<void> => {
+      const city = await createCity(10),
+        unit = createUnit(city, Warrior);
+
+      expect(refusalOf(unit)).to.null;
+    });
+
+    it('should refuse nothing outside a city', async (): Promise<void> => {
+      const city = await createCity(10),
+        unit = createUnit(city);
+
+      unit.setTile(city.tile().getNeighbour('e'));
+
+      expect(refusalOf(unit)).to.null;
+    });
   });
 });
