@@ -53,7 +53,7 @@ export const register = (game: Game): void =>
     ...buildingComplete(game.cityGrowth),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),
-    ...cityCaptured(game.cities, game.units),
+    ...cityCaptured(game.cities, game.units, game.cityGrowth),
     ...created(game.units, game.engine),
     ...defeated(
       game.cities,

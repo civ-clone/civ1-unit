@@ -198,7 +198,7 @@ describe('Diplomats', (): void => {
         engine,
         rng
       ),
-      ...cityCaptured(cityRegistry, unitRegistry),
+      ...cityCaptured(cityRegistry, unitRegistry, cityGrowthRegistry),
       ...transferred(unitImprovementRegistry, engine, strategyNoteRegistry),
       ...turnEnd(
         unitRegistry,
@@ -499,6 +499,19 @@ describe('Diplomats', (): void => {
       expect(unitImprovementRegistry.getByUnit(garrison)).to.deep.equal([]);
       expect(nearby.moves().value()).to.equal(0);
       expect(events.map(([event]) => event)).to.include('city:incited');
+    });
+
+    it('should leave the defectors from a city of size 1, which the capture destroys, with no home', (): void => {
+      const player = addPlayer(1000),
+        rival = addPlayer(0),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5)),
+        garrison = addUnit(Warrior, rival, city.tile(), city);
+
+      find(diplomatUnit, city.tile(), InciteRevolt).perform();
+
+      expect(garrison.player()).to.equal(player);
+      expect(garrison.city()).to.null;
     });
 
     it('should do nothing, and keep the Diplomat, without the gold', (): void => {
