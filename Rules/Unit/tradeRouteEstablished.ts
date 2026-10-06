@@ -31,7 +31,8 @@ import Unit from '@civ-clone/core-unit/Unit';
 import baseTrade from '../../lib/baseTrade';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 
-// What the goods are said to be, picked by the unit (v474.05 picks by unit slot & 7).
+// What the goods are said to be, picked by the unit: v474.05 takes the unit's slot & 7, and the nearest thing here is
+//  the counter at the end of its id (`Caravan-1f`, in base 36).
 export const goods = [
   'Silk',
   'Silver',
@@ -43,14 +44,11 @@ export const goods = [
   'Spice',
 ];
 
-export const goodsFor = (unit: Unit): string =>
-  goods[
-    unit
-      .id()
-      .split('')
-      .reduce((total, character) => total + character.charCodeAt(0), 0) %
-      goods.length
-  ];
+export const goodsFor = (unit: Unit): string => {
+  const counter = parseInt(unit.id().split('-').pop() ?? '', 36);
+
+  return goods[Number.isNaN(counter) ? 0 : counter % goods.length];
+};
 
 // The number of routes a city holds (v474.05 `City.TradeCityIDs[3]`).
 export const routesPerCity = 3;

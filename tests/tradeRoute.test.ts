@@ -30,7 +30,9 @@ import action from '../Rules/Unit/action';
 import { civ1Distance } from '@civ-clone/civ1-world/lib/civ1Distance';
 import destroyed from '../Rules/Unit/destroyed';
 import { expect } from 'chai';
-import tradeRouteEstablished from '../Rules/Unit/tradeRouteEstablished';
+import tradeRouteEstablished, {
+  goodsFor,
+} from '../Rules/Unit/tradeRouteEstablished';
 import unitYield from '../Rules/Unit/yield';
 
 class TestWonder extends Wonder {}
@@ -230,6 +232,9 @@ describe('Trade routes', (): void => {
 
       if (continents) {
         splitIntoContinents();
+      } else {
+        // One continent holding the whole world, so both cities are found on the same one.
+        landMassRegistry.register(new LandMass(world.entries()));
       }
 
       if (railroad) {
@@ -270,6 +275,14 @@ describe('Trade routes', (): void => {
     it('should sell for a third less when the destination knows Railroad', (): void => {
       expect(sell(false, true).gold).to.equal(10);
     });
+  });
+
+  it('should pick the goods by the counter at the end of the unit id', (): void => {
+    expect(
+      ['Caravan-1', 'Caravan-8', 'Caravan-a', 'Caravan-1f'].map((id) =>
+        goodsFor({ id: () => id } as unknown as Unit)
+      )
+    ).to.deep.equal(['Silver', 'Silk', 'Wine', 'Copper']);
   });
 
   describe('the route', (): void => {
