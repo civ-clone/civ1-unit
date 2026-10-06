@@ -7,7 +7,7 @@ import {
   StealTechnology,
   SubvertCity,
 } from '../Actions';
-import { Chariot, Diplomat, Settlers, Warrior } from '../Units';
+import { Bomber, Chariot, Diplomat, Settlers, Warrior } from '../Units';
 import { Fortified, Veteran } from '../UnitImprovements';
 import { Gold, Production } from '@civ-clone/library-city/Yields';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
@@ -52,6 +52,11 @@ import { expect } from 'chai';
 import { bribeCost, inciteCost } from '../lib/diplomatCosts';
 import moved from '../Rules/Unit/moved';
 import transferred from '../Rules/Unit/transferred';
+import turnEnd, { turnsAloftKey } from '../Rules/Player/turnEnd';
+import StrategyNote from '@civ-clone/core-strategy/StrategyNote';
+import StrategyNoteRegistry from '@civ-clone/core-strategy/StrategyNoteRegistry';
+import TurnEnd from '@civ-clone/core-player/Rules/TurnEnd';
+import lostAtSea from '../Rules/Unit/lostAtSea';
 import unitYield from '../Rules/Unit/yield';
 
 class Alphabet extends Advance {}
@@ -68,6 +73,7 @@ describe('Diplomats', (): void => {
     playerTreasuryRegistry: PlayerTreasuryRegistry,
     unitImprovementRegistry: UnitImprovementRegistry,
     unitRegistry: UnitRegistry,
+    strategyNoteRegistry: StrategyNoteRegistry,
     events: any[][],
     random: number[],
     world: World;
@@ -145,6 +151,7 @@ describe('Diplomats', (): void => {
     playerTreasuryRegistry = new PlayerTreasuryRegistry();
     unitImprovementRegistry = new UnitImprovementRegistry();
     unitRegistry = new UnitRegistry();
+    strategyNoteRegistry = new StrategyNoteRegistry();
     events = [];
     random = [];
 
@@ -192,7 +199,15 @@ describe('Diplomats', (): void => {
         rng
       ),
       ...cityCaptured(cityRegistry, unitRegistry),
-      ...transferred(unitImprovementRegistry, engine),
+      ...transferred(unitImprovementRegistry, engine, strategyNoteRegistry),
+      ...turnEnd(
+        unitRegistry,
+        cityRegistry,
+        undefined,
+        strategyNoteRegistry,
+        ruleRegistry
+      ),
+      ...lostAtSea(engine),
       ...created(unitRegistry, engine),
       ...destroyed(unitRegistry, unitImprovementRegistry, engine),
       ...moved(
@@ -536,6 +551,23 @@ describe('Diplomats', (): void => {
         'unit:bribed',
         'unit:transferred',
       ]);
+    });
+
+    it("should give a bribed aircraft full fuel, so it isn't lost at the end of the briber's turn", (): void => {
+      const player = addPlayer(5000),
+        rival = addPlayer(0),
+        bomber = addUnit(Bomber, rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      // A turn out already: one more turn's end away from a city would be its last.
+      strategyNoteRegistry.replace(new StrategyNote(turnsAloftKey(bomber), 1));
+
+      find(diplomatUnit, world.get(5, 5), BribeUnit).perform();
+
+      ruleRegistry.process(TurnEnd, player);
+
+      expect(bomber.player()).to.equal(player);
+      expect(bomber.destroyed()).to.false;
     });
 
     it('should leave a bribed unit with no home when the nearest city isn’t the briber’s', (): void => {
