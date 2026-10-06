@@ -1,7 +1,10 @@
 import {
   BribeUnit,
+  EstablishEmbassy,
   IndustrialSabotage,
   InciteRevolt,
+  InvestigateCity,
+  MeetWithKing,
   SneakInciteRevolt,
   SneakStealTechnology,
   StealTechnology,
@@ -26,6 +29,7 @@ import CityImprovementRegistry from '@civ-clone/core-city-improvement/CityImprov
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import Effect from '@civ-clone/core-rule/Effect';
+import Embassy from '@civ-clone/base-unit-action-establish-embassy/Embassy';
 import Engine from '@civ-clone/core-engine/Engine';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import InteractionRegistry from '@civ-clone/core-diplomacy/InteractionRegistry';
@@ -226,7 +230,7 @@ describe('Diplomats', (): void => {
   });
 
   describe('next to a rival city', (): void => {
-    it('should be offered stealing, sabotage and inciting a revolt, whether or not the city is defended', (): void => {
+    it('should be offered every Diplomat action, whether or not the city is defended', (): void => {
       const player = addPlayer(0),
         rival = addPlayer(0, Alphabet),
         city = addCity(rival, world.get(5, 5)),
@@ -235,9 +239,12 @@ describe('Diplomats', (): void => {
       addUnit(Warrior, rival, city.tile());
 
       expect(actionsOf(diplomatUnit, city.tile())).to.include.members([
+        'EstablishEmbassy',
+        'InvestigateCity',
         'StealTechnology',
         'IndustrialSabotage',
         'InciteRevolt',
+        'MeetWithKing',
       ]);
       expect(actionsOf(diplomatUnit, city.tile())).to.not.include.members([
         'Attack',
@@ -596,6 +603,94 @@ describe('Diplomats', (): void => {
 
       expect(chariot.player()).to.equal(player);
       expect(chariot.city()).to.null;
+    });
+  });
+
+  describe('embassies', (): void => {
+    it('should establish a one-way embassy, use the Diplomat up, and not be offered again', (): void => {
+      const player = addPlayer(0),
+        rival = addPlayer(0),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      find(diplomatUnit, city.tile(), EstablishEmbassy).perform();
+
+      const [embassy] = interactionRegistry
+        .getByPlayers(player, rival)
+        .filter(
+          (interaction) => interaction instanceof Embassy
+        ) as unknown as Embassy[];
+
+      expect(embassy.holder()).to.equal(player);
+      expect(embassy.host()).to.equal(rival);
+      expect(diplomatUnit.destroyed()).to.true;
+      expect(
+        events.find(([event]) => event === 'player:embassy-established')
+      ).to.deep.equal(['player:embassy-established', player, rival]);
+      expect(
+        actionsOf(addUnit(Diplomat, player, world.get(4, 4)), city.tile())
+      ).to.not.include('EstablishEmbassy');
+
+      // The host has no embassy with the holder.
+      const ownCity = addCity(player, world.get(10, 10));
+
+      expect(
+        actionsOf(addUnit(Diplomat, rival, world.get(9, 10)), ownCity.tile())
+      ).to.include('EstablishEmbassy');
+    });
+
+    it('should be offered at peace, and leave the peace in place', (): void => {
+      const player = addPlayer(0),
+        rival = addPlayer(0),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      makePeace(player, rival);
+
+      find(diplomatUnit, city.tile(), EstablishEmbassy).perform();
+
+      expect(
+        interactionRegistry
+          .getByPlayers(player, rival)
+          .some(
+            (interaction) =>
+              interaction instanceof Peace && interaction.active()
+          )
+      ).to.true;
+    });
+  });
+
+  describe('investigating a city', (): void => {
+    it('should tell the client and use the Diplomat up', (): void => {
+      const player = addPlayer(0),
+        rival = addPlayer(0),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      find(diplomatUnit, city.tile(), InvestigateCity).perform();
+
+      expect(diplomatUnit.destroyed()).to.true;
+      expect(
+        events.find(([event]) => event === 'city:investigated')
+      ).to.deep.equal(['city:investigated', city, player]);
+    });
+  });
+
+  describe('meeting the king', (): void => {
+    it('should tell the client, and leave the Diplomat where it is with no moves', (): void => {
+      const player = addPlayer(0),
+        rival = addPlayer(0),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      find(diplomatUnit, city.tile(), MeetWithKing).perform();
+
+      expect(diplomatUnit.destroyed()).to.false;
+      expect(diplomatUnit.tile()).to.equal(world.get(4, 5));
+      expect(diplomatUnit.moves().value()).to.equal(0);
+      expect(
+        events.find(([event]) => event === 'player:meet-with-king')
+      ).to.deep.equal(['player:meet-with-king', player, rival]);
     });
   });
 });

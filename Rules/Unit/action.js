@@ -13,6 +13,7 @@ const LandMassRegistry_1 = require("@civ-clone/core-world/LandMassRegistry");
 const PlayerResearchRegistry_1 = require("@civ-clone/core-science/PlayerResearchRegistry");
 const PlayerTreasuryRegistry_1 = require("@civ-clone/core-treasury/PlayerTreasuryRegistry");
 const diplomatCosts_1 = require("../../lib/diplomatCosts");
+const Embassy_1 = require("@civ-clone/base-unit-action-establish-embassy/Embassy");
 const AdvanceStolen_1 = require("@civ-clone/base-unit-action-steal-technology/AdvanceStolen");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const diplomat_1 = require("./diplomat");
@@ -154,6 +155,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             (0, diplomat_1.stealableAdvances)(unit.player(), city.player(), playerResearchRegistry)
                 .length > 0);
     }), 
+    // One embassy with each civilization.
+    hasNoEmbassy = new Criterion_1.default((unit, to) => !interactionRegistry
+        .getByPlayers(unit.player(), cityRegistry.getByTile(to).player())
+        .some((interaction) => interaction instanceof Embassy_1.default &&
+        interaction.holder() === unit.player())), 
     // A capital can't be incited.
     canIncite = new Criterion_1.default((unit, to) => !cityImprovementRegistry
         .getByCity(cityRegistry.getByTile(to))
@@ -165,6 +171,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             const city = cityRegistry.getByTile(to);
             return new Actions_1.SneakStealTechnology(from, to, unit, city, city.player(), ruleRegistry);
         })),
+        // v474.05 has no peace check on an embassy or an investigation, and neither breaks a treaty.
+        new Action_1.Action('civ1-unit:unit/action/establish-embassy', ...diplomatCriteria, hasNoEmbassy, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishEmbassy(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/investigate-city', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.InvestigateCity(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/industrial-sabotage', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.IndustrialSabotage(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
         // Offered whether or not the Diplomat's owner can afford it, so the price can be shown; the action refuses if not.
         new Action_1.Action('civ1-unit:unit/action/incite-revolt', ...diplomatCriteria, canIncite, new Criterion_1.default((unit, to) => !peaceWithOwner.validate(unit, to)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.InciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), ruleRegistry))),
@@ -175,6 +184,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             return new Actions_1.SneakInciteRevolt(from, to, unit, city, costToIncite(to), city.player(), ruleRegistry);
         })),
         new Action_1.Action('civ1-unit:unit/action/subvert-city', ...diplomatCriteria, canIncite, peaceWithOwner, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SubvertCity(from, to, unit, cityRegistry.getByTile(to), costToIncite(to) * 2, ruleRegistry))),
+        // The Diplomat stays, with no moves left (v474.05 `F22_0000_0000`).
+        new Action_1.Action('civ1-unit:unit/action/meet-with-king', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithKing(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
         // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
         //  check, and the Diplomat keeps its moves.
         new Action_1.Action('civ1-unit:unit/action/bribe-unit', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Units_1.Diplomat), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to) === null), new Criterion_1.default((unit, to) => {

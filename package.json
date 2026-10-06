@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/civ1-unit",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "repository": "git@github.com:civ-clone/civ1-unit.git",
   "keywords": [
     "typescript",
@@ -63,11 +63,14 @@
     "@civ-clone/base-science-advance-writing": "^0.1.0",
     "@civ-clone/base-unit-action-bribe-unit": "^0.1.0",
     "@civ-clone/base-unit-action-embark": "^0.1.0",
+    "@civ-clone/base-unit-action-establish-embassy": "^0.1.0",
     "@civ-clone/base-unit-action-establish-trade-route": "^0.1.0",
     "@civ-clone/base-unit-action-incite-revolt": "^0.1.0",
     "@civ-clone/base-unit-action-industrial-sabotage": "^0.1.0",
+    "@civ-clone/base-unit-action-investigate-city": "^0.1.0",
     "@civ-clone/base-unit-action-join-city": "^0.1.0",
     "@civ-clone/base-unit-action-land-aircraft": "^0.1.0",
+    "@civ-clone/base-unit-action-meet-with-king": "^0.1.0",
     "@civ-clone/base-unit-action-sleep": "^0.1.0",
     "@civ-clone/base-unit-action-steal-technology": "^0.1.0",
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
@@ -101,6 +104,6 @@
     "@civ-clone/core-yield": "^0.1.0",
     "@civ-clone/library-city": "^0.1.4",
     "@civ-clone/library-diplomacy": "^0.1.0",
-    "@civ-clone/library-unit": "^0.1.8"
+    "@civ-clone/library-unit": "^0.1.9"
   }
 }
