@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Worker = exports.NavalTransport = exports.Naval = exports.Land = exports.Fortifiable = exports.Air = void 0;
+exports.Worker = exports.NavalTransport = exports.Naval = exports.Land = exports.Fortifiable = exports.Diplomatic = exports.Air = void 0;
 var Types_1 = require("@civ-clone/library-unit/Types");
 Object.defineProperty(exports, "Air", { enumerable: true, get: function () { return Types_1.Air; } });
+Object.defineProperty(exports, "Diplomatic", { enumerable: true, get: function () { return Types_1.Diplomatic; } });
 Object.defineProperty(exports, "Fortifiable", { enumerable: true, get: function () { return Types_1.Fortifiable; } });
 Object.defineProperty(exports, "Land", { enumerable: true, get: function () { return Types_1.Land; } });
 Object.defineProperty(exports, "Naval", { enumerable: true, get: function () { return Types_1.Naval; } });

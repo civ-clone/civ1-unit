@@ -278,6 +278,58 @@ describe('Action', (): void => {
     unitRegistry.unregister(unit, enemyUnit);
   });
 
+  ([Caravan, Diplomat] as (typeof Unit)[]).forEach((UnitType): void => {
+    it(`should let a ${UnitType.name} move between tiles next to an enemy \`Unit\``, async (): Promise<void> => {
+      const unit = await getUnit(undefined, undefined, UnitType),
+        enemyUnit = await getUnit(getPlayer(), unit.tile().getNeighbour('e'));
+
+      (['n', 'ne', 's', 'se'] as const).forEach(
+        (direction) =>
+          expect(
+            unit
+              .actions(unit.tile().getNeighbour(direction))
+              .some((action) => action instanceof Move),
+            direction
+          ).to.true
+      );
+
+      unitRegistry.unregister(unit, enemyUnit);
+    });
+
+    it(`should not let a ${UnitType.name} attack an enemy \`Unit\`, or capture an unprotected enemy \`City\``, async (): Promise<void> => {
+      const unit = await getUnit(undefined, undefined, UnitType),
+        enemyUnit = await getUnit(getPlayer(), unit.tile().getNeighbour('e')),
+        city = new City(getPlayer(), unit.tile().getNeighbour('se'), '');
+
+      cityRegistry.register(city);
+
+      [enemyUnit.tile(), city.tile()].forEach(
+        (tile) =>
+          expect(
+            unit
+              .actions(tile)
+              .some((action) =>
+                [Attack, SneakAttack, CaptureCity, SneakCaptureCity].some(
+                  (ActionType) => action instanceof ActionType
+                )
+              )
+          ).to.false
+      );
+
+      cityRegistry.unregister(city);
+      unitRegistry.unregister(unit, enemyUnit);
+    });
+
+    it(`should let a ${UnitType.name} \`Fortify\``, async (): Promise<void> => {
+      const unit = await getUnit(undefined, undefined, UnitType);
+
+      expect(unit.actions().some((action) => action instanceof Fortify)).to
+        .true;
+
+      unitRegistry.unregister(unit);
+    });
+  });
+
   it('should be possible to capture an unprotected enemy `City`', async (): Promise<void> => {
     const unit = await getUnit(),
       city = new City(getPlayer(), unit.tile().getNeighbour('se'), '');
