@@ -9,7 +9,6 @@ import Effect from '@civ-clone/core-rule/Effect';
 import Engine from '@civ-clone/core-engine/Engine';
 import { EstablishTradeRoute } from '../Actions';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
-import LandMass from '@civ-clone/core-world/LandMass';
 import LandMassRegistry from '@civ-clone/core-world/LandMassRegistry';
 import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
@@ -19,6 +18,7 @@ import PlayerTreasuryRegistry from '@civ-clone/core-treasury/PlayerTreasuryRegis
 import Priority from '@civ-clone/core-rule/Priority';
 import RailroadAdvance from '@civ-clone/base-science-advance-railroad/Railroad';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
 import TradeRouteRegistry from '@civ-clone/core-city/TradeRouteRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
@@ -80,15 +80,26 @@ describe('Trade routes', (): void => {
     },
     canTrade = (unit: Unit, to: Tile): boolean =>
       unit.actions(to).some((action) => action instanceof EstablishTradeRoute),
-    // The two halves of a 40-wide map, x 0-19 and x 20-39, as two continents.
-    splitIntoContinents = (): void => {
-      const halves: Tile[][] = [[], []];
+    // A 40 × 30 world of Grassland, built as a game builds one, so `World#build()` finds the continents. With
+    //  `split`, columns 19 and 39 are Ocean, which makes two continents, x 0-18 and x 20-38 (x wraps, so it takes two).
+    buildWorld = async (split: boolean): Promise<void> => {
+      const generator = new FillGenerator(30, 40, Grassland);
 
-      world
-        .entries()
-        .forEach((tile) => halves[tile.x() < 20 ? 0 : 1].push(tile));
+      if (split) {
+        generator.generate = (): Promise<Terrain[]> =>
+          Promise.resolve(
+            new Array(30 * 40)
+              .fill(0)
+              .map(
+                (_, i): Terrain =>
+                  [19, 39].includes(i % 40) ? new Ocean() : new Grassland()
+              )
+          );
+      }
 
-      landMassRegistry.register(...halves.map((tiles) => new LandMass(tiles)));
+      world = new World(generator, ruleRegistry, landMassRegistry);
+
+      await world.build();
     };
 
   beforeEach(async (): Promise<void> => {
@@ -103,9 +114,7 @@ describe('Trade routes', (): void => {
     trade = new Map();
     events = [];
 
-    world = new World(new FillGenerator(30, 40, Grassland), ruleRegistry);
-
-    await world.build();
+    await buildWorld(false);
 
     // Each city's trade comes from the test, so `baseTrade` reads what it sets.
     ruleRegistry.register(
@@ -179,7 +188,9 @@ describe('Trade routes', (): void => {
         nine = addCity(player, world.get(9, 1)),
         ten = addCity(player, world.get(10, 1));
 
-      splitIntoContinents();
+      expect(landMassRegistry.getByTile(home.tile())).to.equal(
+        landMassRegistry.getByTile(ten.tile())
+      );
 
       expect(civ1Distance(home.tile(), nine.tile())).to.equal(9);
       expect(canTrade(addCaravan(home, world.get(8, 1)), nine.tile())).to.false;
@@ -187,13 +198,17 @@ describe('Trade routes', (): void => {
       expect(canTrade(addCaravan(home, world.get(9, 2)), ten.tile())).to.true;
     });
 
-    it('should be offered for your own city on another continent nearby, unless it is building a Wonder', (): void => {
+    it('should be offered for your own city on another continent nearby, unless it is building a Wonder', async (): Promise<void> => {
+      await buildWorld(true);
+
       const player = addPlayer(),
         home = addCity(player, world.get(18, 5)),
         other = addCity(player, world.get(21, 5)),
         caravan = addCaravan(home, world.get(20, 5));
 
-      splitIntoContinents();
+      expect(landMassRegistry.getByTile(home.tile())).to.not.equal(
+        landMassRegistry.getByTile(other.tile())
+      );
 
       expect(canTrade(caravan, other.tile())).to.true;
 
@@ -220,22 +235,24 @@ describe('Trade routes', (): void => {
 
   describe('the goods', (): void => {
     // Distance 20, trade 10 + 14: (20 + 10) × 24 / 24 = 30.
-    const sell = (
+    const sell = async (
       continents: boolean,
       railroad: boolean
-    ): { gold: number; research: number; unit: Unit } => {
+    ): Promise<{ gold: number; research: number; unit: Unit }> => {
+      if (continents) {
+        await buildWorld(true);
+      }
+
       const player = addPlayer(),
         other = addPlayer(),
         home = addCity(player, world.get(5, 5), 10),
         foreign = addCity(other, world.get(25, 5), 14),
         caravan = addCaravan(home, world.get(24, 5));
 
-      if (continents) {
-        splitIntoContinents();
-      } else {
-        // One continent holding the whole world, so both cities are found on the same one.
-        landMassRegistry.register(new LandMass(world.entries()));
-      }
+      expect(
+        landMassRegistry.getByTile(home.tile()) ===
+          landMassRegistry.getByTile(foreign.tile())
+      ).to.equal(!continents);
 
       if (railroad) {
         playerResearchRegistry.getByPlayer(other).addAdvance(RailroadAdvance);
@@ -256,8 +273,8 @@ describe('Trade routes', (): void => {
       };
     };
 
-    it('should sell for 30 to a foreign city on another continent, into gold and research', (): void => {
-      const { gold, research, unit } = sell(true, false);
+    it('should sell for 30 to a foreign city on another continent, into gold and research', async (): Promise<void> => {
+      const { gold, research, unit } = await sell(true, false);
 
       expect(gold).to.equal(30);
       expect(research).to.equal(30);
@@ -268,12 +285,12 @@ describe('Trade routes', (): void => {
       expect(events[0][5]).to.equal(30);
     });
 
-    it('should sell for half on the same continent', (): void => {
-      expect(sell(false, false).gold).to.equal(15);
+    it('should sell for half on the same continent', async (): Promise<void> => {
+      expect((await sell(false, false)).gold).to.equal(15);
     });
 
-    it('should sell for a third less when the destination knows Railroad', (): void => {
-      expect(sell(false, true).gold).to.equal(10);
+    it('should sell for a third less when the destination knows Railroad', async (): Promise<void> => {
+      expect((await sell(false, true)).gold).to.equal(10);
     });
   });
 
