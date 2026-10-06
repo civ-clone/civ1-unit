@@ -95,7 +95,7 @@ export const register = (game: Game): void =>
       game.engine,
       game.rng
     ),
-    ...transferred(game.unitImprovements, game.engine),
+    ...transferred(game.unitImprovements, game.engine, game.strategyNotes),
     ...tradeRouteEstablished(
       game.tradeRoutes,
       game.playerTreasuries,
