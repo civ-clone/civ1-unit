@@ -6,7 +6,9 @@ const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
 const CityGrowthRegistry_1 = require("@civ-clone/core-city-growth/CityGrowthRegistry");
 const CityNameRegistry_1 = require("@civ-clone/core-civilization/CityNameRegistry");
+const CityBuildRegistry_1 = require("@civ-clone/core-city-build/CityBuildRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
+const LandMassRegistry_1 = require("@civ-clone/core-world/LandMassRegistry");
 const Units_1 = require("../../Units");
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const InteractionRegistry_1 = require("@civ-clone/core-diplomacy/InteractionRegistry");
@@ -31,8 +33,10 @@ const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Path_1 = require("@civ-clone/core-world-path/Path");
 const joinableCity_1 = require("@civ-clone/base-unit-action-join-city/joinableCity");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
+const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
+const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
-const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance) => {
+const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const landsInCity = (unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }, landingTransport = (unit, to) => {
         var _a;
@@ -93,7 +97,33 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0),
         new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()),
     ];
+    // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
+    //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
+    //  city isn't building a Wonder (civ-clone/web-renderer#57).
+    const canEstablishTradeRoute = (unit, to, from = unit.tile()) => {
+        const home = unit.city(), city = cityRegistry.getByTile(to);
+        if (!(unit instanceof Units_1.Caravan) || home === null || city === null) {
+            return false;
+        }
+        if (city.player() !== unit.player()) {
+            return from.isLand();
+        }
+        if (city === home) {
+            return false;
+        }
+        if ((0, civ1Distance_1.default)(home.tile(), city.tile()) >= 10) {
+            return true;
+        }
+        const building = cityBuildRegistry.getByCity(city).building();
+        return (landMassRegistry.getByTile(home.tile()) !==
+            landMassRegistry.getByTile(city.tile()) &&
+            !(building !== null &&
+                Object.prototype.isPrototypeOf.call(Wonder_1.default, building.item())));
+    };
     return [
+        // Before `move`, so the arrow keys and the AI take it first, as Civ1's AI does: it always sets up the route.
+        //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
+        new Action_1.Action('civ1-unit:unit/action/establish-trade-route', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => canEstablishTradeRoute(unit, to, from)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishTradeRoute(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
         // Before `move`, so it's the first action for a tile an aircraft can land on: the arrow keys and the AI take the
         // first action. `move` is still offered there, so a GoTo (and the action menu) can fly over instead.
         new Action_1.Action('civ1-unit:unit/action/land-aircraft', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => canLandAircraft(unit, to)), new Criterion_1.default((unit, to) => unitRegistry

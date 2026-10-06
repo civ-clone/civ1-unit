@@ -14,6 +14,7 @@ import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
+import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
 import turnEnd from './Rules/Player/turnEnd';
 import unitYield from './Rules/Unit/yield';
 import unsupported from './Rules/Unit/unsupported';
@@ -36,7 +37,9 @@ export const register = (game: Game): void =>
       game.workedTiles,
       game.pathFinders,
       game.strategyNotes,
-      game.cityGrowth
+      game.cityGrowth,
+      game.landMasses,
+      game.cityBuilds
     ),
     ...activate(game.unitImprovements),
     ...build(game.playerResearch),
@@ -73,6 +76,13 @@ export const register = (game: Game): void =>
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
     ...stowed(),
+    ...tradeRouteEstablished(
+      game.tradeRoutes,
+      game.playerTreasuries,
+      game.playerResearch,
+      game.landMasses,
+      game.engine
+    ),
     ...turnEnd(
       game.units,
       game.cities,

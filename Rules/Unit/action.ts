@@ -26,6 +26,7 @@ import {
   Disband,
   Disembark,
   Embark,
+  EstablishTradeRoute,
   Fortify,
   FoundCity,
   GoTo,
@@ -50,10 +51,18 @@ import {
   instance as cityNameRegistryInstance,
 } from '@civ-clone/core-civilization/CityNameRegistry';
 import {
+  CityBuildRegistry,
+  instance as cityBuildRegistryInstance,
+} from '@civ-clone/core-city-build/CityBuildRegistry';
+import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Fighter, Settlers, Submarine } from '../../Units';
+import {
+  LandMassRegistry,
+  instance as landMassRegistryInstance,
+} from '@civ-clone/core-world/LandMassRegistry';
+import { Caravan, Fighter, Settlers, Submarine } from '../../Units';
 import {
   Forest,
   Grassland,
@@ -129,6 +138,8 @@ import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import Wonder from '@civ-clone/core-wonder/Wonder';
+import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 
 const isLandUnit = new Criterion(
     (unit: Unit, to: Tile, from: Tile = unit.tile()) => unit instanceof LandUnit
@@ -153,7 +164,9 @@ export const getRules = (
   workedTileRegistry: WorkedTileRegistry = workedTileRegistryInstance,
   pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance,
   strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance,
-  cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
+  cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance,
+  landMassRegistry: LandMassRegistry = landMassRegistryInstance,
+  cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const landsInCity = (unit: Unit, to: Tile): boolean =>
@@ -259,7 +272,67 @@ export const getRules = (
       ),
     ];
 
+  // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
+  //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
+  //  city isn't building a Wonder (civ-clone/web-renderer#57).
+  const canEstablishTradeRoute = (
+    unit: Unit,
+    to: Tile,
+    from: Tile = unit.tile()
+  ): boolean => {
+    const home = unit.city(),
+      city = cityRegistry.getByTile(to);
+
+    if (!(unit instanceof Caravan) || home === null || city === null) {
+      return false;
+    }
+
+    if (city.player() !== unit.player()) {
+      return from.isLand();
+    }
+
+    if (city === home) {
+      return false;
+    }
+
+    if (civ1Distance(home.tile(), city.tile()) >= 10) {
+      return true;
+    }
+
+    const building = cityBuildRegistry.getByCity(city).building();
+
+    return (
+      landMassRegistry.getByTile(home.tile()) !==
+        landMassRegistry.getByTile(city.tile()) &&
+      !(
+        building !== null &&
+        Object.prototype.isPrototypeOf.call(Wonder, building.item())
+      )
+    );
+  };
+
   return [
+    // Before `move`, so the arrow keys and the AI take it first, as Civ1's AI does: it always sets up the route.
+    //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
+    new Action(
+      'civ1-unit:unit/action/establish-trade-route',
+      isNeighbouringTile,
+      hasMovesLeft,
+      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+        canEstablishTradeRoute(unit, to, from)
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new EstablishTradeRoute(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            ruleRegistry
+          ) as UnitAction
+      )
+    ),
+
     // Before `move`, so it's the first action for a tile an aircraft can land on: the arrow keys and the AI take the
     // first action. `move` is still offered there, so a GoTo (and the action menu) can fly over instead.
     new Action(
