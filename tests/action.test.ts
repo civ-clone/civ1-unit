@@ -43,6 +43,8 @@ import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import BridgeBuilding from '@civ-clone/base-science-advance-bridgebuilding/BridgeBuilding';
 import City from '@civ-clone/core-city/City';
+import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
+import { instance as cityGrowthRegistryInstance } from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
@@ -302,6 +304,9 @@ describe('Action', (): void => {
         city = new City(getPlayer(), unit.tile().getNeighbour('se'), '');
 
       cityRegistry.register(city);
+
+      // A Diplomat is offered incite next to it, which prices the city by its size.
+      cityGrowthRegistryInstance.register(new CityGrowth(city, ruleRegistry));
 
       const hostile = (tile: Tile): boolean =>
         unit
