@@ -48,6 +48,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     const attackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
+        // Diplomats and Caravans never attack: v474.05 stops them before any combat.
+        new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
         new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .some((tileUnit) => tileUnit.player() !== unit.player())),
@@ -85,6 +87,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
         isLandUnit,
+        // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
+        new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
         new Criterion_1.default((unit, to) => tileHasCity(to, cityRegistry)),
         new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0),
         new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()),
@@ -115,12 +119,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // You may only move your `Unit` to the `Tile` if...
         new Or_1.default(new Criterion_1.default(
         // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-        (unit, to, from) => !(unit instanceof Types_1.Land)), 
-        // new Criterion(
-        //   // ...it's a `Diplomatic` `Unit`...
-        //   (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
-        // ),
-        new Criterion_1.default(
+        (unit, to, from) => !(unit instanceof Types_1.Land)), new Criterion_1.default(
+        // ...it's a `Diplomatic` `Unit`...
+        (unit, to) => unit instanceof Types_1.Diplomatic), new Criterion_1.default(
         // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
         (unit, to, from = unit.tile()) => !(from.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => tileUnit instanceof Types_1.Land &&
             // Ignore `LandUnit`s in `Transport` on `Water`
@@ -190,9 +191,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         })),
         new Action_1.Action('civ1-unit:unit/action/pillage', Action_1.hasMovesLeft, Action_1.isCurrentTile, 
         // Every land unit but Diplomats and Caravans can pillage in Civ1, so
-        // Settlers (`Worker`) can as well as the military units. Both of the
-        // exceptions are `Fortifiable`, so they are named.
-        new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable || unit instanceof Types_1.Worker), new Criterion_1.default((unit) => !(unit instanceof Units_1.Caravan || unit instanceof Units_1.Diplomat)), new Criterion_1.default((unit, to) => tileImprovementRegistry
+        // Settlers (`Worker`) can as well as the military units.
+        new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable || unit instanceof Types_1.Worker), new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)), new Criterion_1.default((unit, to) => tileImprovementRegistry
             .getByTile(to)
             // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
             .filter((improvement) => [TileImprovements_1.Irrigation, TileImprovements_1.Mine, TileImprovements_1.Railroad, TileImprovements_1.Road].some((Improvement) => improvement instanceof Improvement)).length > 0), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),

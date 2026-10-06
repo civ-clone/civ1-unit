@@ -6,6 +6,7 @@ import {
 } from '@civ-clone/core-unit/Rules/Action';
 import {
   Air,
+  Diplomatic,
   Fortifiable,
   Land as LandUnit,
   Naval,
@@ -52,7 +53,7 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Caravan, Diplomat, Fighter, Settlers, Submarine } from '../../Units';
+import { Fighter, Settlers, Submarine } from '../../Units';
 import {
   Forest,
   Grassland,
@@ -177,6 +178,8 @@ export const getRules = (
   const attackCriteria = [
       isNeighbouringTile,
       hasMovesLeft,
+      // Diplomats and Caravans never attack: v474.05 stops them before any combat.
+      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
       new Criterion((unit: Unit, to: Tile): boolean =>
         unitRegistry
           .getByTile(to)
@@ -241,6 +244,8 @@ export const getRules = (
       isNeighbouringTile,
       hasMovesLeft,
       isLandUnit,
+      // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
+      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
       new Criterion((unit: Unit, to: Tile): boolean =>
         tileHasCity(to, cityRegistry)
       ),
@@ -341,10 +346,10 @@ export const getRules = (
           (unit: Unit, to: Tile, from: Tile): boolean =>
             !(unit instanceof LandUnit)
         ),
-        // new Criterion(
-        //   // ...it's a `Diplomatic` `Unit`...
-        //   (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
-        // ),
+        new Criterion(
+          // ...it's a `Diplomatic` `Unit`...
+          (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
+        ),
         new Criterion(
           // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
           (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
@@ -541,16 +546,12 @@ export const getRules = (
       hasMovesLeft,
       isCurrentTile,
       // Every land unit but Diplomats and Caravans can pillage in Civ1, so
-      // Settlers (`Worker`) can as well as the military units. Both of the
-      // exceptions are `Fortifiable`, so they are named.
+      // Settlers (`Worker`) can as well as the military units.
       new Criterion(
         (unit: Unit): boolean =>
           unit instanceof Fortifiable || unit instanceof Worker
       ),
-      new Criterion(
-        (unit: Unit): boolean =>
-          !(unit instanceof Caravan || unit instanceof Diplomat)
-      ),
+      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
       new Criterion(
         (unit: Unit, to: Tile): boolean =>
           tileImprovementRegistry

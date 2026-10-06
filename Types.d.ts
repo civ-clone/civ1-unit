@@ -1,5 +1,6 @@
 export {
   Air,
+  Diplomatic,
   Fortifiable,
   Land,
   Naval,
