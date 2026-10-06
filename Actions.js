@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.JoinCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.EstablishTradeRoute = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "BribeUnit", { enumerable: true, get: function () { return Actions_1.BribeUnit; } });
@@ -15,6 +15,7 @@ Object.defineProperty(exports, "ClearSwamp", { enumerable: true, get: function (
 Object.defineProperty(exports, "Disband", { enumerable: true, get: function () { return Actions_1.Disband; } });
 Object.defineProperty(exports, "Disembark", { enumerable: true, get: function () { return Actions_1.Disembark; } });
 Object.defineProperty(exports, "Embark", { enumerable: true, get: function () { return Actions_1.Embark; } });
+Object.defineProperty(exports, "EstablishEmbassy", { enumerable: true, get: function () { return Actions_1.EstablishEmbassy; } });
 Object.defineProperty(exports, "EstablishTradeRoute", { enumerable: true, get: function () { return Actions_1.EstablishTradeRoute; } });
 Object.defineProperty(exports, "Fortify", { enumerable: true, get: function () { return Actions_1.Fortify; } });
 Object.defineProperty(exports, "FoundCity", { enumerable: true, get: function () { return Actions_1.FoundCity; } });
@@ -22,7 +23,9 @@ Object.defineProperty(exports, "GoTo", { enumerable: true, get: function () { re
 Object.defineProperty(exports, "HelpBuildWonder", { enumerable: true, get: function () { return Actions_1.HelpBuildWonder; } });
 Object.defineProperty(exports, "IndustrialSabotage", { enumerable: true, get: function () { return Actions_1.IndustrialSabotage; } });
 Object.defineProperty(exports, "InciteRevolt", { enumerable: true, get: function () { return Actions_1.InciteRevolt; } });
+Object.defineProperty(exports, "InvestigateCity", { enumerable: true, get: function () { return Actions_1.InvestigateCity; } });
 Object.defineProperty(exports, "JoinCity", { enumerable: true, get: function () { return Actions_1.JoinCity; } });
+Object.defineProperty(exports, "MeetWithKing", { enumerable: true, get: function () { return Actions_1.MeetWithKing; } });
 Object.defineProperty(exports, "Move", { enumerable: true, get: function () { return Actions_1.Move; } });
 Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () { return Actions_1.NoOrders; } });
 Object.defineProperty(exports, "Pillage", { enumerable: true, get: function () { return Actions_1.Pillage; } });

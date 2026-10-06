@@ -27,14 +27,17 @@ import {
   Disband,
   Disembark,
   Embark,
+  EstablishEmbassy,
   EstablishTradeRoute,
   Fortify,
   FoundCity,
   GoTo,
   IndustrialSabotage,
   InciteRevolt,
+  InvestigateCity,
   JoinCity,
   LandAircraft,
+  MeetWithKing,
   Move,
   NoOrders,
   Pillage,
@@ -82,6 +85,7 @@ import {
   instance as playerTreasuryRegistryInstance,
 } from '@civ-clone/core-treasury/PlayerTreasuryRegistry';
 import { bribeCost, inciteCost } from '../../lib/diplomatCosts';
+import Embassy from '@civ-clone/base-unit-action-establish-embassy/Embassy';
 import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
 import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
@@ -385,6 +389,17 @@ export const getRules = (
           .length > 0
       );
     }),
+    // One embassy with each civilization.
+    hasNoEmbassy = new Criterion(
+      (unit: Unit, to: Tile): boolean =>
+        !interactionRegistry
+          .getByPlayers(unit.player(), cityRegistry.getByTile(to)!.player())
+          .some(
+            (interaction) =>
+              interaction instanceof Embassy &&
+              (interaction as unknown as Embassy).holder() === unit.player()
+          )
+    ),
     // A capital can't be incited.
     canIncite = new Criterion(
       (unit: Unit, to: Tile): boolean =>
@@ -446,6 +461,38 @@ export const getRules = (
             ruleRegistry
           ) as unknown as UnitAction;
         }
+      )
+    ),
+
+    // v474.05 has no peace check on an embassy or an investigation, and neither breaks a treaty.
+    new Action(
+      'civ1-unit:unit/action/establish-embassy',
+      ...diplomatCriteria,
+      hasNoEmbassy,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new EstablishEmbassy(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            ruleRegistry
+          ) as UnitAction
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/investigate-city',
+      ...diplomatCriteria,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new InvestigateCity(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            ruleRegistry
+          ) as UnitAction
       )
     ),
 
@@ -524,6 +571,22 @@ export const getRules = (
             costToIncite(to) * 2,
             ruleRegistry
           ) as unknown as UnitAction
+      )
+    ),
+
+    // The Diplomat stays, with no moves left (v474.05 `F22_0000_0000`).
+    new Action(
+      'civ1-unit:unit/action/meet-with-king',
+      ...diplomatCriteria,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new MeetWithKing(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!.player(),
+            ruleRegistry
+          ) as UnitAction
       )
     ),
 
