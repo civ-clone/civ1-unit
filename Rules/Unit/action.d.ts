@@ -3,7 +3,10 @@ import { CityGrowthRegistry } from '@civ-clone/core-city-growth/CityGrowthRegist
 import { CityNameRegistry } from '@civ-clone/core-civilization/CityNameRegistry';
 import { CityBuildRegistry } from '@civ-clone/core-city-build/CityBuildRegistry';
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
+import { CityImprovementRegistry } from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import { LandMassRegistry } from '@civ-clone/core-world/LandMassRegistry';
+import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRegistry';
+import { PlayerTreasuryRegistry } from '@civ-clone/core-treasury/PlayerTreasuryRegistry';
 import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegistry';
 import { PathFinderRegistry } from '@civ-clone/core-world-path/PathFinderRegistry';
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
@@ -31,6 +34,9 @@ export declare const getRules: (
   strategyNoteRegistry?: StrategyNoteRegistry,
   cityGrowthRegistry?: CityGrowthRegistry,
   landMassRegistry?: LandMassRegistry,
-  cityBuildRegistry?: CityBuildRegistry
+  cityBuildRegistry?: CityBuildRegistry,
+  cityImprovementRegistry?: CityImprovementRegistry,
+  playerResearchRegistry?: PlayerResearchRegistry,
+  playerTreasuryRegistry?: PlayerTreasuryRegistry
 ) => Action[];
 export default getRules;

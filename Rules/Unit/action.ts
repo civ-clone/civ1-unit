@@ -15,6 +15,7 @@ import {
 } from '../../Types';
 import {
   Attack,
+  BribeUnit,
   BuildIrrigation,
   BuildMine,
   BuildRailroad,
@@ -30,6 +31,8 @@ import {
   Fortify,
   FoundCity,
   GoTo,
+  IndustrialSabotage,
+  InciteRevolt,
   JoinCity,
   LandAircraft,
   Move,
@@ -40,6 +43,10 @@ import {
   Sleep,
   SneakAttack,
   SneakCaptureCity,
+  SneakInciteRevolt,
+  SneakStealTechnology,
+  StealTechnology,
+  SubvertCity,
   Unload,
 } from '../../Actions';
 import {
@@ -59,10 +66,27 @@ import {
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
 import {
+  CityImprovementRegistry,
+  instance as cityImprovementRegistryInstance,
+} from '@civ-clone/core-city-improvement/CityImprovementRegistry';
+import {
   LandMassRegistry,
   instance as landMassRegistryInstance,
 } from '@civ-clone/core-world/LandMassRegistry';
-import { Caravan, Fighter, Settlers, Submarine } from '../../Units';
+import {
+  PlayerResearchRegistry,
+  instance as playerResearchRegistryInstance,
+} from '@civ-clone/core-science/PlayerResearchRegistry';
+import {
+  PlayerTreasuryRegistry,
+  instance as playerTreasuryRegistryInstance,
+} from '@civ-clone/core-treasury/PlayerTreasuryRegistry';
+import { bribeCost, inciteCost } from '../../lib/diplomatCosts';
+import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
+import { Palace } from '@civ-clone/library-city/CityImprovements';
+import Player from '@civ-clone/core-player/Player';
+import { stealableAdvances } from './diplomat';
+import { Caravan, Diplomat, Fighter, Settlers, Submarine } from '../../Units';
 import {
   Forest,
   Grassland,
@@ -166,7 +190,10 @@ export const getRules = (
   strategyNoteRegistry: StrategyNoteRegistry = strategyNoteRegistryInstance,
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance,
   landMassRegistry: LandMassRegistry = landMassRegistryInstance,
-  cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance
+  cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance,
+  cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
+  playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
+  playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const landsInCity = (unit: Unit, to: Tile): boolean =>
@@ -311,7 +338,234 @@ export const getRules = (
     );
   };
 
+  // A Diplomat's actions on a rival's city (v474.05 `PlayerTurn.cs` L1802-L1905, civ-clone/web-renderer#58): next to
+  //  it, with moves left, and not from a ship. Units in the city don't matter: the Diplomat never enters it.
+  const diplomatCity = (
+      unit: Unit,
+      to: Tile,
+      from: Tile = unit.tile()
+    ): City | null => {
+      const city = cityRegistry.getByTile(to);
+
+      return unit instanceof Diplomat &&
+        from.isLand() &&
+        city !== null &&
+        city.player() !== unit.player()
+        ? city
+        : null;
+    },
+    atPeace = (player: Player, other: Player): boolean =>
+      interactionRegistry
+        .getByPlayers(player, other)
+        .some(
+          (interaction): interaction is Peace =>
+            interaction instanceof Peace && interaction.active()
+        ),
+    diplomatCriteria = [
+      isNeighbouringTile,
+      hasMovesLeft,
+      new Criterion(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+          diplomatCity(unit, to, from) !== null
+      ),
+    ],
+    // Once per city, and only with something to take.
+    canSteal = new Criterion((unit: Unit, to: Tile): boolean => {
+      const city = cityRegistry.getByTile(to)!;
+
+      return (
+        !interactionRegistry
+          .entries()
+          .some(
+            (interaction) =>
+              interaction instanceof AdvanceStolen &&
+              (interaction as unknown as AdvanceStolen).city() === city
+          ) &&
+        stealableAdvances(unit.player(), city.player(), playerResearchRegistry)
+          .length > 0
+      );
+    }),
+    // A capital can't be incited.
+    canIncite = new Criterion(
+      (unit: Unit, to: Tile): boolean =>
+        !cityImprovementRegistry
+          .getByCity(cityRegistry.getByTile(to)!)
+          .some(
+            (improvement) =>
+              improvement instanceof Palace && !improvement.destroyed()
+          )
+    ),
+    peaceWithOwner = new Criterion((unit: Unit, to: Tile): boolean =>
+      atPeace(unit.player(), cityRegistry.getByTile(to)!.player())
+    ),
+    costToIncite = (to: Tile): number =>
+      inciteCost(
+        cityRegistry.getByTile(to)!,
+        cityGrowthRegistry,
+        cityImprovementRegistry,
+        playerTreasuryRegistry,
+        ruleRegistry
+      );
+
   return [
+    // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
+    new Action(
+      'civ1-unit:unit/action/steal-technology',
+      ...diplomatCriteria,
+      canSteal,
+      new Criterion(
+        (unit: Unit, to: Tile): boolean => !peaceWithOwner.validate(unit, to)
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new StealTechnology(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            ruleRegistry
+          ) as UnitAction
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/sneak-steal-technology',
+      ...diplomatCriteria,
+      canSteal,
+      peaceWithOwner,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const city = cityRegistry.getByTile(to)!;
+
+          return new SneakStealTechnology(
+            from,
+            to,
+            unit,
+            city,
+            city.player(),
+            ruleRegistry
+          ) as unknown as UnitAction;
+        }
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/industrial-sabotage',
+      ...diplomatCriteria,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new IndustrialSabotage(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            ruleRegistry
+          ) as UnitAction
+      )
+    ),
+
+    // Offered whether or not the Diplomat's owner can afford it, so the price can be shown; the action refuses if not.
+    new Action(
+      'civ1-unit:unit/action/incite-revolt',
+      ...diplomatCriteria,
+      canIncite,
+      new Criterion(
+        (unit: Unit, to: Tile): boolean => !peaceWithOwner.validate(unit, to)
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new InciteRevolt(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            costToIncite(to),
+            ruleRegistry
+          ) as unknown as UnitAction
+      )
+    ),
+
+    // At peace, inciting ends the peace; subverting costs double and keeps it (v474.05 has no Senate check on either:
+    //  #133 adds one).
+    new Action(
+      'civ1-unit:unit/action/sneak-incite-revolt',
+      ...diplomatCriteria,
+      canIncite,
+      peaceWithOwner,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const city = cityRegistry.getByTile(to)!;
+
+          return new SneakInciteRevolt(
+            from,
+            to,
+            unit,
+            city,
+            costToIncite(to),
+            city.player(),
+            ruleRegistry
+          ) as unknown as UnitAction;
+        }
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/subvert-city',
+      ...diplomatCriteria,
+      canIncite,
+      peaceWithOwner,
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new SubvertCity(
+            from,
+            to,
+            unit,
+            cityRegistry.getByTile(to)!,
+            costToIncite(to) * 2,
+            ruleRegistry
+          ) as unknown as UnitAction
+      )
+    ),
+
+    // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
+    //  check, and the Diplomat keeps its moves.
+    new Action(
+      'civ1-unit:unit/action/bribe-unit',
+      isNeighbouringTile,
+      hasMovesLeft,
+      new Criterion((unit: Unit): boolean => unit instanceof Diplomat),
+      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+        from.isLand()
+      ),
+      new Criterion(
+        (unit: Unit, to: Tile): boolean => cityRegistry.getByTile(to) === null
+      ),
+      new Criterion((unit: Unit, to: Tile): boolean => {
+        const units = unitRegistry.getByTile(to);
+
+        return units.length === 1 && units[0].player() !== unit.player();
+      }),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const [target] = unitRegistry.getByTile(to);
+
+          return new BribeUnit(
+            from,
+            to,
+            unit,
+            target,
+            bribeCost(
+              target,
+              cityImprovementRegistry,
+              playerTreasuryRegistry,
+              ruleRegistry
+            ),
+            ruleRegistry
+          ) as unknown as UnitAction;
+        }
+      )
+    ),
+
     // Before `move`, so the arrow keys and the AI take it first, as Civ1's AI does: it always sets up the route.
     //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
     new Action(

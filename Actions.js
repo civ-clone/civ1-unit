@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LandAircraft = exports.Unload = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.JoinCity = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.EstablishTradeRoute = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.JoinCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.EstablishTradeRoute = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
+Object.defineProperty(exports, "BribeUnit", { enumerable: true, get: function () { return Actions_1.BribeUnit; } });
 Object.defineProperty(exports, "BuildIrrigation", { enumerable: true, get: function () { return Actions_1.BuildIrrigation; } });
 Object.defineProperty(exports, "BuildMine", { enumerable: true, get: function () { return Actions_1.BuildMine; } });
 Object.defineProperty(exports, "BuildRoad", { enumerable: true, get: function () { return Actions_1.BuildRoad; } });
@@ -19,6 +20,8 @@ Object.defineProperty(exports, "Fortify", { enumerable: true, get: function () {
 Object.defineProperty(exports, "FoundCity", { enumerable: true, get: function () { return Actions_1.FoundCity; } });
 Object.defineProperty(exports, "GoTo", { enumerable: true, get: function () { return Actions_1.GoTo; } });
 Object.defineProperty(exports, "HelpBuildWonder", { enumerable: true, get: function () { return Actions_1.HelpBuildWonder; } });
+Object.defineProperty(exports, "IndustrialSabotage", { enumerable: true, get: function () { return Actions_1.IndustrialSabotage; } });
+Object.defineProperty(exports, "InciteRevolt", { enumerable: true, get: function () { return Actions_1.InciteRevolt; } });
 Object.defineProperty(exports, "JoinCity", { enumerable: true, get: function () { return Actions_1.JoinCity; } });
 Object.defineProperty(exports, "Move", { enumerable: true, get: function () { return Actions_1.Move; } });
 Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () { return Actions_1.NoOrders; } });
@@ -28,6 +31,10 @@ Object.defineProperty(exports, "SetHomeCity", { enumerable: true, get: function 
 Object.defineProperty(exports, "Sleep", { enumerable: true, get: function () { return Actions_1.Sleep; } });
 Object.defineProperty(exports, "SneakAttack", { enumerable: true, get: function () { return Actions_1.SneakAttack; } });
 Object.defineProperty(exports, "SneakCaptureCity", { enumerable: true, get: function () { return Actions_1.SneakCaptureCity; } });
+Object.defineProperty(exports, "SneakInciteRevolt", { enumerable: true, get: function () { return Actions_1.SneakInciteRevolt; } });
+Object.defineProperty(exports, "SneakStealTechnology", { enumerable: true, get: function () { return Actions_1.SneakStealTechnology; } });
+Object.defineProperty(exports, "StealTechnology", { enumerable: true, get: function () { return Actions_1.StealTechnology; } });
+Object.defineProperty(exports, "SubvertCity", { enumerable: true, get: function () { return Actions_1.SubvertCity; } });
 Object.defineProperty(exports, "Unload", { enumerable: true, get: function () { return Actions_1.Unload; } });
 var LandAircraft_1 = require("@civ-clone/base-unit-action-land-aircraft/LandAircraft");
 Object.defineProperty(exports, "LandAircraft", { enumerable: true, get: function () { return LandAircraft_1.LandAircraft; } });

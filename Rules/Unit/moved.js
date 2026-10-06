@@ -92,7 +92,9 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
             unit.moves().set(0);
             unit.setActive(false);
         })),
-        new Moved_1.default('civ1-unit:unit/moved/break-peace-treaty', new Criterion_1.default((unit, action) => action instanceof Actions_1.SneakAttack || action instanceof Actions_1.SneakCaptureCity), new Effect_1.default((unit, action) => {
+        new Moved_1.default('civ1-unit:unit/moved/break-peace-treaty', 
+        // Any action with an enemy: a sneak attack or capture, or a Diplomat stealing or inciting at peace.
+        new Criterion_1.default((unit, action) => typeof action.enemy === 'function'), new Effect_1.default((unit, action) => {
             const peaceTreaties = interactionRegistry
                 .getByPlayers(unit.player(), action.enemy())
                 .filter((interaction) => interaction instanceof Declarations_1.Peace && interaction.active());

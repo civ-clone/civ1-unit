@@ -5,9 +5,11 @@ import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
 import canJoinCity from './Rules/Unit/canJoinCity';
 import canStow from './Rules/Unit/canStow';
+import cityCaptured from './Rules/City/captured';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
+import diplomat from './Rules/Unit/diplomat';
 import expectedMovementCost from './Rules/Unit/expectedMovementCost';
 import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
@@ -15,6 +17,7 @@ import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
 import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
+import transferred from './Rules/Unit/transferred';
 import turnEnd from './Rules/Player/turnEnd';
 import unitYield from './Rules/Unit/yield';
 import unsupported from './Rules/Unit/unsupported';
@@ -39,7 +42,10 @@ export const register = (game: Game): void =>
       game.strategyNotes,
       game.cityGrowth,
       game.landMasses,
-      game.cityBuilds
+      game.cityBuilds,
+      game.cityImprovements,
+      game.playerResearch,
+      game.playerTreasuries
     ),
     ...activate(game.unitImprovements),
     ...build(game.playerResearch),
@@ -47,6 +53,7 @@ export const register = (game: Game): void =>
     ...buildingComplete(game.cityGrowth),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),
+    ...cityCaptured(game.cities, game.units),
     ...created(game.units, game.engine),
     ...defeated(
       game.cities,
@@ -76,6 +83,19 @@ export const register = (game: Game): void =>
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
     ...stowed(),
+    ...diplomat(
+      game.cityBuilds,
+      game.cityImprovements,
+      game.cities,
+      game.interactions,
+      game.playerResearch,
+      game.playerTreasuries,
+      game.rules,
+      game.turn,
+      game.engine,
+      game.rng
+    ),
+    ...transferred(game.unitImprovements, game.engine),
     ...tradeRouteEstablished(
       game.tradeRoutes,
       game.playerTreasuries,

@@ -1,15 +1,10 @@
 import { Bomber, Trireme } from '../../Units';
+import Player from '@civ-clone/core-player/Player';
 import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import {
-  Attack,
-  Disembark,
-  Move,
-  SneakAttack,
-  SneakCaptureCity,
-} from '../../Actions';
+import { Attack, Disembark, Move, SneakAttack } from '../../Actions';
 import {
   Engine,
   instance as engineInstance,
@@ -227,15 +222,16 @@ export const getRules = (
 
     new Moved(
       'civ1-unit:unit/moved/break-peace-treaty',
+      // Any action with an enemy: a sneak attack or capture, or a Diplomat stealing or inciting at peace.
       new Criterion(
         (unit: Unit, action: Action) =>
-          action instanceof SneakAttack || action instanceof SneakCaptureCity
+          typeof (action as unknown as { enemy?: unknown }).enemy === 'function'
       ),
       new Effect((unit: Unit, action: Action) => {
         const peaceTreaties = interactionRegistry
           .getByPlayers(
             unit.player(),
-            (action as SneakAttack | SneakCaptureCity).enemy()
+            (action as unknown as { enemy(): Player }).enemy()
           )
           .filter(
             (interaction): interaction is Peace =>
