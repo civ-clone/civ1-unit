@@ -303,18 +303,29 @@ describe('Action', (): void => {
 
       cityRegistry.register(city);
 
-      [enemyUnit.tile(), city.tile()].forEach(
-        (tile) =>
-          expect(
-            unit
-              .actions(tile)
-              .some((action) =>
-                [Attack, SneakAttack, CaptureCity, SneakCaptureCity].some(
-                  (ActionType) => action instanceof ActionType
-                )
-              )
-          ).to.false
+      const hostile = (tile: Tile): boolean =>
+        unit
+          .actions(tile)
+          .some((action) =>
+            [Attack, SneakAttack, CaptureCity, SneakCaptureCity].some(
+              (ActionType) => action instanceof ActionType
+            )
+          );
+
+      expect(hostile(enemyUnit.tile())).to.false;
+      expect(hostile(city.tile())).to.false;
+
+      // At peace, the sneak versions aren't offered either.
+      const treaties = [enemyUnit.player(), city.player()].map(
+        (player) => new Peace(unit.player(), player, ruleRegistry)
       );
+
+      interactionRegistry.register(...treaties);
+
+      expect(hostile(enemyUnit.tile())).to.false;
+      expect(hostile(city.tile())).to.false;
+
+      interactionRegistry.unregister(...treaties);
 
       cityRegistry.unregister(city);
       unitRegistry.unregister(unit, enemyUnit);
