@@ -1,7 +1,9 @@
 import { Action } from '@civ-clone/core-unit/Rules/Action';
 import { CityGrowthRegistry } from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import { CityNameRegistry } from '@civ-clone/core-civilization/CityNameRegistry';
+import { CityBuildRegistry } from '@civ-clone/core-city-build/CityBuildRegistry';
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
+import { LandMassRegistry } from '@civ-clone/core-world/LandMassRegistry';
 import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegistry';
 import { PathFinderRegistry } from '@civ-clone/core-world-path/PathFinderRegistry';
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
@@ -27,6 +29,8 @@ export declare const getRules: (
   workedTileRegistry?: WorkedTileRegistry,
   pathFinderRegistry?: PathFinderRegistry,
   strategyNoteRegistry?: StrategyNoteRegistry,
-  cityGrowthRegistry?: CityGrowthRegistry
+  cityGrowthRegistry?: CityGrowthRegistry,
+  landMassRegistry?: LandMassRegistry,
+  cityBuildRegistry?: CityBuildRegistry
 ) => Action[];
 export default getRules;
