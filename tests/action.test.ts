@@ -14,6 +14,7 @@ import {
 } from '@civ-clone/civ1-world/Terrains';
 import {
   Attack,
+  Automate,
   BuildIrrigation,
   BuildMine,
   BuildRailroad,
@@ -22,6 +23,7 @@ import {
   ClearForest,
   ClearJungle,
   ClearSwamp,
+  Explore,
   Fortify,
   FoundCity,
   GoTo,
@@ -31,7 +33,15 @@ import {
   SneakAttack,
   SneakCaptureCity,
 } from '../Actions';
-import { Caravan, Diplomat, Sail, Settlers, Warrior } from '../Units';
+import {
+  Caravan,
+  Diplomat,
+  Fighter,
+  Sail,
+  Settlers,
+  Submarine,
+  Warrior,
+} from '../Units';
 import {
   Irrigation,
   Mine,
@@ -712,6 +722,85 @@ describe('Action', (): void => {
     expect(
       unit.actions(world.get(2, 2)).some((action) => action instanceof GoTo)
     ).true;
+
+    unitRegistry.unregister(unit);
+  });
+  (
+    [
+      [Warrior, true, false],
+      [Diplomat, true, false],
+      [Caravan, true, false],
+      [Sail, true, false],
+      [Submarine, true, false],
+      [Settlers, false, true],
+      [Fighter, false, false],
+    ] as [typeof Unit, boolean, boolean][]
+  ).forEach(([UnitType, explores, automates]): void => {
+    it(`should${explores ? '' : ' not'} offer a ${
+      UnitType.name
+    } \`Explore\`, and should${
+      automates ? '' : ' not'
+    } offer it \`Automate\`, as its last action`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
+          TerrainType:
+            UnitType === Sail || UnitType === Submarine ? Ocean : Grassland,
+        }),
+        unit = await getUnit(getPlayer(), world.get(2, 2), UnitType),
+        actions = unit.actions(),
+        [last] = actions.slice(-1);
+
+      expect(actions.some((action) => action instanceof Explore)).to.equal(
+        explores
+      );
+      expect(actions.some((action) => action instanceof Automate)).to.equal(
+        automates
+      );
+      expect(last instanceof Explore || last instanceof Automate).to.equal(
+        explores || automates
+      );
+
+      unit.moves().set(0);
+
+      expect(
+        unit
+          .actions()
+          .some(
+            (action) => action instanceof Explore || action instanceof Automate
+          )
+      ).false;
+
+      unitRegistry.unregister(unit);
+    });
+  });
+
+  it('should hand a unit straight back when it is ordered to `Explore` in a game with no `Explore` strategy', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
+      unit = await getUnit(getPlayer(), world.get(2, 2), Warrior),
+      [explore] = unit.actions().filter((action) => action instanceof Explore);
+
+    unit.action(explore);
+
+    expect(unit.tile()).to.equal(world.get(2, 2));
+    expect(unit.busy()).to.equal(null);
+    expect(unit.active()).true;
+    expect(unit.moves().value()).to.equal(1);
+
+    unitRegistry.unregister(unit);
+  });
+
+  it('should hand Settlers straight back when they are ordered to `Automate` in a game with no `TerrainWork` strategy', async (): Promise<void> => {
+    const world = await generateFixedWorld(),
+      unit = await getUnit(getPlayer(), world.get(2, 2), Settlers),
+      [automate] = unit
+        .actions()
+        .filter((action) => action instanceof Automate);
+
+    unit.action(automate);
+
+    expect(unit.tile()).to.equal(world.get(2, 2));
+    expect(unit.busy()).to.equal(null);
+    expect(unit.active()).true;
+    expect(unit.moves().value()).to.equal(1);
 
     unitRegistry.unregister(unit);
   });

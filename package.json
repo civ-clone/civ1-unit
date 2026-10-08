@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/civ1-unit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "repository": "git@github.com:civ-clone/civ1-unit.git",
   "keywords": [
     "typescript",
@@ -104,6 +104,6 @@
     "@civ-clone/core-yield": "^0.1.0",
     "@civ-clone/library-city": "^0.1.4",
     "@civ-clone/library-diplomacy": "^0.1.0",
-    "@civ-clone/library-unit": "^0.1.9"
+    "@civ-clone/library-unit": "^0.1.10"
   }
 }

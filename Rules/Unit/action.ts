@@ -15,6 +15,7 @@ import {
 } from '../../Types';
 import {
   Attack,
+  Automate,
   BribeUnit,
   BuildIrrigation,
   BuildMine,
@@ -29,6 +30,7 @@ import {
   Embark,
   EstablishEmbassy,
   EstablishTradeRoute,
+  Explore,
   Fortify,
   FoundCity,
   GoTo,
@@ -123,6 +125,10 @@ import {
   instance as strategyNoteRegistryInstance,
 } from '@civ-clone/core-strategy/StrategyNoteRegistry';
 import {
+  StrategyRegistry,
+  instance as strategyRegistryInstance,
+} from '@civ-clone/core-strategy/StrategyRegistry';
+import {
   TerrainFeatureRegistry,
   instance as terrainFeatureRegistryInstance,
 } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
@@ -197,7 +203,8 @@ export const getRules = (
   cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
-  playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance
+  playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance,
+  strategyRegistry: StrategyRegistry = strategyRegistryInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const landsInCity = (unit: Unit, to: Tile): boolean =>
@@ -1339,6 +1346,51 @@ export const getRules = (
       new Effect(
         (unit: Unit, to: Tile, from: Tile): UnitAction =>
           new SetHomeCity(from, to, unit, ruleRegistry, cityRegistry)
+      )
+    ),
+
+    // Standing orders, run by the game's strategies (`base-strategy-explore`, `base-strategy-terrain-work`). Offered
+    //  whether or not the game has the strategy: without it, the order hands the unit straight back.
+    new Action(
+      'civ1-unit:unit/action/explore',
+      hasMovesLeft,
+      isCurrentTile,
+      // Land units that fight (and Diplomats and Caravans, which are `Fortifiable` too) and ships. Not Settlers, which
+      //  have work to do, nor aircraft, which have fuel to mind.
+      new Criterion(
+        (unit: Unit): boolean =>
+          unit instanceof Fortifiable || unit instanceof Naval
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new Explore(
+            from,
+            to,
+            unit,
+            ruleRegistry,
+            strategyRegistry,
+            strategyNoteRegistry,
+            { pathFinderRegistry, unitRegistry }
+          )
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/automate',
+      hasMovesLeft,
+      isCurrentTile,
+      new Criterion((unit: Unit): boolean => unit instanceof Worker),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new Automate(
+            from,
+            to,
+            unit,
+            ruleRegistry,
+            strategyRegistry,
+            strategyNoteRegistry,
+            { pathFinderRegistry, unitRegistry }
+          )
       )
     ),
   ];
