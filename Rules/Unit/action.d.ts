@@ -11,6 +11,7 @@ import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegist
 import { PathFinderRegistry } from '@civ-clone/core-world-path/PathFinderRegistry';
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
 import { StrategyNoteRegistry } from '@civ-clone/core-strategy/StrategyNoteRegistry';
+import { StrategyRegistry } from '@civ-clone/core-strategy/StrategyRegistry';
 import { TerrainFeatureRegistry } from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
@@ -37,6 +38,7 @@ export declare const getRules: (
   cityBuildRegistry?: CityBuildRegistry,
   cityImprovementRegistry?: CityImprovementRegistry,
   playerResearchRegistry?: PlayerResearchRegistry,
-  playerTreasuryRegistry?: PlayerTreasuryRegistry
+  playerTreasuryRegistry?: PlayerTreasuryRegistry,
+  strategyRegistry?: StrategyRegistry
 ) => Action[];
 export default getRules;

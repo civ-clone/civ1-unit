@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
+Object.defineProperty(exports, "Automate", { enumerable: true, get: function () { return Actions_1.Automate; } });
 Object.defineProperty(exports, "BribeUnit", { enumerable: true, get: function () { return Actions_1.BribeUnit; } });
 Object.defineProperty(exports, "BuildIrrigation", { enumerable: true, get: function () { return Actions_1.BuildIrrigation; } });
 Object.defineProperty(exports, "BuildMine", { enumerable: true, get: function () { return Actions_1.BuildMine; } });
@@ -17,6 +18,7 @@ Object.defineProperty(exports, "Disembark", { enumerable: true, get: function ()
 Object.defineProperty(exports, "Embark", { enumerable: true, get: function () { return Actions_1.Embark; } });
 Object.defineProperty(exports, "EstablishEmbassy", { enumerable: true, get: function () { return Actions_1.EstablishEmbassy; } });
 Object.defineProperty(exports, "EstablishTradeRoute", { enumerable: true, get: function () { return Actions_1.EstablishTradeRoute; } });
+Object.defineProperty(exports, "Explore", { enumerable: true, get: function () { return Actions_1.Explore; } });
 Object.defineProperty(exports, "Fortify", { enumerable: true, get: function () { return Actions_1.Fortify; } });
 Object.defineProperty(exports, "FoundCity", { enumerable: true, get: function () { return Actions_1.FoundCity; } });
 Object.defineProperty(exports, "GoTo", { enumerable: true, get: function () { return Actions_1.GoTo; } });

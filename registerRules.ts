@@ -45,7 +45,8 @@ export const register = (game: Game): void =>
       game.cityBuilds,
       game.cityImprovements,
       game.playerResearch,
-      game.playerTreasuries
+      game.playerTreasuries,
+      game.strategies
     ),
     ...activate(game.unitImprovements),
     ...build(game.playerResearch),

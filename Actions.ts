@@ -1,5 +1,6 @@
 export {
   Attack,
+  Automate,
   BribeUnit,
   BuildIrrigation,
   BuildMine,
@@ -14,6 +15,7 @@ export {
   Embark,
   EstablishEmbassy,
   EstablishTradeRoute,
+  Explore,
   Fortify,
   FoundCity,
   GoTo,
