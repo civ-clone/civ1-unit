@@ -15,7 +15,9 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
         engine.emit('unit:defeated', unit, by);
         ruleRegistry.process(Destroyed_1.default, unit, by.player());
     })),
-    new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
+    new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', 
+    // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
+    new Criterion_1.default((unit, by, action) => !action || action.unit() !== unit), new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>
     //   !tileImprovementRegistry.getByTile(unit.tile())
