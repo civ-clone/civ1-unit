@@ -18,6 +18,7 @@ import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
+import Action from '@civ-clone/core-unit/Action';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
@@ -47,6 +48,11 @@ export const getRules: (
   ),
   new Defeated(
     'civ1-unit:unit/defeated/destroy-stack',
+    // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
+    new Criterion(
+      (unit: Unit, by: Unit, action?: Action): boolean =>
+        !action || action.unit() !== unit
+    ),
     new Criterion((unit: Unit) => cityRegistry.getByTile(unit.tile()) === null),
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>

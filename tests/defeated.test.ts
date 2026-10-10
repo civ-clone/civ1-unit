@@ -1,4 +1,5 @@
 import { Settlers, Spearman, Warrior } from '../Units';
+import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
@@ -111,5 +112,46 @@ describe('defeated', (): void => {
     ruleRegistry.process(Defeated, defender, attacker);
 
     expect(bystander.destroyed()).false;
+  });
+
+  it('should destroy the stack of a defender defeated by an attack', async (): Promise<void> => {
+    const {
+      attacker,
+      ruleRegistry,
+      stack: [defender, ...others],
+      tile,
+    } = await setUp();
+
+    ruleRegistry.process(
+      Defeated,
+      defender,
+      attacker,
+      new Action(attacker.tile(), tile, attacker, ruleRegistry)
+    );
+
+    expect(defender.destroyed()).true;
+    others.forEach((unit: Unit): void => {
+      expect(unit.destroyed()).true;
+    });
+  });
+
+  it('should only destroy an attacker that loses, not the stack it attacked from', async (): Promise<void> => {
+    const {
+      attacker: defender,
+      ruleRegistry,
+      stack: [attacker, ...others],
+    } = await setUp();
+
+    ruleRegistry.process(
+      Defeated,
+      attacker,
+      defender,
+      new Action(attacker.tile(), defender.tile(), attacker, ruleRegistry)
+    );
+
+    expect(attacker.destroyed()).true;
+    others.forEach((unit: Unit): void => {
+      expect(unit.destroyed()).false;
+    });
   });
 });
