@@ -30,10 +30,7 @@ import {
   Warrior,
 } from '../../Units';
 import { Capacity, CargoWeight } from '@civ-clone/core-unit-transport/Yields';
-import {
-  Fortified as FortifiedUnitImprovement,
-  Veteran as VeteranUnitImprovement,
-} from '../../UnitImprovements';
+import { Veteran as VeteranUnitImprovement } from '../../UnitImprovements';
 import {
   RuleRegistry,
   instance as ruleRegistryInstance,
@@ -106,10 +103,11 @@ export const getRules = (
   ),
 
   ...(
-    [
-      [FortifiedUnitImprovement, 1, Defence],
-      [VeteranUnitImprovement, 0.5, Attack, Defence],
-    ] as [typeof UnitImprovement, number, ...(typeof Yield)[]][]
+    [[VeteranUnitImprovement, 0.5, Attack, Defence]] as [
+      typeof UnitImprovement,
+      number,
+      ...(typeof Yield)[]
+    ][]
   ).flatMap(
     ([UnitImprovementType, yieldModifier, ...YieldTypes]: [
       typeof UnitImprovement,

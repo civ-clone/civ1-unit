@@ -95,7 +95,7 @@
     "@civ-clone/core-tile-improvement": "^0.1.0",
     "@civ-clone/core-treasury": "^0.1.7",
     "@civ-clone/core-turn-based-game": "^0.1.0",
-    "@civ-clone/core-unit": "^0.1.25",
+    "@civ-clone/core-unit": "^0.1.27",
     "@civ-clone/core-unit-improvement": "^0.1.0",
     "@civ-clone/core-unit-transport": "^0.1.8",
     "@civ-clone/core-wonder": "^0.1.5",
