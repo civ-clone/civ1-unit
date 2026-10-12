@@ -186,7 +186,7 @@ describe('unit:strength', (): void => {
     expect(defenceOf(defender, attackWith(Knight))).equal(2);
   });
 
-  it('should give a ship no terrain bonus, except City Walls in a city', async (): Promise<void> => {
+  it('should give a ship no terrain or fortified bonus, except in a city with City Walls, where it gets terrain × walls', async (): Promise<void> => {
     const { attackWith, buildCity, defend, defenceOf } = await setUp(),
       defender = defend(Sail, Hills, [Fortified]);
 
@@ -194,6 +194,7 @@ describe('unit:strength', (): void => {
 
     buildCity(true);
 
+    // v474.05's walls branch gives any defender but an aircraft terrain × defence × 3: Hills (×2) × Sail (1) × 3.
     expect(defenceOf(defender, attackWith(Knight))).equal(6);
   });
 

@@ -26,8 +26,10 @@ exports.ignoreCityWalls = [Units_1.Artillery, Units_1.Bomber];
 /**
  * Civ1's defence bonuses in battle (v474.05, `F0_29f3_000e`). A defender gets its terrain's multiplier and then the
  * first of City Walls (×3) or being fortified (×1.5); they don't stack. A ship gets no terrain or fortification
- * bonus, but City Walls still cover it in a city; an aircraft gets nothing. The defender's own defence already has
- * Veteran's ×1.5, which v474.05 applies last: the product is the same.
+ * bonus, except in a city with City Walls, where it defends like a land unit: v474.05's walls branch sets the
+ * defence to terrain × defence × 3 for any defender but an aircraft, replacing the ship's flat value. An aircraft
+ * gets nothing. The defender's own defence already has Veteran's ×1.5, which v474.05 applies last: the product is
+ * the same.
  */
 const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance) => [
     new Strength_1.default(new Effect_1.default((attacker, defender, attack, defence) => {
@@ -40,6 +42,7 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
             cityImprovementRegistry
                 .getByCity(city)
                 .some((cityImprovement) => cityImprovement instanceof CityImprovements_1.CityWalls);
+        // A ship outside a walled city fights at its own defence. Inside one, it falls through to terrain × walls.
         if (defender instanceof Types_1.Naval && !cityWalls) {
             return;
         }
