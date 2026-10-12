@@ -16,6 +16,7 @@ import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
+import strength from './Rules/Unit/strength';
 import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
 import transferred from './Rules/Unit/transferred';
 import turnEnd from './Rules/Player/turnEnd';
@@ -111,6 +112,7 @@ export const register = (game: Game): void =>
       game.strategyNotes,
       game.rules
     ),
+    ...strength(game.cities, game.cityImprovements, game.unitImprovements),
     ...unitYield(game.unitImprovements, game.rules, game.transports),
     ...unsupported(game.engine),
     ...validateMove(game.rng)

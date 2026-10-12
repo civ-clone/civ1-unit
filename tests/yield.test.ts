@@ -43,9 +43,9 @@ describe('unit:yield', (): void => {
   (
     [
       [Defence, [], 2],
-      [Defence, [FortifiedImprovement], 4],
+      [Defence, [FortifiedImprovement], 2],
       [Defence, [VeteranImprovement], 3],
-      [Defence, [FortifiedImprovement, VeteranImprovement], 5],
+      [Defence, [FortifiedImprovement, VeteranImprovement], 3],
       [Attack, [], 1],
       [Attack, [FortifiedImprovement], 1],
       [Attack, [VeteranImprovement], 1.5],

@@ -43,10 +43,7 @@ const getRules = (unitImprovementRegistry = UnitImprovementRegistry_1.instance, 
         [Units_1.Trireme, 1, 0, 3],
         [Units_1.Warrior],
     ].flatMap(([UnitType, attack = 1, defence = 1, movement = 1, visibility = 1]) => (0, Yield_1.unitYield)(UnitType, attack, defence, movement, visibility)),
-    ...[
-        [UnitImprovements_1.Fortified, 1, Yields_1.Defence],
-        [UnitImprovements_1.Veteran, 0.5, Yields_1.Attack, Yields_1.Defence],
-    ].flatMap(([UnitImprovementType, yieldModifier, ...YieldTypes]) => YieldTypes.map((YieldType) => new Yield_1.Yield(`civ1-unit:unit/yield/improvement/${UnitImprovementType.name}/${YieldType.name}`, new Criterion_1.default((unit, unitYield) => unitYield instanceof YieldType), new Criterion_1.default((unit) => unitImprovementRegistry
+    ...[[UnitImprovements_1.Veteran, 0.5, Yields_1.Attack, Yields_1.Defence]].flatMap(([UnitImprovementType, yieldModifier, ...YieldTypes]) => YieldTypes.map((YieldType) => new Yield_1.Yield(`civ1-unit:unit/yield/improvement/${UnitImprovementType.name}/${YieldType.name}`, new Criterion_1.default((unit, unitYield) => unitYield instanceof YieldType), new Criterion_1.default((unit) => unitImprovementRegistry
         .getByUnit(unit)
         .some((unitImprovement) => unitImprovement instanceof UnitImprovementType)), new Effect_1.default((unit, unitYield) => {
         const baseYield = new YieldType();
