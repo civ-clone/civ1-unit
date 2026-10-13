@@ -104,7 +104,9 @@ describe('unit:movementCost:terrain-jobs', (): void => {
     });
   });
 
-  it('should be able to give a planted Forest Game', async (): Promise<void> => {
+  // A special resource stays with the square (civ-clone/web-renderer#281), so planting a Forest doesn't roll for Game,
+  //  even where a rule would always give it.
+  it("shouldn't roll Game for a Forest planted where the square had no special", async (): Promise<void> => {
     const terrainFeatureRegistry = new TerrainFeatureRegistry(),
       featureRuleRegistry = new RuleRegistry();
 
@@ -128,6 +130,6 @@ describe('unit:movementCost:terrain-jobs', (): void => {
       terrainFeatureRegistry
         .getByTerrain(unit.tile().terrain())
         .some((terrainFeature) => terrainFeature instanceof Game)
-    ).to.true;
+    ).to.false;
   });
 });
