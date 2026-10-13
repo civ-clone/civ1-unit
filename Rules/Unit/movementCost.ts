@@ -18,6 +18,7 @@ import {
   BuildMine,
   BuildRailroad,
   BuildRoad,
+  CleanPollution,
   ClearForest,
   ClearJungle,
   ClearSwamp,
@@ -155,6 +156,9 @@ export const civ1TerrainJobTurns: TerrainJob[] = [
       return cost === null ? null : 4 * cost;
     },
   ],
+  // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
+  //  civ-clone/web-renderer#32).
+  [CleanPollution, (): number => 4],
   [ClearForest, [[Forest, 5]]],
   [ClearJungle, [[Jungle, 15]]],
   [ClearSwamp, [[Swamp, 15]]],

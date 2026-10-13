@@ -6,8 +6,8 @@ const CityImprovementRegistry_1 = require("@civ-clone/core-city-improvement/City
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Engine_1 = require("@civ-clone/core-engine/Engine");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
+const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/TileImprovementRegistry");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
-const Built_1 = require("@civ-clone/core-tile-improvement/Rules/Built");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Detonated_1 = require("@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
@@ -17,7 +17,7 @@ const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const core_random_1 = require("@civ-clone/core-random");
 // What a nuclear weapon does, from v474.05 (`Segment_29f3.cs` `F0_29f3_0d4d` and `F0_29f3_0ec3`,
 //  civ-clone/web-renderer#129), to the `Tile` it detonates over and the 8 around it.
-const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance) => {
+const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance) => {
     const area = (tile) => [tile, ...tile.getNeighbours()], hasSdiDefence = (city) => cityImprovementRegistry
         .getByCity(city)
         .some((cityImprovement) => cityImprovement instanceof CityImprovements_1.SdiDefence);
@@ -55,14 +55,19 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
             }
         }))),
         new Detonated_1.default(
-        // Fallout: each land `Tile` in the area without a city is polluted, with a 2 in 3 chance.
+        // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance.
         'civ1-unit:unit/detonated/fallout', new Effect_1.default((unit, tile) => area(tile)
-            .filter((areaTile) => areaTile.isLand() && cityRegistry.getByTile(areaTile) === null)
+            .filter((areaTile) => areaTile.isLand() &&
+            cityRegistry.getByTile(areaTile) === null &&
+            !tileImprovementRegistry
+                .getByTile(areaTile)
+                .some((improvement) => improvement instanceof TileImprovements_1.Pollution))
             .forEach((areaTile) => {
             if (randomNumberGenerator() >= 2 / 3) {
                 return;
             }
-            ruleRegistry.process(Built_1.default, areaTile, new TileImprovements_1.Pollution(areaTile, ruleRegistry));
+            // Building it processes `Built`, which puts it on the tile.
+            new TileImprovements_1.Pollution(areaTile, ruleRegistry);
         }))),
     ];
 };

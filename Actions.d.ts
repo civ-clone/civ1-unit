@@ -7,6 +7,7 @@ export {
   BuildRoad,
   BuildRailroad,
   CaptureCity,
+  CleanPollution,
   ClearForest,
   ClearJungle,
   ClearSwamp,
