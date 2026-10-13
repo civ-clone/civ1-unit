@@ -71,6 +71,7 @@
     "@civ-clone/base-unit-action-join-city": "^0.1.0",
     "@civ-clone/base-unit-action-land-aircraft": "^0.1.0",
     "@civ-clone/base-unit-action-meet-with-king": "^0.1.0",
+    "@civ-clone/base-unit-action-nuclear-attack": "^0.1.0",
     "@civ-clone/base-unit-action-sleep": "^0.1.0",
     "@civ-clone/base-unit-action-steal-technology": "^0.1.0",
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
@@ -104,6 +105,6 @@
     "@civ-clone/core-yield": "^0.1.0",
     "@civ-clone/library-city": "^0.1.4",
     "@civ-clone/library-diplomacy": "^0.1.0",
-    "@civ-clone/library-unit": "^0.1.10"
+    "@civ-clone/library-unit": "^0.1.11"
   }
 }

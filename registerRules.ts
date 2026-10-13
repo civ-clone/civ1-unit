@@ -9,6 +9,7 @@ import cityCaptured from './Rules/City/captured';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
+import detonated from './Rules/Unit/detonated';
 import diplomat from './Rules/Unit/diplomat';
 import expectedMovementCost from './Rules/Unit/expectedMovementCost';
 import halted from './Rules/Unit/halted';
@@ -70,6 +71,15 @@ export const register = (game: Game): void =>
       game.unitImprovements,
       game.engine,
       game.transports
+    ),
+    ...detonated(
+      game.cities,
+      game.cityImprovements,
+      game.cityGrowth,
+      game.rules,
+      game.units,
+      game.engine,
+      game.rng
     ),
     ...expectedMovementCost(),
     ...halted(game.engine),

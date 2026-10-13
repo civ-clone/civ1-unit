@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakNuclearAttack = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NuclearAttack = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "Automate", { enumerable: true, get: function () { return Actions_1.Automate; } });
@@ -30,6 +30,7 @@ Object.defineProperty(exports, "JoinCity", { enumerable: true, get: function () 
 Object.defineProperty(exports, "MeetWithKing", { enumerable: true, get: function () { return Actions_1.MeetWithKing; } });
 Object.defineProperty(exports, "Move", { enumerable: true, get: function () { return Actions_1.Move; } });
 Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () { return Actions_1.NoOrders; } });
+Object.defineProperty(exports, "NuclearAttack", { enumerable: true, get: function () { return Actions_1.NuclearAttack; } });
 Object.defineProperty(exports, "Pillage", { enumerable: true, get: function () { return Actions_1.Pillage; } });
 Object.defineProperty(exports, "PlantForest", { enumerable: true, get: function () { return Actions_1.PlantForest; } });
 Object.defineProperty(exports, "SetHomeCity", { enumerable: true, get: function () { return Actions_1.SetHomeCity; } });
@@ -37,6 +38,7 @@ Object.defineProperty(exports, "Sleep", { enumerable: true, get: function () { r
 Object.defineProperty(exports, "SneakAttack", { enumerable: true, get: function () { return Actions_1.SneakAttack; } });
 Object.defineProperty(exports, "SneakCaptureCity", { enumerable: true, get: function () { return Actions_1.SneakCaptureCity; } });
 Object.defineProperty(exports, "SneakInciteRevolt", { enumerable: true, get: function () { return Actions_1.SneakInciteRevolt; } });
+Object.defineProperty(exports, "SneakNuclearAttack", { enumerable: true, get: function () { return Actions_1.SneakNuclearAttack; } });
 Object.defineProperty(exports, "SneakStealTechnology", { enumerable: true, get: function () { return Actions_1.SneakStealTechnology; } });
 Object.defineProperty(exports, "StealTechnology", { enumerable: true, get: function () { return Actions_1.StealTechnology; } });
 Object.defineProperty(exports, "SubvertCity", { enumerable: true, get: function () { return Actions_1.SubvertCity; } });

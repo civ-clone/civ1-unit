@@ -42,6 +42,7 @@ import {
   MeetWithKing,
   Move,
   NoOrders,
+  NuclearAttack,
   Pillage,
   PlantForest,
   SetHomeCity,
@@ -49,6 +50,7 @@ import {
   SneakAttack,
   SneakCaptureCity,
   SneakInciteRevolt,
+  SneakNuclearAttack,
   SneakStealTechnology,
   StealTechnology,
   SubvertCity,
@@ -92,7 +94,14 @@ import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceS
 import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
 import { stealableAdvances } from './diplomat';
-import { Caravan, Diplomat, Fighter, Settlers, Submarine } from '../../Units';
+import {
+  Caravan,
+  Diplomat,
+  Fighter,
+  Nuclear,
+  Settlers,
+  Submarine,
+} from '../../Units';
 import {
   Forest,
   Grassland,
@@ -231,6 +240,8 @@ export const getRules = (
       hasMovesLeft,
       // Diplomats and Caravans never attack: v474.05 stops them before any combat.
       new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
+      // A Nuclear unit never fights: it detonates (`nuclear-attack`, below).
+      new Criterion((unit: Unit): boolean => !(unit instanceof Nuclear)),
       new Criterion((unit: Unit, to: Tile): boolean =>
         unitRegistry
           .getByTile(to)
@@ -307,6 +318,31 @@ export const getRules = (
       new Criterion(
         (unit: Unit, to: Tile): boolean =>
           cityRegistry.getByTile(to)!.player() !== unit.player()
+      ),
+    ];
+
+  // The players a Nuclear unit would attack on `to`: those with a unit there, and the owner of a city there. In
+  //  v474.05 it detonates when it attacks any unit, or moves into a rival's city, and never over empty land.
+  const nuclearTargets = (unit: Unit, to: Tile): Player[] => {
+      const city = cityRegistry.getByTile(to);
+
+      return Array.from(
+        new Set(
+          [
+            ...unitRegistry
+              .getByTile(to)
+              .map((tileUnit: Unit): Player => tileUnit.player()),
+            ...(city === null ? [] : [city.player()]),
+          ].filter((player: Player): boolean => player !== unit.player())
+        )
+      );
+    },
+    nuclearAttackCriteria = [
+      isNeighbouringTile,
+      hasMovesLeft,
+      new Criterion((unit: Unit): boolean => unit instanceof Nuclear),
+      new Criterion(
+        (unit: Unit, to: Tile): boolean => nuclearTargets(unit, to).length > 0
       ),
     ];
 
@@ -876,6 +912,45 @@ export const getRules = (
             enemies[0],
             ruleRegistry,
             unitRegistry
+          ) as UnitAction;
+        }
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/nuclear-attack',
+      ...nuclearAttackCriteria,
+      new Criterion((unit: Unit, to: Tile): boolean =>
+        nuclearTargets(unit, to).every(
+          (player: Player): boolean => !atPeace(unit.player(), player)
+        )
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new NuclearAttack(from, to, unit, ruleRegistry) as UnitAction
+      )
+    ),
+
+    new Action(
+      'civ1-unit:unit/action/sneak-nuclear-attack',
+      ...nuclearAttackCriteria,
+      new Criterion((unit: Unit, to: Tile): boolean =>
+        nuclearTargets(unit, to).some((player: Player): boolean =>
+          atPeace(unit.player(), player)
+        )
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
+          const [enemy] = nuclearTargets(unit, to).filter(
+            (player: Player): boolean => atPeace(unit.player(), player)
+          );
+
+          return new SneakNuclearAttack(
+            from,
+            to,
+            unit,
+            enemy,
+            ruleRegistry
           ) as UnitAction;
         }
       )
