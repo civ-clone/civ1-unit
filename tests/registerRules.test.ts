@@ -1,4 +1,5 @@
 import { Carrier, Fighter, Trireme, Warrior } from '../Units';
+import Halted from '@civ-clone/base-unit-action-goto/Rules/Halted';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Game } from '@civ-clone/core-game/Game';
 import { Ocean } from '@civ-clone/civ1-world/Terrains';
@@ -52,5 +53,18 @@ describe('registerRules', (): void => {
     expect(trireme.stow(first)).true;
     expect(trireme.stow(second)).true;
     expect(trireme.stow(third)).false;
+  });
+
+  it('should tell the engine when a GoTo stops next to its destination', async (): Promise<void> => {
+    const { game, player, tile } = await setUp(),
+      warrior = new Warrior(null, player, tile, game.rules),
+      emitted: unknown[][] = [];
+
+    game.engine.on('unit:halted', (...args: unknown[]) => emitted.push(args));
+
+    game.rules.process(Halted, warrior, tile);
+
+    expect(emitted.length).to.equal(1);
+    expect(emitted[0][0] === warrior && emitted[0][1] === tile).true;
   });
 });
