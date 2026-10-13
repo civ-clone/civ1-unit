@@ -19,10 +19,13 @@ import {
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
 import {
+  TileImprovementRegistry,
+  instance as tileImprovementRegistryInstance,
+} from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
-import Built from '@civ-clone/core-tile-improvement/Rules/Built';
 import City from '@civ-clone/core-city/City';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
@@ -32,6 +35,7 @@ import High from '@civ-clone/core-rule/Priorities/High';
 import { Pollution } from '@civ-clone/civ1-world/TileImprovements';
 import { SdiDefence } from '@civ-clone/library-city/CityImprovements';
 import Tile from '@civ-clone/core-world/Tile';
+import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
@@ -44,7 +48,8 @@ export const getRules: (
   ruleRegistry?: RuleRegistry,
   unitRegistry?: UnitRegistry,
   engine?: Engine,
-  randomNumberGenerator?: () => number
+  randomNumberGenerator?: () => number,
+  tileImprovementRegistry?: TileImprovementRegistry
 ) => Detonated[] = (
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
@@ -52,7 +57,8 @@ export const getRules: (
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   unitRegistry: UnitRegistry = unitRegistryInstance,
   engine: Engine = engineInstance,
-  randomNumberGenerator: () => number = rngInstance
+  randomNumberGenerator: () => number = rngInstance,
+  tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance
 ): Detonated[] => {
   const area = (tile: Tile): Tile[] => [tile, ...tile.getNeighbours()],
     hasSdiDefence = (city: City): boolean =>
@@ -118,24 +124,28 @@ export const getRules: (
     ),
 
     new Detonated(
-      // Fallout: each land `Tile` in the area without a city is polluted, with a 2 in 3 chance.
+      // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance.
       'civ1-unit:unit/detonated/fallout',
       new Effect((unit: Unit, tile: Tile): void =>
         area(tile)
           .filter(
             (areaTile: Tile): boolean =>
-              areaTile.isLand() && cityRegistry.getByTile(areaTile) === null
+              areaTile.isLand() &&
+              cityRegistry.getByTile(areaTile) === null &&
+              !tileImprovementRegistry
+                .getByTile(areaTile)
+                .some(
+                  (improvement: TileImprovement): boolean =>
+                    improvement instanceof Pollution
+                )
           )
           .forEach((areaTile: Tile): void => {
             if (randomNumberGenerator() >= 2 / 3) {
               return;
             }
 
-            ruleRegistry.process(
-              Built,
-              areaTile,
-              new Pollution(areaTile, ruleRegistry)
-            );
+            // Building it processes `Built`, which puts it on the tile.
+            new Pollution(areaTile, ruleRegistry);
           })
       )
     ),

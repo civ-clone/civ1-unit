@@ -196,6 +196,33 @@ describe('nuclear', (): void => {
     });
   });
 
+  it("doesn't pollute a square twice", async (): Promise<void> => {
+    const { enemy, game, player, unit, world } = await setUp(),
+      nuke = unit(Nuclear, player, world.get(3, 3)),
+      target = unit(Warrior, enemy, world.get(4, 3)),
+      events: unknown[] = [];
+
+    new Pollution(world.get(4, 4), game.rules);
+
+    game.engine.on('tile-improvement:built', (...args: unknown[]) =>
+      events.push(args)
+    );
+
+    nuke.action(
+      nuke
+        .actions(target.tile())
+        .find((action) => action instanceof NuclearAttack)!
+    );
+
+    expect(
+      game.tileImprovements
+        .getByTile(world.get(4, 4))
+        .filter((improvement) => improvement instanceof Pollution).length
+    ).to.equal(1);
+    // Every roll is 0, so each of the other 8 land squares is polluted, once.
+    expect(events.length).to.equal(8);
+  });
+
   it('leaves fallout on 2 in 3 land squares without a city, never on Ocean', async (): Promise<void> => {
     // One roll per land square without a city, in `[tile, ...tile.getNeighbours()]` order: (1,3) is the target, with
     //  (0,*) Ocean and (2,2) a city, so five land squares are rolled for. A roll under 2/3 pollutes.

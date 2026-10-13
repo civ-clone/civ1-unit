@@ -79,7 +79,8 @@ export const register = (game: Game): void =>
       game.rules,
       game.units,
       game.engine,
-      game.rng
+      game.rng,
+      game.tileImprovements
     ),
     ...expectedMovementCost(),
     ...halted(game.engine),

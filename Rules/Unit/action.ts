@@ -22,6 +22,7 @@ import {
   BuildRailroad,
   BuildRoad,
   CaptureCity,
+  CleanPollution,
   ClearForest,
   ClearJungle,
   ClearSwamp,
@@ -117,6 +118,7 @@ import {
 import {
   Irrigation,
   Mine,
+  Pollution,
   Railroad,
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
@@ -1268,6 +1270,33 @@ export const getRules = (
               )
           )
         )
+    ),
+
+    // Only on a polluted tile, as v474.05's menu offers it (`GameMenus.cs` L308, civ-clone/web-renderer#32).
+    new Action(
+      'civ1-unit:unit/action/clean-pollution',
+      hasMovesLeft,
+      isCurrentTile,
+      new Criterion((unit: Unit): boolean => unit instanceof Worker),
+      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+        tileImprovementRegistry
+          .getByTile(from)
+          .some(
+            (improvement: TileImprovement): boolean =>
+              improvement instanceof Pollution
+          )
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new CleanPollution(
+            from,
+            to,
+            unit,
+            ruleRegistry,
+            tileImprovementRegistry,
+            turn
+          )
+      )
     ),
 
     new Action(

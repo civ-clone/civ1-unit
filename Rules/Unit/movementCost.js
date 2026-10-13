@@ -103,6 +103,9 @@ exports.civ1TerrainJobTurns = [
             return cost === null ? null : 4 * cost;
         },
     ],
+    // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
+    //  civ-clone/web-renderer#32).
+    [Actions_1.CleanPollution, () => 4],
     [Actions_1.ClearForest, [[Terrains_1.Forest, 5]]],
     [Actions_1.ClearJungle, [[Terrains_1.Jungle, 15]]],
     [Actions_1.ClearSwamp, [[Terrains_1.Swamp, 15]]],
