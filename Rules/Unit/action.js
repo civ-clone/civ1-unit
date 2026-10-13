@@ -63,6 +63,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         Action_1.hasMovesLeft,
         // Diplomats and Caravans never attack: v474.05 stops them before any combat.
         new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
+        // A Nuclear unit never fights: it detonates (`nuclear-attack`, below).
+        new Criterion_1.default((unit) => !(unit instanceof Units_1.Nuclear)),
         new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .some((tileUnit) => tileUnit.player() !== unit.player())),
@@ -105,6 +107,22 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Criterion_1.default((unit, to) => tileHasCity(to, cityRegistry)),
         new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0),
         new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()),
+    ];
+    // The players a Nuclear unit would attack on `to`: those with a unit there, and the owner of a city there. In
+    //  v474.05 it detonates when it attacks any unit, or moves into a rival's city, and never over empty land.
+    const nuclearTargets = (unit, to) => {
+        const city = cityRegistry.getByTile(to);
+        return Array.from(new Set([
+            ...unitRegistry
+                .getByTile(to)
+                .map((tileUnit) => tileUnit.player()),
+            ...(city === null ? [] : [city.player()]),
+        ].filter((player) => player !== unit.player())));
+    }, nuclearAttackCriteria = [
+        Action_1.isNeighbouringTile,
+        Action_1.hasMovesLeft,
+        new Criterion_1.default((unit) => unit instanceof Units_1.Nuclear),
+        new Criterion_1.default((unit, to) => nuclearTargets(unit, to).length > 0),
     ];
     // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
     //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
@@ -273,6 +291,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 console.warn('core-unit/Rules/Unit/action.ts');
             }
             return new Actions_1.SneakAttack(from, to, unit, enemies[0], ruleRegistry, unitRegistry);
+        })),
+        new Action_1.Action('civ1-unit:unit/action/nuclear-attack', ...nuclearAttackCriteria, new Criterion_1.default((unit, to) => nuclearTargets(unit, to).every((player) => !atPeace(unit.player(), player))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NuclearAttack(from, to, unit, ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/sneak-nuclear-attack', ...nuclearAttackCriteria, new Criterion_1.default((unit, to) => nuclearTargets(unit, to).some((player) => atPeace(unit.player(), player))), new Effect_1.default((unit, to, from = unit.tile()) => {
+            const [enemy] = nuclearTargets(unit, to).filter((player) => atPeace(unit.player(), player));
+            return new Actions_1.SneakNuclearAttack(from, to, unit, enemy, ruleRegistry);
         })),
         new Action_1.Action('civ1-unit:unit/action/capture-city', ...captureCityCriteria, new Criterion_1.default((unit, to) => {
             const city = cityRegistry.getByTile(to);
