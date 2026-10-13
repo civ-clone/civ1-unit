@@ -43,6 +43,13 @@ import {
   Warrior,
 } from '../Units';
 import {
+  Game,
+  Gems,
+  Horse,
+  Oil,
+  Shield,
+} from '@civ-clone/civ1-world/TerrainFeatures';
+import {
   Irrigation,
   Mine,
   Railroad,
@@ -65,6 +72,7 @@ import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
 import RailroadAdvance from '@civ-clone/base-science-advance-railroad/Railroad';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import TerrainFeature from '@civ-clone/core-terrain-feature/TerrainFeature';
 import TerrainFeatureRegistry from '@civ-clone/core-terrain-feature/TerrainFeatureRegistry';
 import TerrainRegistry from '@civ-clone/core-terrain/TerrainRegistry';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -575,6 +583,60 @@ describe('Action', (): void => {
       PlantForest.complete(action as PlantForest);
 
       expect(unit.tile().terrain()).to.instanceof(Forest);
+
+      unitRegistry.unregister(unit);
+    });
+  });
+
+  // A special resource stays with the square, as in Civ1, rather than being rolled again for the new terrain.
+  (
+    [
+      [ClearForest, Forest, Game, Plains, Horse],
+      [ClearForest, Forest, null, Plains, null],
+      [PlantForest, Swamp, Oil, Forest, Game],
+      [PlantForest, Jungle, Gems, Forest, Game],
+      [PlantForest, Plains, Horse, Forest, Game],
+      [PlantForest, Grassland, Shield, Forest, null],
+      [PlantForest, Plains, null, Forest, null],
+    ] as [
+      typeof ClearForest | typeof PlantForest,
+      typeof Terrain,
+      typeof TerrainFeature | null,
+      typeof Terrain,
+      typeof TerrainFeature | null
+    ][]
+  ).forEach(([ActionType, From, FromFeature, To, ToFeature]) => {
+    it(`should turn ${From.name}${
+      FromFeature ? ` with ${FromFeature.name}` : ''
+    } into ${To.name} with ${
+      ToFeature ? ToFeature.name : 'no special'
+    } when Settlers finish ${ActionType.name}`, async (): Promise<void> => {
+      const world = await generateFixedWorld({
+          TerrainType: From,
+        }),
+        unit = await getUnit(getPlayer(), world.get(4, 4), Settlers),
+        [action] = unit
+          .actions()
+          .filter(
+            (action: UnitAction): boolean => action instanceof ActionType
+          );
+
+      if (FromFeature !== null) {
+        terrainFeatureRegistry.register(new FromFeature(unit.tile().terrain()));
+      }
+
+      if (action instanceof ClearForest) {
+        ClearForest.complete(action);
+      } else {
+        PlantForest.complete(action as PlantForest);
+      }
+
+      expect(unit.tile().terrain()).to.instanceof(To);
+      expect(
+        terrainFeatureRegistry
+          .getByTerrain(unit.tile().terrain())
+          .map((feature: TerrainFeature) => feature.constructor)
+      ).to.eql(ToFeature === null ? [] : [ToFeature]);
 
       unitRegistry.unregister(unit);
     });
