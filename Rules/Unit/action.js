@@ -40,6 +40,7 @@ const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Path_1 = require("@civ-clone/core-world-path/Path");
+const PlannedPathFinderRegistry_1 = require("../../lib/PlannedPathFinderRegistry");
 const joinableCity_1 = require("@civ-clone/base-unit-action-join-city/joinableCity");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
@@ -58,6 +59,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         return (_a = transport) !== null && _a !== void 0 ? _a : null;
     }, canLandAircraft = (unit, to) => unit instanceof Types_1.Air &&
         (landsInCity(unit, to) || landingTransport(unit, to) !== null);
+    // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
+    //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
+    let plannedGoTo = null;
     const attackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
@@ -397,12 +401,28 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Action_1.Action('civ1-unit:unit/action/unload', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit) => unit.hasCargo()), new Criterion_1.default((unit, to) => to.getNeighbours().some((tile) => tile.isLand())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/goto', Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), new Criterion_1.default((unit, to, from) => {
             const [PathFinder] = pathFinderRegistry.entries();
+            plannedGoTo = null;
             if (!PathFinder) {
                 return false;
             }
             const path = new PathFinder(unit, from, to).generate();
-            return path instanceof Path_1.default;
-        }), new Effect_1.default((unit, to, from) => new Actions_1.GoTo(from, to, unit, ruleRegistry, pathFinderRegistry, strategyNoteRegistry))),
+            if (!(path instanceof Path_1.default)) {
+                return false;
+            }
+            plannedGoTo = { unit, from, to, path };
+            return true;
+        }), new Effect_1.default((unit, to, from) => {
+            const planned = plannedGoTo, isPlanned = planned !== null &&
+                planned.unit === unit &&
+                planned.from === from &&
+                planned.to === to;
+            plannedGoTo = null;
+            // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
+            //  performed (civ-clone/web-renderer#307).
+            return new Actions_1.GoTo(from, to, unit, ruleRegistry, isPlanned
+                ? new PlannedPathFinderRegistry_1.default(unit, from, to, planned.path, pathFinderRegistry)
+                : pathFinderRegistry, strategyNoteRegistry);
+        })),
         new Action_1.Action('civ1-unit:unit/action/set-home-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
             const city = cityRegistry.getByTile(from);
             if (!(city instanceof City_1.default)) {
