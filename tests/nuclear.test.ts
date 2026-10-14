@@ -4,15 +4,19 @@ import {
   SneakAttack,
   SneakNuclearAttack,
 } from '../Actions';
-import { Bomber, Nuclear, Warrior } from '../Units';
+import { Bomber, Nuclear, Trireme, Warrior } from '../Units';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import City from '@civ-clone/core-city/City';
 import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
+import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
+import Effect from '@civ-clone/core-rule/Effect';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Game } from '@civ-clone/core-game/Game';
 import { IRng } from '@civ-clone/core-random/Rng';
+import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Player from '@civ-clone/core-player/Player';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import { Pollution } from '@civ-clone/civ1-world/TileImprovements';
 import { SdiDefence } from '@civ-clone/library-city/CityImprovements';
 import Tile from '@civ-clone/core-world/Tile';
@@ -143,6 +147,48 @@ describe('nuclear', (): void => {
       expect(areaUnit.destroyed()).true;
     });
     expect(outside.destroyed()).false;
+  });
+
+  it('destroys the cargo of a transport in the area once, not again as part of the stack', async (): Promise<void> => {
+    const { enemy, game, player, unit, world } = await setUp(),
+      nuke = unit(Nuclear, player, world.get(2, 3)),
+      target = unit(Warrior, enemy, world.get(1, 3)),
+      trireme = new Trireme(
+        null,
+        enemy,
+        world.get(0, 3),
+        game.rules,
+        game.transports
+      ),
+      cargo = unit(Warrior, enemy, world.get(0, 3)),
+      destroyedCount = new Map<Unit, number>();
+
+    game.units.register(trireme);
+    expect((trireme as unknown as ITransport).stow(cargo)).true;
+    cargo.setBusy(new Stowed());
+    cargo.setActive(false);
+
+    game.rules.register(
+      new Destroyed(
+        new Effect((destroyed: Unit): void => {
+          destroyedCount.set(
+            destroyed,
+            (destroyedCount.get(destroyed) ?? 0) + 1
+          );
+        })
+      )
+    );
+
+    nuke.action(
+      nuke
+        .actions(target.tile())
+        .find((action) => action instanceof NuclearAttack)!
+    );
+
+    expect(trireme.destroyed()).true;
+    expect(cargo.destroyed()).true;
+    expect(destroyedCount.get(trireme)).equal(1);
+    expect(destroyedCount.get(cargo)).equal(1);
   });
 
   it('spares the units in a city with SDI Defense, but still halves it', async (): Promise<void> => {
