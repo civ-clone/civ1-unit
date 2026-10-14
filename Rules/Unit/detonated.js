@@ -37,6 +37,10 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
                 return;
             }
             unitRegistry.getByTile(areaTile).forEach((areaUnit) => {
+                // Cargo is destroyed with its transport, earlier in this loop, if the transport is lost at sea.
+                if (areaUnit.destroyed()) {
+                    return;
+                }
                 ruleRegistry.process(Destroyed_1.default, areaUnit, unit.player());
             });
         }))),

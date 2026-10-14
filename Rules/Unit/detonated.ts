@@ -94,6 +94,11 @@ export const getRules: (
           }
 
           unitRegistry.getByTile(areaTile).forEach((areaUnit: Unit): void => {
+            // Cargo is destroyed with its transport, earlier in this loop, if the transport is lost at sea.
+            if (areaUnit.destroyed()) {
+              return;
+            }
+
             ruleRegistry.process(Destroyed, areaUnit, unit.player());
           });
         })
