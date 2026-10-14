@@ -176,6 +176,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
 import Path from '@civ-clone/core-world-path/Path';
+import PlannedPathFinderRegistry from '../../lib/PlannedPathFinderRegistry';
 import { joinableCity } from '@civ-clone/base-unit-action-join-city/joinableCity';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -236,6 +237,11 @@ export const getRules = (
     canLandAircraft = (unit: Unit, to: Tile): boolean =>
       unit instanceof Air &&
       (landsInCity(unit, to) || landingTransport(unit, to) !== null);
+
+  // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
+  //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
+  let plannedGoTo: { unit: Unit; from: Tile; to: Tile; path: Path } | null =
+    null;
 
   const attackCriteria = [
       isNeighbouringTile,
@@ -1413,25 +1419,51 @@ export const getRules = (
       new Criterion((unit: Unit, to: Tile, from: Tile) => {
         const [PathFinder] = pathFinderRegistry.entries();
 
+        plannedGoTo = null;
+
         if (!PathFinder) {
           return false;
         }
 
         const path = new PathFinder(unit, from, to).generate();
 
-        return path instanceof Path;
+        if (!(path instanceof Path)) {
+          return false;
+        }
+
+        plannedGoTo = { unit, from, to, path };
+
+        return true;
       }),
-      new Effect(
-        (unit: Unit, to: Tile, from: Tile): UnitAction =>
-          new GoTo(
-            from,
-            to,
-            unit,
-            ruleRegistry,
-            pathFinderRegistry,
-            strategyNoteRegistry
-          )
-      )
+      new Effect((unit: Unit, to: Tile, from: Tile): UnitAction => {
+        const planned = plannedGoTo,
+          isPlanned =
+            planned !== null &&
+            planned.unit === unit &&
+            planned.from === from &&
+            planned.to === to;
+
+        plannedGoTo = null;
+
+        // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
+        //  performed (civ-clone/web-renderer#307).
+        return new GoTo(
+          from,
+          to,
+          unit,
+          ruleRegistry,
+          isPlanned
+            ? new PlannedPathFinderRegistry(
+                unit,
+                from,
+                to,
+                planned.path,
+                pathFinderRegistry
+              )
+            : pathFinderRegistry,
+          strategyNoteRegistry
+        );
+      })
     ),
 
     new Action(
