@@ -1,6 +1,7 @@
 import { GoTo, Move } from '../Actions';
 import BasePathFinder from '@civ-clone/simple-world-path/BasePathFinder';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
+import Engine from '@civ-clone/core-engine/Engine';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Grassland } from '@civ-clone/civ1-world/Terrains';
 import Path from '@civ-clone/core-world-path/Path';
@@ -29,6 +30,7 @@ describe('GoTo', (): void => {
   const setUp = async () => {
     const ruleRegistry = new RuleRegistry(),
       cityRegistry = new CityRegistry(),
+      engine = new Engine(),
       pathFinderRegistry = new PathFinderRegistry(),
       strategyNoteRegistry = new StrategyNoteRegistry(),
       tileImprovementRegistry = new TileImprovementRegistry(),
@@ -67,9 +69,17 @@ describe('GoTo', (): void => {
         undefined,
         undefined,
         pathFinderRegistry,
-        strategyNoteRegistry
+        strategyNoteRegistry,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        engine
       ),
-      ...moved(transportRegistry, ruleRegistry),
+      ...moved(transportRegistry, ruleRegistry, undefined, engine),
       ...movementCost(tileImprovementRegistry, transportRegistry),
       ...unitYield(
         new UnitImprovementRegistry(),
@@ -99,10 +109,14 @@ describe('GoTo', (): void => {
     unit.moves().set(unit.movement());
 
     return {
+      engine,
+      player,
       routeFrom,
+      ruleRegistry,
       searches,
       strategyNoteRegistry,
       unit,
+      unitRegistry,
       world,
     };
   };
@@ -171,6 +185,77 @@ describe('GoTo', (): void => {
 
     expect(searches.length).equal(2);
   });
+
+  it('should search again when a unit has moved onto its route since it was offered', async (): Promise<void> => {
+    const {
+        player,
+        routeFrom,
+        ruleRegistry,
+        searches,
+        strategyNoteRegistry,
+        unit,
+        unitRegistry,
+        world,
+      } = await setUp(),
+      to = world.get(6, 4),
+      oldRoute = routeFrom(unit.tile(), to),
+      // An intermediate tile, beyond the first step, so the GoTo's own unit doesn't move.
+      blocked = oldRoute[3],
+      beside = blocked
+        .getNeighbours()
+        .find(
+          (tile: Tile): boolean =>
+            !oldRoute.includes(tile) && tile !== unit.tile()
+        )!,
+      other = new Warrior(null, new Player(ruleRegistry), beside, ruleRegistry),
+      goTo = goToFor(unit, to);
+
+    unitRegistry.register(other);
+    other.moves().set(other.movement());
+
+    expect(searches.length).equal(1);
+
+    other
+      .actions(blocked)
+      .find((action) => action instanceof Move)!
+      .perform();
+
+    expect(other.tile() === blocked).true;
+    expect(unit.tile() === world.get(0, 0)).true;
+
+    // What a fresh search finds now, with `blocked` occupied.
+    const newRoute = routeFrom(unit.tile(), to);
+
+    expect(newRoute.includes(blocked)).false;
+
+    searches.length = 0;
+
+    goTo.perform();
+
+    expect(searches.length).equal(1);
+    expect(unit.tile() === newRoute[1]).true;
+
+    const remaining = strategyNoteRegistry
+      .getByKey<Tile[]>(generateKey(unit))!
+      .value();
+
+    expect(remaining.includes(blocked)).false;
+    expect(remaining.every((tile, index) => tile === newRoute[index + 2])).true;
+  });
+
+  ['unit:created', 'unit:destroyed', 'unit:moved', 'unit:transferred'].forEach(
+    (event: string): void => {
+      it(`should search again when ${event} has been announced since it was offered`, async (): Promise<void> => {
+        const { engine, searches, unit, world } = await setUp(),
+          goTo = goToFor(unit, world.get(6, 4));
+
+        engine.emit(event, unit);
+        goTo.perform();
+
+        expect(searches.length).equal(2);
+      });
+    }
+  );
 
   it('should not be offered next to the unit, without a search', async (): Promise<void> => {
     const { searches, unit, world } = await setUp();

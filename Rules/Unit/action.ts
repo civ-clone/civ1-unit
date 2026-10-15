@@ -70,6 +70,10 @@ import {
   instance as cityBuildRegistryInstance,
 } from '@civ-clone/core-city-build/CityBuildRegistry';
 import {
+  Engine,
+  instance as engineInstance,
+} from '@civ-clone/core-engine/Engine';
+import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
@@ -216,7 +220,8 @@ export const getRules = (
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance,
   playerTreasuryRegistry: PlayerTreasuryRegistry = playerTreasuryRegistryInstance,
-  strategyRegistry: StrategyRegistry = strategyRegistryInstance
+  strategyRegistry: StrategyRegistry = strategyRegistryInstance,
+  engine: Engine = engineInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const landsInCity = (unit: Unit, to: Tile): boolean =>
@@ -240,8 +245,33 @@ export const getRules = (
 
   // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
   //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
-  let plannedGoTo: { unit: Unit; from: Tile; to: Tile; path: Path } | null =
-    null;
+  let plannedGoTo: {
+    unit: Unit;
+    from: Tile;
+    to: Tile;
+    path: Path;
+    revision: number;
+  } | null = null;
+
+  // Counts the changes to where units (and cities) are, which is what a route depends on besides the tiles
+  //  themselves. A route is only followed if nothing has changed since it was found, so one that was kept for a
+  //  `GoTo` that is performed later (not in the same `handleAction`) is searched for again instead.
+  let routingRevision = 0;
+
+  [
+    'city:captured',
+    'city:created',
+    'city:destroyed',
+    'unit:created',
+    'unit:destroyed',
+    'unit:moved',
+    'unit:transferred',
+  ].forEach((event: string): void => {
+    engine.on(event, (): void => {
+      routingRevision++;
+      plannedGoTo = null;
+    });
+  });
 
   const attackCriteria = [
       isNeighbouringTile,
@@ -1431,7 +1461,7 @@ export const getRules = (
           return false;
         }
 
-        plannedGoTo = { unit, from, to, path };
+        plannedGoTo = { unit, from, to, path, revision: routingRevision };
 
         return true;
       }),
@@ -1441,7 +1471,8 @@ export const getRules = (
             planned !== null &&
             planned.unit === unit &&
             planned.from === from &&
-            planned.to === to;
+            planned.to === to &&
+            planned.revision === routingRevision;
 
         plannedGoTo = null;
 
@@ -1458,7 +1489,9 @@ export const getRules = (
                 from,
                 to,
                 planned.path,
-                pathFinderRegistry
+                pathFinderRegistry,
+                () => routingRevision,
+                planned.revision
               )
             : pathFinderRegistry,
           strategyNoteRegistry
