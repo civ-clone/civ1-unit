@@ -77,7 +77,7 @@
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
     "@civ-clone/core-city": "^0.1.19",
     "@civ-clone/core-city-build": "^0.1.14",
-    "@civ-clone/core-city-growth": "^0.1.0",
+    "@civ-clone/core-city-growth": "^0.1.6",
     "@civ-clone/core-city-happiness": "^0.1.0",
     "@civ-clone/core-city-improvement": "^0.1.5",
     "@civ-clone/core-civilization": "^0.1.0",
