@@ -20,8 +20,9 @@ export const getRules: (
       (cityBuild: CityBuild, buildItem: BuildableInstance) =>
         buildItem instanceof Settlers
     ),
-    new Effect((cityBuild: CityBuild) =>
-      cityGrowthRegistry.getByCity(cityBuild.city()).shrink()
+    // The Settlers are what shrank it (civ-clone/web-renderer#400).
+    new Effect((cityBuild: CityBuild, buildItem: BuildableInstance) =>
+      cityGrowthRegistry.getByCity(cityBuild.city()).shrink(buildItem)
     )
   ),
 ];

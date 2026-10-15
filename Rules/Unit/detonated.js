@@ -55,7 +55,7 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
             }
             const cityGrowth = cityGrowthRegistry.getByCity(city), loss = Math.floor(cityGrowth.size() / 2);
             for (let i = 0; i < loss; i++) {
-                cityGrowth.shrink();
+                cityGrowth.shrink(unit);
             }
         }))),
         new Detonated_1.default(
