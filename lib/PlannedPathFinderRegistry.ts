@@ -51,13 +51,19 @@ class PlannedPathFinder extends PathFinder {
  *
  * The route is used once, and only by a search from the same tile to the same
  * tile for the same unit; any other search, or a second one, runs as before.
- * Like the rest of the action that offered it, it describes the world as it was
- * when the actions were asked for.
+ *
+ * It is also only used while the routing state it was found in still stands:
+ * `revision` says what that is now, and a route found at a different revision
+ * is dropped, so a unit that has since moved onto (or been created on, or
+ * destroyed on) a tile of the route can't leave the `GoTo` with a route that a
+ * search would no longer find.
  */
 export class PlannedPathFinderRegistry extends PathFinderRegistry {
   private _from: Tile;
   private _path: Path | null;
   private _pathFinderRegistry: PathFinderRegistry;
+  private _revision: () => number;
+  private _revisionOfPath: number;
   private _to: Tile;
   private _unit: Unit;
 
@@ -66,13 +72,18 @@ export class PlannedPathFinderRegistry extends PathFinderRegistry {
     from: Tile,
     to: Tile,
     path: Path,
-    pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance
+    pathFinderRegistry: PathFinderRegistry = pathFinderRegistryInstance,
+    // Changes whenever something that a route depends on does; the route is only good for the value it was found at.
+    revision: () => number = () => 0,
+    revisionOfPath: number = revision()
   ) {
     super();
 
     this._from = from;
     this._path = path;
     this._pathFinderRegistry = pathFinderRegistry;
+    this._revision = revision;
+    this._revisionOfPath = revisionOfPath;
     this._to = to;
     this._unit = unit;
   }
@@ -93,16 +104,18 @@ export class PlannedPathFinderRegistry extends PathFinderRegistry {
   take(unit: Unit, from: Tile, to: Tile): Path | null {
     const path = this._path;
 
+    // Spent either way: a route that has gone stale is no use to a later search of the same GoTo either.
+    this._path = null;
+
     if (
       path === null ||
+      this._revision() !== this._revisionOfPath ||
       unit !== this._unit ||
       from !== this._from ||
       to !== this._to
     ) {
       return null;
     }
-
-    this._path = null;
 
     return path;
   }

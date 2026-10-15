@@ -2,6 +2,7 @@ import { Action } from '@civ-clone/core-unit/Rules/Action';
 import { CityGrowthRegistry } from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import { CityNameRegistry } from '@civ-clone/core-civilization/CityNameRegistry';
 import { CityBuildRegistry } from '@civ-clone/core-city-build/CityBuildRegistry';
+import { Engine } from '@civ-clone/core-engine/Engine';
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
 import { CityImprovementRegistry } from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import { LandMassRegistry } from '@civ-clone/core-world/LandMassRegistry';
@@ -39,6 +40,7 @@ export declare const getRules: (
   cityImprovementRegistry?: CityImprovementRegistry,
   playerResearchRegistry?: PlayerResearchRegistry,
   playerTreasuryRegistry?: PlayerTreasuryRegistry,
-  strategyRegistry?: StrategyRegistry
+  strategyRegistry?: StrategyRegistry,
+  engine?: Engine
 ) => Action[];
 export default getRules;

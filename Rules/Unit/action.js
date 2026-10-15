@@ -7,6 +7,7 @@ const Actions_1 = require("../../Actions");
 const CityGrowthRegistry_1 = require("@civ-clone/core-city-growth/CityGrowthRegistry");
 const CityNameRegistry_1 = require("@civ-clone/core-civilization/CityNameRegistry");
 const CityBuildRegistry_1 = require("@civ-clone/core-city-build/CityBuildRegistry");
+const Engine_1 = require("@civ-clone/core-engine/Engine");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const CityImprovementRegistry_1 = require("@civ-clone/core-city-improvement/CityImprovementRegistry");
 const LandMassRegistry_1 = require("@civ-clone/core-world/LandMassRegistry");
@@ -46,7 +47,7 @@ const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
-const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance) => {
+const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const landsInCity = (unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }, landingTransport = (unit, to) => {
         var _a;
@@ -62,6 +63,24 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
     //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
     let plannedGoTo = null;
+    // Counts the changes to where units (and cities) are, which is what a route depends on besides the tiles
+    //  themselves. A route is only followed if nothing has changed since it was found, so one that was kept for a
+    //  `GoTo` that is performed later (not in the same `handleAction`) is searched for again instead.
+    let routingRevision = 0;
+    [
+        'city:captured',
+        'city:created',
+        'city:destroyed',
+        'unit:created',
+        'unit:destroyed',
+        'unit:moved',
+        'unit:transferred',
+    ].forEach((event) => {
+        engine.on(event, () => {
+            routingRevision++;
+            plannedGoTo = null;
+        });
+    });
     const attackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
@@ -409,18 +428,19 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             if (!(path instanceof Path_1.default)) {
                 return false;
             }
-            plannedGoTo = { unit, from, to, path };
+            plannedGoTo = { unit, from, to, path, revision: routingRevision };
             return true;
         }), new Effect_1.default((unit, to, from) => {
             const planned = plannedGoTo, isPlanned = planned !== null &&
                 planned.unit === unit &&
                 planned.from === from &&
-                planned.to === to;
+                planned.to === to &&
+                planned.revision === routingRevision;
             plannedGoTo = null;
             // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
             //  performed (civ-clone/web-renderer#307).
             return new Actions_1.GoTo(from, to, unit, ruleRegistry, isPlanned
-                ? new PlannedPathFinderRegistry_1.default(unit, from, to, planned.path, pathFinderRegistry)
+                ? new PlannedPathFinderRegistry_1.default(unit, from, to, planned.path, pathFinderRegistry, () => routingRevision, planned.revision)
                 : pathFinderRegistry, strategyNoteRegistry);
         })),
         new Action_1.Action('civ1-unit:unit/action/set-home-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
