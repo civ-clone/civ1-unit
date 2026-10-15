@@ -122,7 +122,7 @@ export const getRules: (
             loss = Math.floor(cityGrowth.size() / 2);
 
           for (let i = 0; i < loss; i++) {
-            cityGrowth.shrink();
+            cityGrowth.shrink(unit);
           }
         })
       )

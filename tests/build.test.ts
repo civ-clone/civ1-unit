@@ -42,6 +42,8 @@ import Combustion from '@civ-clone/base-science-advance-combustion/Combustion';
 import Conscription from '@civ-clone/base-science-advance-conscription/Conscription';
 import Created from '@civ-clone/core-unit/Rules/Created';
 import Effect from '@civ-clone/core-rule/Effect';
+import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
+import Shrink from '@civ-clone/core-city-growth/Rules/Shrink';
 import Flight from '@civ-clone/base-science-advance-flight/Flight';
 import Gunpowder from '@civ-clone/base-science-advance-gunpowder/Gunpowder';
 import HorsebackRiding from '@civ-clone/base-science-advance-horsebackriding/HorsebackRiding';
@@ -314,8 +316,9 @@ describe('CityBuild:build', () => {
     });
   });
 
-  it('should trigger `City.shrink` when `Settlers are built', async (): Promise<void> => {
-    const ruleRegistry = new RuleRegistry(),
+  it('should trigger `City.shrink` when `Settlers are built, with the Settlers as its cause', async (): Promise<void> => {
+    const causes: unknown[] = [],
+      ruleRegistry = new RuleRegistry(),
       availableBuildItemsRegistry = new AvailableCityBuildItemsRegistry(),
       cityGrowthRegistry = new CityGrowthRegistry(),
       unitRegistry = new UnitRegistry(),
@@ -334,7 +337,12 @@ describe('CityBuild:build', () => {
     ruleRegistry.register(
       ...buildCost(),
       ...buildingComplete(cityGrowthRegistry),
-      new Created(new Effect((unit: Unit) => unitRegistry.register(unit)))
+      new Created(new Effect((unit: Unit) => unitRegistry.register(unit))),
+      new Shrink(
+        new Effect((cityGrowth: CityGrowth, cause: unknown): void => {
+          causes.push(cause);
+        })
+      )
     );
 
     availableBuildItemsRegistry.register(
@@ -353,5 +361,6 @@ describe('CityBuild:build', () => {
 
     expect(cityGrowth.size()).equal(2);
     expect(unitRegistry.getByCity(city)).length(1);
+    expect(causes).to.deep.equal(unitRegistry.getByCity(city));
   });
 });
