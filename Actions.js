@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakNuclearAttack = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.PlantForest = exports.Pillage = exports.NuclearAttack = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CleanPollution = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = void 0;
+exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakNuclearAttack = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.RoadTo = exports.RailroadTo = exports.PlantForest = exports.Pillage = exports.NuclearAttack = exports.NoOrders = exports.Move = exports.MeetWithKing = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CleanPollution = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "Attack", { enumerable: true, get: function () { return Actions_1.Attack; } });
 Object.defineProperty(exports, "Automate", { enumerable: true, get: function () { return Actions_1.Automate; } });
@@ -34,6 +34,8 @@ Object.defineProperty(exports, "NoOrders", { enumerable: true, get: function () 
 Object.defineProperty(exports, "NuclearAttack", { enumerable: true, get: function () { return Actions_1.NuclearAttack; } });
 Object.defineProperty(exports, "Pillage", { enumerable: true, get: function () { return Actions_1.Pillage; } });
 Object.defineProperty(exports, "PlantForest", { enumerable: true, get: function () { return Actions_1.PlantForest; } });
+Object.defineProperty(exports, "RailroadTo", { enumerable: true, get: function () { return Actions_1.RailroadTo; } });
+Object.defineProperty(exports, "RoadTo", { enumerable: true, get: function () { return Actions_1.RoadTo; } });
 Object.defineProperty(exports, "SetHomeCity", { enumerable: true, get: function () { return Actions_1.SetHomeCity; } });
 Object.defineProperty(exports, "Sleep", { enumerable: true, get: function () { return Actions_1.Sleep; } });
 Object.defineProperty(exports, "SneakAttack", { enumerable: true, get: function () { return Actions_1.SneakAttack; } });

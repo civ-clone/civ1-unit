@@ -41,6 +41,7 @@ const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const Path_1 = require("@civ-clone/core-world-path/Path");
+const routeOrders_1 = require("../../lib/routeOrders");
 const PlannedPathFinderRegistry_1 = require("../../lib/PlannedPathFinderRegistry");
 const joinableCity_1 = require("@civ-clone/base-unit-action-join-city/joinableCity");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
@@ -60,9 +61,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         return (_a = transport) !== null && _a !== void 0 ? _a : null;
     }, canLandAircraft = (unit, to) => unit instanceof Types_1.Air &&
         (landsInCity(unit, to) || landingTransport(unit, to) !== null);
-    // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
-    //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
     let plannedGoTo = null;
+    // The route the `road-to` and `railroad-to` criteria found, as `plannedGoTo` is for `GoTo`: the very route the `goto`
+    //  criterion found for the same journey a moment before, when it did, so offering them costs no search of their own.
+    let plannedRoute = null;
     // Counts the changes to where units (and cities) are, which is what a route depends on besides the tiles
     //  themselves. A route is only followed if nothing has changed since it was found, so one that was kept for a
     //  `GoTo` that is performed later (not in the same `handleAction`) is searched for again instead.
@@ -443,6 +445,42 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 ? new PlannedPathFinderRegistry_1.default(unit, from, to, planned.path, pathFinderRegistry, () => routingRevision, planned.revision)
                 : pathFinderRegistry, strategyNoteRegistry);
         })),
+        // Road to and Railroad to (civ-clone/web-renderer#195): a worker goes to a distant square, building on each square
+        //  of the way where it's offered the build. Which of them a unit may be given is `routeOrders`'s.
+        ...[
+            [Actions_1.RoadTo, 'road-to'],
+            [Actions_1.RailroadTo, 'railroad-to'],
+        ].map(([RouteAction, name]) => new Action_1.Action(`civ1-unit:unit/action/${name}`, Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), new Criterion_1.default((unit) => (0, routeOrders_1.default)(unit, playerResearchRegistry).includes(RouteAction)), new Criterion_1.default((unit, to, from) => {
+            const found = plannedGoTo;
+            plannedRoute = null;
+            if (found !== null &&
+                found.unit === unit &&
+                found.from === from &&
+                found.to === to &&
+                found.revision === routingRevision) {
+                plannedRoute = found;
+                return true;
+            }
+            const [PathFinder] = pathFinderRegistry.entries();
+            if (!PathFinder) {
+                return false;
+            }
+            const path = new PathFinder(unit, from, to).generate();
+            if (!(path instanceof Path_1.default)) {
+                return false;
+            }
+            plannedRoute = { unit, from, to, path, revision: routingRevision };
+            return true;
+        }), new Effect_1.default((unit, to, from) => {
+            const planned = plannedRoute, isPlanned = planned !== null &&
+                planned.unit === unit &&
+                planned.from === from &&
+                planned.to === to &&
+                planned.revision === routingRevision;
+            return new RouteAction(from, to, unit, ruleRegistry, isPlanned
+                ? new PlannedPathFinderRegistry_1.default(unit, from, to, planned.path, pathFinderRegistry, () => routingRevision, planned.revision)
+                : pathFinderRegistry, strategyNoteRegistry);
+        }))),
         new Action_1.Action('civ1-unit:unit/action/set-home-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit, to, from) => {
             const city = cityRegistry.getByTile(from);
             if (!(city instanceof City_1.default)) {
