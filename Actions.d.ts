@@ -31,6 +31,8 @@ export {
   NuclearAttack,
   Pillage,
   PlantForest,
+  RailroadTo,
+  RoadTo,
   SetHomeCity,
   Sleep,
   SneakAttack,
