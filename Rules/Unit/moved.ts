@@ -41,7 +41,9 @@ import Tile from '@civ-clone/core-world/Tile';
 import { Air, NavalTransport } from '../../Types';
 import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Unit from '@civ-clone/core-unit/Unit';
-import { Peace } from '@civ-clone/library-diplomacy/Declarations';
+import { Peace, Vendetta } from '@civ-clone/library-diplomacy/Declarations';
+import Never from '@civ-clone/core-diplomacy/Expiries/Never';
+import { hasVendetta } from '@civ-clone/library-diplomacy/lib/holds';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
 export const getRules = (
@@ -239,6 +241,19 @@ export const getRules = (
           );
 
         peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+
+        // The victim of an attack in peacetime holds a grudge (v474.05's Vendetta flag, OpenCivOne `Segment_29f3.cs`
+        //  ~L886-894, `Overlay_22.cs` ~L517).
+        const enemy = (action as unknown as { enemy(): Player }).enemy();
+
+        if (
+          peaceTreaties.length > 0 &&
+          !hasVendetta(enemy, unit.player(), interactionRegistry)
+        ) {
+          interactionRegistry.register(
+            new Vendetta(enemy, unit.player(), new Never(), ruleRegistry)
+          );
+        }
       })
     ),
   ];

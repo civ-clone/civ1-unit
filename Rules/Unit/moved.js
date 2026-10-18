@@ -19,6 +19,8 @@ const Sleeping_1 = require("@civ-clone/base-unit-action-sleep/Rules/Sleeping");
 const Types_1 = require("../../Types");
 const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
+const Never_1 = require("@civ-clone/core-diplomacy/Expiries/Never");
+const holds_1 = require("@civ-clone/library-diplomacy/lib/holds");
 const core_random_1 = require("@civ-clone/core-random");
 const getRules = (transportRegistry = TransportRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, randomNumberGenerator = core_random_1.instance, engine = Engine_1.instance, cityRegistry = CityRegistry_1.instance, 
 // No longer used: aircraft fuel is checked at the end of the turn (`Rules/Player/turnEnd`). Kept so the positional
@@ -99,6 +101,13 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
                 .getByPlayers(unit.player(), action.enemy())
                 .filter((interaction) => interaction instanceof Declarations_1.Peace && interaction.active());
             peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+            // The victim of an attack in peacetime holds a grudge (v474.05's Vendetta flag, OpenCivOne `Segment_29f3.cs`
+            //  ~L886-894, `Overlay_22.cs` ~L517).
+            const enemy = action.enemy();
+            if (peaceTreaties.length > 0 &&
+                !(0, holds_1.hasVendetta)(enemy, unit.player(), interactionRegistry)) {
+                interactionRegistry.register(new Declarations_1.Vendetta(enemy, unit.player(), new Never_1.default(), ruleRegistry));
+            }
         })),
     ];
 };
