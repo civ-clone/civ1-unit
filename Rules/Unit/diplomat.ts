@@ -58,7 +58,7 @@ import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
-/** The advances `victim` knows and `thief` doesn't: what a Diplomat could steal. */
+/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
 export const stealableAdvances = (
   thief: Player,
   victim: Player,
@@ -74,7 +74,7 @@ export const stealableAdvances = (
       .map((advance: Advance): typeof Advance => advance.sourceClass())
       .filter(
         (AdvanceType: typeof Advance): boolean =>
-          !thiefResearch.completed(AdvanceType)
+          !AdvanceType.repeatable && !thiefResearch.completed(AdvanceType)
       );
   } catch (e) {
     return [];

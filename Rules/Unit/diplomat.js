@@ -26,7 +26,7 @@ const UnitBribed_1 = require("@civ-clone/base-unit-action-bribe-unit/Rules/UnitB
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 const core_random_1 = require("@civ-clone/core-random");
-/** The advances `victim` knows and `thief` doesn't: what a Diplomat could steal. */
+/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
 const stealableAdvances = (thief, victim, playerResearchRegistry = PlayerResearchRegistry_1.instance) => {
     // Either without research (as a test may make them) has nothing to steal, rather than making the lookup throw.
     try {
@@ -35,7 +35,7 @@ const stealableAdvances = (thief, victim, playerResearchRegistry = PlayerResearc
             .getByPlayer(victim)
             .complete()
             .map((advance) => advance.sourceClass())
-            .filter((AdvanceType) => !thiefResearch.completed(AdvanceType));
+            .filter((AdvanceType) => !AdvanceType.repeatable && !thiefResearch.completed(AdvanceType));
     }
     catch (e) {
         return [];

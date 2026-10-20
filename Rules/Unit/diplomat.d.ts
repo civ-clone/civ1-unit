@@ -16,7 +16,7 @@ import Player from '@civ-clone/core-player/Player';
 import RevoltIncited from '@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited';
 import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
-/** The advances `victim` knows and `thief` doesn't: what a Diplomat could steal. */
+/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
 export declare const stealableAdvances: (
   thief: Player,
   victim: Player,

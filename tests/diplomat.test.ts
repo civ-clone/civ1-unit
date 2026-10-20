@@ -415,6 +415,20 @@ describe('Diplomats', (): void => {
       ).to.not.include('StealTechnology');
     });
 
+    it('should never take a repeatable advance', (): void => {
+      class Repeatable extends Advance {
+        static readonly repeatable = true;
+      }
+
+      const player = addPlayer(0, Alphabet),
+        rival = addPlayer(0, Alphabet, Repeatable),
+        city = addCity(rival, world.get(5, 5));
+
+      expect(
+        actionsOf(addUnit(Diplomat, player, world.get(4, 5)), city.tile())
+      ).to.not.include('StealTechnology');
+    });
+
     it('should end the peace when stealing at peace', (): void => {
       const player = addPlayer(0),
         rival = addPlayer(0, Alphabet),
