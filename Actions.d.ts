@@ -1,4 +1,5 @@
 export {
+  Activate,
   Attack,
   Automate,
   BribeUnit,

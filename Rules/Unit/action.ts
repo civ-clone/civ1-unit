@@ -14,6 +14,7 @@ import {
   Worker,
 } from '../../Types';
 import {
+  Activate,
   Attack,
   Automate,
   BribeUnit,
@@ -191,6 +192,8 @@ import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
+import { Fortified } from '../../UnitImprovements';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 
@@ -1124,6 +1127,27 @@ export const getRules = (
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Sleep(from, to, unit, ruleRegistry, turn)
+      )
+    ),
+
+    new Action(
+      // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
+      //  (`activate.ts`) decide what that does.
+      'civ1-unit:unit/action/activate',
+      isCurrentTile,
+      new Criterion(
+        (unit: Unit): boolean =>
+          unit.busy() !== null ||
+          unitImprovementRegistry
+            .getByUnit(unit)
+            .some(
+              (unitImprovement: UnitImprovement): boolean =>
+                unitImprovement instanceof Fortified
+            )
+      ),
+      new Effect(
+        (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
+          new Activate(from, to, unit, ruleRegistry)
       )
     ),
 

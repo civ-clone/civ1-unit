@@ -1,4 +1,4 @@
-import { BuildIrrigation, Fortify } from '../Actions';
+import { Activate, BuildIrrigation, Fortify } from '../Actions';
 import { Settlers, Warrior } from '../Units';
 import Action from '@civ-clone/core-unit/Action';
 import Busy from '@civ-clone/core-unit/Rules/Busy';
@@ -73,6 +73,10 @@ describe('unit:activate', () => {
           .filter((action: Action): boolean => action instanceof ActionType);
 
       expect(action).to.instanceof(ActionType);
+      // Nothing to wake it from yet.
+      expect(
+        unit.actions().some((action: Action) => action instanceof Activate)
+      ).to.false;
 
       unitRegistry.register(unit);
 
@@ -100,7 +104,14 @@ describe('unit:activate', () => {
           )
       ).to.true;
 
-      unit.activate();
+      // Woken as an order like any other (civ-clone/web-renderer#160).
+      const [activate] = unit
+        .actions()
+        .filter((action: Action): boolean => action instanceof Activate);
+
+      expect(activate).to.instanceof(Activate);
+
+      unit.action(activate);
 
       expect(
         unitImprovementRegistry
