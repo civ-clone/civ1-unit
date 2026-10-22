@@ -34,6 +34,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@civ-clone/base-civilization-barbarian": "^0.1.0",
     "@civ-clone/base-science-advance-advancedflight": "^0.1.0",
     "@civ-clone/base-science-advance-automobile": "^0.1.0",
     "@civ-clone/base-science-advance-bronzeworking": "^0.1.0",
