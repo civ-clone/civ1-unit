@@ -6,6 +6,7 @@ import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import { Fortified } from '../UnitImprovements';
 import { River } from '@civ-clone/civ1-world/Terrains';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
@@ -153,4 +154,17 @@ describe('unit:activate', () => {
       });
     }
   );
+
+  it("doesn't offer Activate to cargo stowed aboard a transport", async () => {
+    const world = new World(new StaticWorldGenerator(), ruleRegistry);
+
+    await world.build();
+
+    const unit = new Warrior(null, new Player(), world.get(0, 0), ruleRegistry);
+
+    unit.setBusy(new Stowed());
+
+    expect(unit.actions().some((action: Action) => action instanceof Activate))
+      .to.false;
+  });
 });

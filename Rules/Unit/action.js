@@ -46,6 +46,7 @@ const PlannedPathFinderRegistry_1 = require("../../lib/PlannedPathFinderRegistry
 const joinableCity_1 = require("@civ-clone/base-unit-action-join-city/joinableCity");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const UnitImprovements_1 = require("../../UnitImprovements");
+const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
@@ -354,11 +355,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Action_1.Action('civ1-unit:unit/action/sleep', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
         new Action_1.Action(
         // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
-        //  (`activate.ts`) decide what that does.
-        'civ1-unit:unit/action/activate', Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.busy() !== null ||
-            unitImprovementRegistry
-                .getByUnit(unit)
-                .some((unitImprovement) => unitImprovement instanceof UnitImprovements_1.Fortified)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Activate(from, to, unit, ruleRegistry))),
+        //  (`activate.ts`) decide what that does. Not cargo: a unit `Stowed` aboard a transport is woken by unloading, and
+        //  an aircraft collected by a Carrier stays active while stowed, so it would be offered this beside its own orders.
+        'civ1-unit:unit/action/activate', Action_1.isCurrentTile, new Criterion_1.default((unit) => !(unit.busy() instanceof Stowed_1.default) &&
+            (unit.busy() !== null ||
+                unitImprovementRegistry
+                    .getByUnit(unit)
+                    .some((unitImprovement) => unitImprovement instanceof UnitImprovements_1.Fortified))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Activate(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/disband', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/no-orders', Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/found-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
