@@ -106,6 +106,6 @@
     "@civ-clone/library-city": "^0.1.4",
     "@civ-clone/library-diplomacy": "^0.1.4",
     "@civ-clone/library-science": "^0.1.0",
-    "@civ-clone/library-unit": "^0.1.12"
+    "@civ-clone/library-unit": "^0.1.13"
   }
 }

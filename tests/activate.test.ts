@@ -1,4 +1,4 @@
-import { BuildIrrigation, Fortify } from '../Actions';
+import { Activate, BuildIrrigation, Fortify } from '../Actions';
 import { Settlers, Warrior } from '../Units';
 import Action from '@civ-clone/core-unit/Action';
 import Busy from '@civ-clone/core-unit/Rules/Busy';
@@ -6,6 +6,7 @@ import CityNameRegistry from '@civ-clone/core-civilization/CityNameRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import { Fortified } from '../UnitImprovements';
 import { River } from '@civ-clone/civ1-world/Terrains';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Player from '@civ-clone/core-player/Player';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import PlayerResearchRegistry from '@civ-clone/core-science/PlayerResearchRegistry';
@@ -73,6 +74,10 @@ describe('unit:activate', () => {
           .filter((action: Action): boolean => action instanceof ActionType);
 
       expect(action).to.instanceof(ActionType);
+      // Nothing to wake it from yet.
+      expect(
+        unit.actions().some((action: Action) => action instanceof Activate)
+      ).to.false;
 
       unitRegistry.register(unit);
 
@@ -100,7 +105,14 @@ describe('unit:activate', () => {
           )
       ).to.true;
 
-      unit.activate();
+      // Woken as an order like any other (civ-clone/web-renderer#160).
+      const [activate] = unit
+        .actions()
+        .filter((action: Action): boolean => action instanceof Activate);
+
+      expect(activate).to.instanceof(Activate);
+
+      unit.action(activate);
 
       expect(
         unitImprovementRegistry
@@ -142,4 +154,17 @@ describe('unit:activate', () => {
       });
     }
   );
+
+  it("doesn't offer Activate to cargo stowed aboard a transport", async () => {
+    const world = new World(new StaticWorldGenerator(), ruleRegistry);
+
+    await world.build();
+
+    const unit = new Warrior(null, new Player(), world.get(0, 0), ruleRegistry);
+
+    unit.setBusy(new Stowed());
+
+    expect(unit.actions().some((action: Action) => action instanceof Activate))
+      .to.false;
+  });
 });
