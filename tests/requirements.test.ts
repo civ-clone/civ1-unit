@@ -8,6 +8,7 @@ import {
   requiresAdvance,
 } from '../Requirements';
 import Build from '@civ-clone/core-city-build/Rules/Build';
+import { Irrigation } from '@civ-clone/civ1-world/TileImprovements';
 import City from '@civ-clone/core-city/City';
 import Conscription from '@civ-clone/base-science-advance-conscription/Conscription';
 import { Game } from '@civ-clone/core-game/Game';
@@ -166,6 +167,12 @@ describe('civ1-unit requirements', (): void => {
       'civ1-unit:city/build/obsolete/Spearman',
       'civ1-unit:city/build/obsolete/Warrior',
     ]);
+    // Irrigation needs water nearby, which the Worker's own rule decides.
+    expect(
+      game.requirements
+        .for(Irrigation)
+        .map((entry: Requirement): string => entry.id)
+    ).include('civ1-unit:unit/action/improvement/Irrigation');
     // A Trireme is `Naval`, so the coastal entry is about it too.
     expect(
       game.requirements
