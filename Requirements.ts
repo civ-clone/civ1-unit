@@ -33,6 +33,7 @@ import Magnetism from '@civ-clone/base-science-advance-magnetism/Magnetism';
 import Metallurgy from '@civ-clone/base-science-advance-metallurgy/Metallurgy';
 import { Naval } from './Types';
 import Navigation from '@civ-clone/base-science-advance-navigation/Navigation';
+import { Irrigation } from '@civ-clone/civ1-world/TileImprovements';
 import Robotics from '@civ-clone/base-science-advance-robotics/Robotics';
 import requiredAdvances from './lib/requiredAdvances';
 
@@ -109,10 +110,26 @@ export const buildRequirements: Requirement[] = [
   ...obsoletedBy,
 ];
 
+/** River or water beside the tile, or irrigated land that isn't a city, which `Rules/Unit/action`'s own rule decides. */
+export const waterNearby = new Condition('civ1-unit:water-nearby');
+
+/**
+ * A Worker irrigates only with water nearby. The action's rule is written by hand, and asks civ1-world's entries for
+ * the terrain; this entry names the water for the civilopedia.
+ */
+export const irrigationNeedsWater = new Requirement({
+  id: 'civ1-unit:unit/action/improvement/Irrigation',
+  subject: Irrigation,
+  relation: 'requires',
+  targets: [waterNearby],
+  range: 'tile',
+});
+
 /** The entries that only describe: no rule is made from them. */
 export const describedRequirements: Requirement[] = [
   navalNeedsCoast,
   ...replacedBy,
+  irrigationNeedsWater,
 ];
 
 export default buildRequirements;
