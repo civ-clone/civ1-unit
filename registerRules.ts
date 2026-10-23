@@ -1,6 +1,7 @@
 import action from './Rules/Unit/action';
 import activate from './Rules/Unit/activate';
-import build from './Rules/City/build';
+import { buildRequirements, describedRequirements } from './Requirements';
+import { deriveBuildRules, navalNeedsCoast } from './Rules/City/build';
 import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
 import canJoinCity from './Rules/Unit/canJoinCity';
@@ -27,7 +28,7 @@ import unsupported from './Rules/Unit/unsupported';
 import validateMove from './Rules/Unit/validateMove';
 import { Game, defaultGame } from '@civ-clone/core-game';
 
-export const register = (game: Game): void =>
+export const register = (game: Game): void => {
   game.rules.register(
     ...action(
       game.cityNames,
@@ -53,7 +54,18 @@ export const register = (game: Game): void =>
       game.engine
     ),
     ...activate(game.unitImprovements),
-    ...build(game.playerResearch),
+    navalNeedsCoast()
+  );
+
+  // Which units a city may build, from the entries in `Requirements`: their rules land where the build rules always
+  //  were, between the rules above and below, so nothing else moves in the order rules run (civ-clone/web-renderer#37).
+  game.requirements.add(
+    deriveBuildRules(game.playerResearch),
+    ...buildRequirements
+  );
+  game.requirements.add(null, ...describedRequirements);
+
+  game.rules.register(
     ...buildCost(),
     ...buildingComplete(game.cityGrowth),
     ...canJoinCity(game.cityGrowth),
@@ -131,6 +143,7 @@ export const register = (game: Game): void =>
     ...unsupported(game.engine),
     ...validateMove(game.rng)
   );
+};
 
 // The plugin loader imports each package for this side effect. Until it passes
 // a `Game` of its own, dropping it would produce a game with silently absent
