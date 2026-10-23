@@ -25,7 +25,7 @@ const notBarbarian = new Criterion(
 );
 
 /** Ships are only built in a coastal city: a state of the map, so a rule written by hand. */
-export const navalNeedsCoast = (): Build =>
+export const navalNeedsCoastRule = (): Build =>
   new Build(
     'civ1-unit:city/build/naval-needs-coast',
     Naval,
@@ -45,32 +45,37 @@ export const navalNeedsCoast = (): Build =>
 export const buildRulesFor = (
   entry: Requirement,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance
-): Build[] =>
-  entry.relation === 'requires' || entry.relation === 'obsoletedBy'
-    ? [
-        new Build(
-          entry.id,
-          entry.subject,
-          notBarbarian,
-          new Criterion(
-            (city: City, BuildItem: IConstructor): boolean =>
-              BuildItem === entry.subject
-          ),
-          new Effect((city: City): IBuildCriterion => {
-            const known = (): boolean =>
-              met(entry, (target: Target): boolean =>
-                playerResearchRegistry
-                  .getByPlayer(city.player())
-                  .completed(target as typeof Advance)
-              );
+): Build[] => {
+  if (entry.relation !== 'requires' && entry.relation !== 'obsoletedBy') {
+    return [];
+  }
 
-            return new Criterion((): boolean =>
-              entry.relation === 'obsoletedBy' ? !known() : known()
+  const obsolete = entry.relation === 'obsoletedBy';
+
+  return [
+    new Build(
+      entry.id,
+      entry.subject,
+      notBarbarian,
+      new Criterion(
+        (city: City, BuildItem: IConstructor): boolean =>
+          BuildItem === entry.subject
+      ),
+      new Effect(
+        (city: City): IBuildCriterion =>
+          new Criterion((): boolean => {
+            const known = met(entry, (target: Target): boolean =>
+              playerResearchRegistry
+                .getByPlayer(city.player())
+                .completed(target as typeof Advance)
             );
+
+            return obsolete ? !known : known;
           })
-        ),
-      ]
-    : [];
+      )
+    ),
+  ];
+};
 
 /** What `registerRules` gives the game's `requirements` to make each entry's rules with. */
 export const deriveBuildRules =
@@ -89,7 +94,7 @@ export const getRules: (
 ) => Build[] = (
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance
 ): Build[] => [
-  navalNeedsCoast(),
+  navalNeedsCoastRule(),
   ...buildRequirements.flatMap((entry: Requirement): Build[] =>
     buildRulesFor(entry, playerResearchRegistry)
   ),

@@ -81,11 +81,50 @@ describe('civ1-unit requirements', (): void => {
   it('should register the rules in the order they always were', (): void => {
     const { game } = setUp();
 
+    // The build rules' ids in the order \`Rules/City/build\` registered them before they were made from entries,
+    //  written out rather than read from the same entries, so a reordered table fails here.
     expect(ids(game.rules.get(Build))).eql(ids(getRules()));
     expect(ids(getRules())).eql([
       'civ1-unit:city/build/naval-needs-coast',
-      ...requiresAdvance.map((entry: Requirement): string => entry.id),
-      ...obsoletedBy.map((entry: Requirement): string => entry.id),
+      'civ1-unit:city/build/requires-advance/Artillery',
+      'civ1-unit:city/build/requires-advance/Battleship',
+      'civ1-unit:city/build/requires-advance/Bomber',
+      'civ1-unit:city/build/requires-advance/Cannon',
+      'civ1-unit:city/build/requires-advance/Carrier',
+      'civ1-unit:city/build/requires-advance/Caravan',
+      'civ1-unit:city/build/requires-advance/Catapult',
+      'civ1-unit:city/build/requires-advance/Chariot',
+      'civ1-unit:city/build/requires-advance/Cruiser',
+      'civ1-unit:city/build/requires-advance/Diplomat',
+      'civ1-unit:city/build/requires-advance/Fighter',
+      'civ1-unit:city/build/requires-advance/Frigate',
+      'civ1-unit:city/build/requires-advance/Horseman',
+      'civ1-unit:city/build/requires-advance/Ironclad',
+      'civ1-unit:city/build/requires-advance/Knight',
+      'civ1-unit:city/build/requires-advance/MechanizedInfantry',
+      'civ1-unit:city/build/requires-advance/Musketman',
+      'civ1-unit:city/build/requires-advance/Nuclear',
+      'civ1-unit:city/build/requires-advance/Rifleman',
+      'civ1-unit:city/build/requires-advance/Sail',
+      'civ1-unit:city/build/requires-advance/Spearman',
+      'civ1-unit:city/build/requires-advance/Submarine',
+      'civ1-unit:city/build/requires-advance/Swordman',
+      'civ1-unit:city/build/requires-advance/Tank',
+      'civ1-unit:city/build/requires-advance/Transport',
+      'civ1-unit:city/build/requires-advance/Trireme',
+      'civ1-unit:city/build/obsolete/Cannon',
+      'civ1-unit:city/build/obsolete/Catapult',
+      'civ1-unit:city/build/obsolete/Chariot',
+      'civ1-unit:city/build/obsolete/Frigate',
+      'civ1-unit:city/build/obsolete/Horseman',
+      'civ1-unit:city/build/obsolete/Ironclad',
+      'civ1-unit:city/build/obsolete/Knight',
+      'civ1-unit:city/build/obsolete/Musketman',
+      'civ1-unit:city/build/obsolete/Sail',
+      'civ1-unit:city/build/obsolete/Spearman',
+      'civ1-unit:city/build/obsolete/Swordman',
+      'civ1-unit:city/build/obsolete/Trireme',
+      'civ1-unit:city/build/obsolete/Warrior',
     ]);
   });
 

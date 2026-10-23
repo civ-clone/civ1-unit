@@ -3,7 +3,7 @@ import { Deriver } from '@civ-clone/core-requirement/RequirementRegistry';
 import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRegistry';
 import { Requirement } from '@civ-clone/core-requirement/Requirement';
 /** Ships are only built in a coastal city: a state of the map, so a rule written by hand. */
-export declare const navalNeedsCoast: () => Build;
+export declare const navalNeedsCoastRule: () => Build;
 /**
  * The rule `entry` is played by: a city may build its subject only while its player has the advances it `requires`,
  * and only until its player has the ones it is `obsoletedBy`. A `replacedBy` entry only describes, so it makes none.

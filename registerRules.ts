@@ -1,7 +1,7 @@
 import action from './Rules/Unit/action';
 import activate from './Rules/Unit/activate';
 import { buildRequirements, describedRequirements } from './Requirements';
-import { deriveBuildRules, navalNeedsCoast } from './Rules/City/build';
+import { deriveBuildRules, navalNeedsCoastRule } from './Rules/City/build';
 import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
 import canJoinCity from './Rules/Unit/canJoinCity';
@@ -54,7 +54,7 @@ export const register = (game: Game): void => {
       game.engine
     ),
     ...activate(game.unitImprovements),
-    navalNeedsCoast()
+    navalNeedsCoastRule()
   );
 
   // Which units a city may build, from the entries in `Requirements`: their rules land where the build rules always
