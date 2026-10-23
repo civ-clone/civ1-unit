@@ -17,11 +17,15 @@ export declare const coastalCity: Condition;
 export declare const navalNeedsCoast: Requirement;
 /** The entries `Rules/City/build`'s deriver makes rules from, in the order the rules were always registered. */
 export declare const buildRequirements: Requirement[];
-/** River or water beside the tile, or irrigated land that isn't a city, which `Rules/Unit/action`'s own rule decides. */
+/**
+ * A River, or River or water beside the tile, or irrigated land beside it that isn't a city, which `Rules/Unit/action`'s
+ * own rule decides.
+ */
 export declare const waterNearby: Condition;
 /**
- * A Worker irrigates only with water nearby. The action's rule is written by hand, and asks civ1-world's entries for
- * the terrain; this entry names the water for the civilopedia.
+ * A Worker irrigates only with water nearby. The action's rule (`civ1-unit:unit/action/improvement/Irrigation`) is
+ * written by hand, and asks civ1-world's entries for the terrain; this entry names the water for the civilopedia. It
+ * has an id of its own, as that rule refuses for other reasons too.
  */
 export declare const irrigationNeedsWater: Requirement;
 /** The entries that only describe: no rule is made from them. */
