@@ -70,14 +70,18 @@ exports.buildRequirements = [
     ...exports.requiresAdvance,
     ...exports.obsoletedBy,
 ];
-/** River or water beside the tile, or irrigated land that isn't a city, which `Rules/Unit/action`'s own rule decides. */
+/**
+ * A River, or River or water beside the tile, or irrigated land beside it that isn't a city, which `Rules/Unit/action`'s
+ * own rule decides.
+ */
 exports.waterNearby = new Requirement_1.Condition('civ1-unit:water-nearby');
 /**
- * A Worker irrigates only with water nearby. The action's rule is written by hand, and asks civ1-world's entries for
- * the terrain; this entry names the water for the civilopedia.
+ * A Worker irrigates only with water nearby. The action's rule (`civ1-unit:unit/action/improvement/Irrigation`) is
+ * written by hand, and asks civ1-world's entries for the terrain; this entry names the water for the civilopedia. It
+ * has an id of its own, as that rule refuses for other reasons too.
  */
 exports.irrigationNeedsWater = new Requirement_1.Requirement({
-    id: 'civ1-unit:unit/action/improvement/Irrigation',
+    id: 'civ1-unit:unit/action/improvement/Irrigation/water-nearby',
     subject: TileImprovements_1.Irrigation,
     relation: 'requires',
     targets: [exports.waterNearby],

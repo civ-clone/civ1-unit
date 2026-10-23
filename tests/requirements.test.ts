@@ -172,7 +172,7 @@ describe('civ1-unit requirements', (): void => {
       game.requirements
         .for(Irrigation)
         .map((entry: Requirement): string => entry.id)
-    ).include('civ1-unit:unit/action/improvement/Irrigation');
+    ).include('civ1-unit:unit/action/improvement/Irrigation/water-nearby');
     // A Trireme is `Naval`, so the coastal entry is about it too.
     expect(
       game.requirements
