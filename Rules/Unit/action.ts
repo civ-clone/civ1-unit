@@ -311,6 +311,9 @@ export const getRules = (
             (tileUnit: Unit): boolean => tileUnit.player() !== unit.player()
           )
       ),
+      // A unit with no attack (Settlers, a Transport) can't attack. v474.05 lets it, and it always loses (#642). After
+      //  the check for a foreign unit: working out a unit's attack runs its yield rules.
+      new Criterion((unit: Unit): boolean => unit.attack().value() > 0),
       // Where the Unit is either...
       new Or(
         new And(

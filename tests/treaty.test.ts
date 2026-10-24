@@ -9,6 +9,9 @@ import {
   SneakPillage,
 } from '../Actions';
 import { Bomber, Caravan, Diplomat, Settlers, Warrior } from '../Units';
+import Criterion from '@civ-clone/core-rule/Criterion';
+import Effect from '@civ-clone/core-rule/Effect';
+import Expired from '@civ-clone/core-diplomacy/Rules/Declaration/Expired';
 import { Democracy, Monarchy } from '@civ-clone/library-government/Governments';
 import { Irrigation, Road } from '@civ-clone/civ1-world/TileImprovements';
 import AvailableGovernmentRegistry from '@civ-clone/core-government/AvailableGovernmentRegistry';
@@ -195,9 +198,22 @@ describe('treaties', (): void => {
     });
 
     it('should move, and end the treaty with no Vendetta, on Break treaty', (): void => {
-      const unit = addUnit(Warrior);
+      const unit = addUnit(Warrior),
+        endedBy: (Player | null)[] = [];
+
+      // Who ended it is passed on, so the player who broke it isn't told they were attacked (civ-clone/web-renderer#641).
+      ruleRegistry.register(
+        new Expired(
+          new Criterion((): boolean => true),
+          new Effect((declaration: unknown, by: Player | null): void => {
+            endedBy.push(by);
+          })
+        )
+      );
 
       unit.action(find(unit, land, SneakMove));
+
+      expect(endedBy).to.deep.equal([player]);
 
       expect(unit.tile()).to.equal(land);
       expect(unit.moves().value()).to.equal(0);
@@ -386,6 +402,46 @@ describe('treaties', (): void => {
       expect(find(capturer, city.tile(), SneakCaptureCity)).instanceOf(
         SneakCaptureCity
       );
+    });
+  });
+
+  // A unit with no attack can't attack (civ-clone/web-renderer#642).
+  describe('attacking with no attack', (): void => {
+    it('should not let Settlers attack', (): void => {
+      const unit = addUnit(Settlers),
+        target = world.get(8, 5);
+
+      addUnit(Warrior, partner, target);
+      interactionRegistry
+        .getByPlayers(player, partner)
+        .forEach((interaction) => (interaction as Peace).expire());
+
+      expect(actionsOf(unit, target)).to.deep.equal([]);
+    });
+
+    it('should not offer Settlers a sneak attack, or one the Senate overrules', (): void => {
+      const unit = addUnit(Settlers),
+        target = world.get(8, 5);
+
+      addUnit(Warrior, partner, target);
+
+      expect(actionsOf(unit, target)).to.deep.equal([]);
+
+      setGovernment(Democracy);
+
+      expect(actionsOf(unit, target)).to.deep.equal([]);
+    });
+
+    it('should still let a Warrior attack', (): void => {
+      const unit = addUnit(Warrior),
+        target = world.get(8, 5);
+
+      addUnit(Warrior, partner, target);
+      interactionRegistry
+        .getByPlayers(player, partner)
+        .forEach((interaction) => (interaction as Peace).expire());
+
+      expect(actionsOf(unit, target)).to.include('Attack');
     });
   });
 
