@@ -27,10 +27,12 @@ const getRules = (unitRegistry = UnitRegistry_1.instance, unitImprovementRegistr
         })),
         new Destroyed_1.default(
         // A loss for the Military report, as Civ1 counts one: a unit another player destroyed, its cargo with it at sea.
-        //  Disbanding, founding or joining a city and a spent Diplomat or Caravan are destroyed by no one, and a nuclear
-        //  weapon spends itself, so none of those count. A transport lost at sea is counted by `lostAtSea`
-        //  (civ-clone/web-renderer#405).
-        'civ1-unit:unit/destroyed/count-loss', new Criterion_1.default((unit, player) => player !== null && player !== unit.player()), new Effect_1.default((unit) => {
+        //  Disbanding, founding or joining a city, a spent Diplomat or Caravan, and a unit whose supporting city was
+        //  captured are destroyed by no one, and a nuclear weapon spends itself, so none of those count. A transport lost
+        //  at sea is counted by `lostAtSea` (civ-clone/web-renderer#405).
+        'civ1-unit:unit/destroyed/count-loss', new Criterion_1.default((unit, player) => player !== null && player !== unit.player()), 
+        // Once: a defeated stack's cargo goes down with its transport, and then comes up again in the stack.
+        new Criterion_1.default((unit) => !unit.destroyed()), new Effect_1.default((unit) => {
             unitLossRegistry.record(unit.player(), unit.sourceClass());
         })),
         new Destroyed_1.default('civ1-unit:unit/destroyed/deactivate', new Effect_1.default((unit) => {

@@ -18,7 +18,9 @@ const getRules = (engine = Engine_1.instance, unitLossRegistry = UnitLossRegistr
         ...transportRegistry
             .getByTransport(transport)
             .map((manifest) => manifest.unit()),
-    ].forEach((unit) => {
+    ]
+        .filter((unit) => !unit.destroyed())
+        .forEach((unit) => {
         unitLossRegistry.record(unit.player(), unit.sourceClass());
     }))),
     new LostAtSea_1.default('civ1-unit:unit/lost-at-sea/destroy', new Effect_1.default((unit) => unit.destroy(null))),

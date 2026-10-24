@@ -170,6 +170,52 @@ describe('cargo', (): void => {
     expect(losses(unitLossRegistry, enemy)).to.deep.equal([]);
   });
 
+  it('should count a defeated stack’s cargo once, though it goes down with its transport first', async (): Promise<void> => {
+    const {
+        enemy,
+        player,
+        ruleRegistry,
+        stowAboard,
+        tile,
+        transportRegistry,
+        unitLossRegistry,
+        unitRegistry,
+      } = await setUp(),
+      // Registered before the defender, so the stack has the transport, then its cargo, after the defender falls.
+      trireme = new Trireme(
+        null,
+        player,
+        tile,
+        ruleRegistry,
+        transportRegistry
+      ),
+      warrior = new Warrior(null, player, tile, ruleRegistry),
+      defender = new Trireme(
+        null,
+        player,
+        tile,
+        ruleRegistry,
+        transportRegistry
+      ),
+      attacker = new Trireme(
+        null,
+        enemy,
+        tile,
+        ruleRegistry,
+        transportRegistry
+      );
+
+    unitRegistry.register(trireme, warrior, defender, attacker);
+    stowAboard(trireme, warrior);
+
+    ruleRegistry.process(Defeated, defender, attacker);
+
+    expect(losses(unitLossRegistry, player)).to.deep.equal([
+      ['Trireme', 2],
+      ['Warrior', 1],
+    ]);
+  });
+
   it('should not count a unit destroyed by no one, or by its own player', async (): Promise<void> => {
     const { player, ruleRegistry, tile, unitLossRegistry, unitRegistry } =
         await setUp(Grassland),
