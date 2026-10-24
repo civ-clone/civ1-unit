@@ -18,6 +18,7 @@ import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprov
 import TransportRegistry from '@civ-clone/core-unit-transport/TransportRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import UnitLossRegistry from '@civ-clone/core-unit/UnitLossRegistry';
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
 import canStow from '../Rules/Unit/canStow';
@@ -33,6 +34,7 @@ describe('cargo', (): void => {
       cityRegistry = new CityRegistry(),
       transportRegistry = new TransportRegistry(),
       unitImprovementRegistry = new UnitImprovementRegistry(),
+      unitLossRegistry = new UnitLossRegistry(),
       unitRegistry = new UnitRegistry(),
       engine = new Engine(),
       player = new Player(ruleRegistry),
@@ -53,9 +55,10 @@ describe('cargo', (): void => {
         unitRegistry,
         unitImprovementRegistry,
         engine,
-        transportRegistry
+        transportRegistry,
+        unitLossRegistry
       ),
-      ...lostAtSea(engine),
+      ...lostAtSea(engine, unitLossRegistry, transportRegistry),
       ...unitYield(unitImprovementRegistry, ruleRegistry, transportRegistry),
       new Destroyed(
         new Effect((unit: Unit): void => {
@@ -85,9 +88,103 @@ describe('cargo', (): void => {
       stowAboard,
       tile,
       transportRegistry,
+      unitLossRegistry,
       unitRegistry,
     };
   };
+
+  // What the Military report shows as lost, by unit type (civ-clone/web-renderer#405).
+  const losses = (
+    unitLossRegistry: UnitLossRegistry,
+    player: Player
+  ): [string, number][] =>
+    unitLossRegistry
+      .getByPlayer(player)
+      .map((unitLoss): [string, number] => [
+        unitLoss.unit().name,
+        unitLoss.count(),
+      ]);
+
+  it('should count a Trireme lost at sea and its cargo as losses, once each', async (): Promise<void> => {
+    const {
+        player,
+        ruleRegistry,
+        stowAboard,
+        tile,
+        transportRegistry,
+        unitLossRegistry,
+        unitRegistry,
+      } = await setUp(),
+      trireme = new Trireme(
+        null,
+        player,
+        tile,
+        ruleRegistry,
+        transportRegistry
+      ),
+      warrior = new Warrior(null, player, tile, ruleRegistry);
+
+    unitRegistry.register(trireme, warrior);
+    stowAboard(trireme, warrior);
+
+    ruleRegistry.process(LostAtSea, trireme as unknown as ITransport);
+
+    expect(losses(unitLossRegistry, player)).to.deep.equal([
+      ['Trireme', 1],
+      ['Warrior', 1],
+    ]);
+  });
+
+  it('should count a unit another player destroys, with its cargo at sea', async (): Promise<void> => {
+    const {
+        enemy,
+        player,
+        ruleRegistry,
+        stowAboard,
+        tile,
+        transportRegistry,
+        unitLossRegistry,
+        unitRegistry,
+      } = await setUp(),
+      trireme = new Trireme(
+        null,
+        player,
+        tile,
+        ruleRegistry,
+        transportRegistry
+      ),
+      cargo = [
+        new Warrior(null, player, tile, ruleRegistry),
+        new Warrior(null, player, tile, ruleRegistry),
+      ];
+
+    unitRegistry.register(trireme, ...cargo);
+    stowAboard(trireme, ...cargo);
+
+    trireme.destroy(enemy);
+
+    expect(losses(unitLossRegistry, player)).to.deep.equal([
+      ['Trireme', 1],
+      ['Warrior', 2],
+    ]);
+    expect(losses(unitLossRegistry, enemy)).to.deep.equal([]);
+  });
+
+  it('should not count a unit destroyed by no one, or by its own player', async (): Promise<void> => {
+    const { player, ruleRegistry, tile, unitLossRegistry, unitRegistry } =
+        await setUp(Grassland),
+      disbanded = new Warrior(null, player, tile, ruleRegistry),
+      spent = new Warrior(null, player, tile, ruleRegistry);
+
+    unitRegistry.register(disbanded, spent);
+
+    // As disbanding, founding or joining a city, and a spent Diplomat or Caravan leave it.
+    disbanded.destroy();
+    // As a nuclear weapon spends itself.
+    spent.destroy(player);
+
+    expect(losses(unitLossRegistry, player)).to.deep.equal([]);
+  });
 
   it('should lose the cargo of a Trireme lost at sea', async (): Promise<void> => {
     const {

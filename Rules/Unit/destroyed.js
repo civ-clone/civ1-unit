@@ -4,13 +4,14 @@ exports.getRules = void 0;
 const Engine_1 = require("@civ-clone/core-engine/Engine");
 const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
+const UnitLossRegistry_1 = require("@civ-clone/core-unit/UnitLossRegistry");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Types_1 = require("@civ-clone/core-terrain/Types");
-const getRules = (unitRegistry = UnitRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, engine = Engine_1.instance, transportRegistry = TransportRegistry_1.instance) => {
+const getRules = (unitRegistry = UnitRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, engine = Engine_1.instance, transportRegistry = TransportRegistry_1.instance, unitLossRegistry = UnitLossRegistry_1.instance) => {
     // Nothing clears `Stowed` on its own (its criterion is `() => false`), so a unit taken off a transport, destroyed or
     // not, would otherwise stay stowed aboard nothing.
     const leaveTransport = (manifest) => {
@@ -23,6 +24,14 @@ const getRules = (unitRegistry = UnitRegistry_1.instance, unitImprovementRegistr
     return [
         new Destroyed_1.default('civ1-unit:unit/destroyed/emit', new Effect_1.default((unit, player) => {
             engine.emit('unit:destroyed', unit, player);
+        })),
+        new Destroyed_1.default(
+        // A loss for the Military report, as Civ1 counts one: a unit another player destroyed, its cargo with it at sea.
+        //  Disbanding, founding or joining a city and a spent Diplomat or Caravan are destroyed by no one, and a nuclear
+        //  weapon spends itself, so none of those count. A transport lost at sea is counted by `lostAtSea`
+        //  (civ-clone/web-renderer#405).
+        'civ1-unit:unit/destroyed/count-loss', new Criterion_1.default((unit, player) => player !== null && player !== unit.player()), new Effect_1.default((unit) => {
+            unitLossRegistry.record(unit.player(), unit.sourceClass());
         })),
         new Destroyed_1.default('civ1-unit:unit/destroyed/deactivate', new Effect_1.default((unit) => {
             unit.setActive(false);

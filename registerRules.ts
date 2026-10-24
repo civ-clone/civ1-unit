@@ -83,7 +83,8 @@ export const register = (game: Game): void => {
       game.units,
       game.unitImprovements,
       game.engine,
-      game.transports
+      game.transports,
+      game.unitLosses
     ),
     ...detonated(
       game.cities,
@@ -97,7 +98,7 @@ export const register = (game: Game): void => {
     ),
     ...expectedMovementCost(),
     ...halted(game.engine),
-    ...lostAtSea(game.engine),
+    ...lostAtSea(game.engine, game.unitLosses, game.transports),
     ...moved(
       game.transports,
       game.rules,
