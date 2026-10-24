@@ -41,12 +41,14 @@ export const getRules: (
         ...transportRegistry
           .getByTransport(transport)
           .map((manifest: TransportManifest): Unit => manifest.unit()),
-      ].forEach((unit: Unit): void => {
-        unitLossRegistry.record(
-          unit.player(),
-          unit.sourceClass() as typeof Unit
-        );
-      })
+      ]
+        .filter((unit: Unit): boolean => !unit.destroyed())
+        .forEach((unit: Unit): void => {
+          unitLossRegistry.record(
+            unit.player(),
+            unit.sourceClass() as typeof Unit
+          );
+        })
     )
   ),
   new LostAtSea(
