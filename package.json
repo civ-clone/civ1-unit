@@ -85,6 +85,7 @@
     "@civ-clone/core-data-object": "^0.1.0",
     "@civ-clone/core-diplomacy": "^0.1.0",
     "@civ-clone/core-engine": "^0.1.0",
+    "@civ-clone/core-government": "^0.1.6",
     "@civ-clone/core-game": "^0.1.15",
     "@civ-clone/core-player": "^0.1.0",
     "@civ-clone/core-random": "^0.1.0",
@@ -108,6 +109,7 @@
     "@civ-clone/library-city": "^0.1.4",
     "@civ-clone/library-diplomacy": "^0.1.4",
     "@civ-clone/library-science": "^0.1.0",
+    "@civ-clone/library-government": "^0.1.1",
     "@civ-clone/library-unit": "^0.1.13"
   }
 }

@@ -1,4 +1,5 @@
 export {
+  AbortMove,
   Activate,
   Attack,
   Automate,
@@ -30,6 +31,7 @@ export {
   Move,
   NoOrders,
   NuclearAttack,
+  Overruled,
   Pillage,
   PlantForest,
   RailroadTo,
@@ -39,7 +41,9 @@ export {
   SneakAttack,
   SneakCaptureCity,
   SneakInciteRevolt,
+  SneakMove,
   SneakNuclearAttack,
+  SneakPillage,
   SneakStealTechnology,
   StealTechnology,
   SubvertCity,

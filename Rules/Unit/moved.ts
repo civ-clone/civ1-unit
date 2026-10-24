@@ -4,7 +4,14 @@ import {
   CityRegistry,
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
-import { Attack, Disembark, Move, SneakAttack } from '../../Actions';
+import {
+  Attack,
+  Disembark,
+  Move,
+  SneakAttack,
+  SneakMove,
+  SneakPillage,
+} from '../../Actions';
 import {
   Engine,
   instance as engineInstance,
@@ -243,11 +250,14 @@ export const getRules = (
         peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
 
         // The victim of an attack in peacetime holds a grudge (v474.05's Vendetta flag, OpenCivOne `Segment_29f3.cs`
-        //  ~L886-894, `Overlay_22.cs` ~L517).
+        //  ~L886-894, `Overlay_22.cs` ~L517). Walking onto or pillaging its land only ends the treaty (`CheckPlayerTurn.cs`
+        //  ~L673 and ~L1687 clear Peace and nothing else, #287).
         const enemy = (action as unknown as { enemy(): Player }).enemy();
 
         if (
           peaceTreaties.length > 0 &&
+          !(action instanceof SneakMove) &&
+          !(action instanceof SneakPillage) &&
           !hasVendetta(enemy, unit.player(), interactionRegistry)
         ) {
           interactionRegistry.register(

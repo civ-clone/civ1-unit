@@ -14,6 +14,7 @@ import detonated from './Rules/Unit/detonated';
 import diplomat from './Rules/Unit/diplomat';
 import expectedMovementCost from './Rules/Unit/expectedMovementCost';
 import halted from './Rules/Unit/halted';
+import impassable from './Rules/Unit/impassable';
 import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
@@ -51,7 +52,8 @@ export const register = (game: Game): void => {
       game.playerResearch,
       game.playerTreasuries,
       game.strategies,
-      game.engine
+      game.engine,
+      game.playerGovernments
     ),
     ...activate(game.unitImprovements),
     navalNeedsCoastRule()
@@ -97,6 +99,7 @@ export const register = (game: Game): void => {
       game.tileImprovements
     ),
     ...expectedMovementCost(),
+    ...impassable(game.interactions, game.tileImprovements, game.workedTiles),
     ...halted(game.engine),
     ...lostAtSea(game.engine, game.unitLosses, game.transports),
     ...moved(
