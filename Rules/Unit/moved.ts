@@ -247,7 +247,9 @@ export const getRules = (
               interaction instanceof Peace && interaction.active()
           );
 
-        peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+        peaceTreaties.forEach((peaceTreaty) =>
+          peaceTreaty.expire(unit.player())
+        );
 
         // The victim of an attack in peacetime holds a grudge (v474.05's Vendetta flag, OpenCivOne `Segment_29f3.cs`
         //  ~L886-894, `Overlay_22.cs` ~L517). Walking onto or pillaging its land only ends the treaty (`CheckPlayerTurn.cs`
