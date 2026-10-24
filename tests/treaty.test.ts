@@ -39,6 +39,7 @@ import created from '../Rules/Unit/created';
 import { expect } from 'chai';
 import { hasVendetta } from '@civ-clone/library-diplomacy/lib/holds';
 import impassable from '../Rules/Unit/impassable';
+import moveOneStep from '@civ-clone/base-unit-action-goto/lib/moveOneStep';
 import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
@@ -389,6 +390,23 @@ describe('treaties', (): void => {
   });
 
   describe('routes', (): void => {
+    it("should stop a route passing over a partner's land, keeping the treaty", (): void => {
+      const unit = addUnit(Warrior);
+
+      expect(moveOneStep(unit, land, false)).to.equal('blocked');
+      expect(unit.tile()).to.equal(beside);
+      expect(unit.moves().value()).to.equal(1);
+      expect(atPeace()).to.true;
+    });
+
+    it("should halt a route ending on a partner's land, for the player to choose", (): void => {
+      const unit = addUnit(Warrior);
+
+      expect(moveOneStep(unit, land, true)).to.equal('halted');
+      expect(unit.tile()).to.equal(beside);
+      expect(atPeace()).to.true;
+    });
+
     it("should go round a partner's land", (): void => {
       const unit = addUnit(Warrior);
 

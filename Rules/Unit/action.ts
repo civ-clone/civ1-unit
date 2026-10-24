@@ -541,15 +541,23 @@ export const getRules = (
       unit: Unit,
       to: Tile,
       from: Tile = unit.tile()
-    ): Player | null =>
-      from.isLand() &&
-      to.isLand() &&
-      !unitRegistry
-        .getByTile(to)
-        .some((tileUnit: Unit): boolean => tileUnit.player() === unit.player())
-        ? partnerOf(unit, to)
-        : null,
-    // First of their actions' criteria: it's the cheap one that rules most tiles out.
+    ): Player | null => {
+      if (!from.isLand() || !to.isLand()) {
+        return null;
+      }
+
+      const partner = partnerOf(unit, to);
+
+      return partner !== null &&
+        !unitRegistry
+          .getByTile(to)
+          .some(
+            (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
+          )
+        ? partner
+        : null;
+    },
+    // First of their actions' criteria: it's the cheap one that rules most tiles out (most tiles aren't worked).
     onPartnersLand = new Criterion(
       (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         movePartner(unit, to, from) !== null
@@ -1322,8 +1330,8 @@ export const getRules = (
     // Pillaging a treaty partner's land breaks the treaty (v474.05 `CheckPlayerTurn.cs` ~L642-686).
     new Action(
       'civ1-unit:unit/action/sneak-pillage',
-      pillagingPartnersLand,
       ...pillageCriteria,
+      pillagingPartnersLand,
       isFree,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -1351,8 +1359,8 @@ export const getRules = (
           tileImprovementRegistry,
           turn
         ) as UnitAction,
-      pillagingPartnersLand,
-      ...pillageCriteria
+      ...pillageCriteria,
+      pillagingPartnersLand
     ),
 
     new Action(

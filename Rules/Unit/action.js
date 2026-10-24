@@ -215,14 +215,19 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         .some((improvement) => improvement instanceof CityImprovements_1.Palace && !improvement.destroyed())), peaceWithOwner = new Criterion_1.default((unit, to) => atPeace(unit.player(), cityRegistry.getByTile(to).player())), costToIncite = (to) => (0, diplomatCosts_1.inciteCost)(cityRegistry.getByTile(to), cityGrowthRegistry, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry);
     // A treaty partner's land (#287, `treatyPartner`): v474.05 asks about a move onto it from land, unless the unit's
     //  own units are there already (`CheckPlayerTurn.cs` ~L1662-1705), and about pillaging it.
-    const partnerOf = (unit, tile) => (0, treatyPartner_1.default)(unit, tile, interactionRegistry, tileImprovementRegistry, workedTileRegistry), movePartner = (unit, to, from = unit.tile()) => from.isLand() &&
-        to.isLand() &&
-        !unitRegistry
-            .getByTile(to)
-            .some((tileUnit) => tileUnit.player() === unit.player())
-        ? partnerOf(unit, to)
-        : null, 
-    // First of their actions' criteria: it's the cheap one that rules most tiles out.
+    const partnerOf = (unit, tile) => (0, treatyPartner_1.default)(unit, tile, interactionRegistry, tileImprovementRegistry, workedTileRegistry), movePartner = (unit, to, from = unit.tile()) => {
+        if (!from.isLand() || !to.isLand()) {
+            return null;
+        }
+        const partner = partnerOf(unit, to);
+        return partner !== null &&
+            !unitRegistry
+                .getByTile(to)
+                .some((tileUnit) => tileUnit.player() === unit.player())
+            ? partner
+            : null;
+    }, 
+    // First of their actions' criteria: it's the cheap one that rules most tiles out (most tiles aren't worked).
     onPartnersLand = new Criterion_1.default((unit, to, from = unit.tile()) => movePartner(unit, to, from) !== null), pillagingPartnersLand = new Criterion_1.default((unit, to) => partnerOf(unit, to) !== null), 
     // A Republic or Democracy can't break a treaty (#133): whatever would is offered as `Overruled` instead, which
     //  v474.05 answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a
@@ -383,8 +388,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         overruled('sneak-capture-city', (unit, to, from) => new Actions_1.SneakCaptureCity(from, to, unit, cityRegistry.getByTile(to), cityOwner(unit, to), ruleRegistry), ...captureCityCriteria, peaceWithOwner),
         new Action_1.Action('civ1-unit:unit/action/pillage', ...pillageCriteria, new Criterion_1.default((unit, to) => partnerOf(unit, to) === null), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
         // Pillaging a treaty partner's land breaks the treaty (v474.05 `CheckPlayerTurn.cs` ~L642-686).
-        new Action_1.Action('civ1-unit:unit/action/sneak-pillage', pillagingPartnersLand, ...pillageCriteria, isFree, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn))),
-        overruled('sneak-pillage', (unit, to, from) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn), pillagingPartnersLand, ...pillageCriteria),
+        new Action_1.Action('civ1-unit:unit/action/sneak-pillage', ...pillageCriteria, pillagingPartnersLand, isFree, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn))),
+        overruled('sneak-pillage', (unit, to, from) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn), ...pillageCriteria, pillagingPartnersLand),
         new Action_1.Action('civ1-unit:unit/action/fortify', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
         new Action_1.Action('civ1-unit:unit/action/sleep', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
         new Action_1.Action(
