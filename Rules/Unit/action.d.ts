@@ -20,6 +20,7 @@ import { Turn } from '@civ-clone/core-turn-based-game/Turn';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
+import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 export declare const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -41,6 +42,7 @@ export declare const getRules: (
   playerResearchRegistry?: PlayerResearchRegistry,
   playerTreasuryRegistry?: PlayerTreasuryRegistry,
   strategyRegistry?: StrategyRegistry,
-  engine?: Engine
+  engine?: Engine,
+  playerGovernmentRegistry?: PlayerGovernmentRegistry
 ) => Action[];
 export default getRules;

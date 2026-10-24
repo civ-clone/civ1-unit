@@ -100,11 +100,14 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
             const peaceTreaties = interactionRegistry
                 .getByPlayers(unit.player(), action.enemy())
                 .filter((interaction) => interaction instanceof Declarations_1.Peace && interaction.active());
-            peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire());
+            peaceTreaties.forEach((peaceTreaty) => peaceTreaty.expire(unit.player()));
             // The victim of an attack in peacetime holds a grudge (v474.05's Vendetta flag, OpenCivOne `Segment_29f3.cs`
-            //  ~L886-894, `Overlay_22.cs` ~L517).
+            //  ~L886-894, `Overlay_22.cs` ~L517). Walking onto or pillaging its land only ends the treaty (`CheckPlayerTurn.cs`
+            //  ~L673 and ~L1687 clear Peace and nothing else, #287).
             const enemy = action.enemy();
             if (peaceTreaties.length > 0 &&
+                !(action instanceof Actions_1.SneakMove) &&
+                !(action instanceof Actions_1.SneakPillage) &&
                 !(0, holds_1.hasVendetta)(enemy, unit.player(), interactionRegistry)) {
                 interactionRegistry.register(new Declarations_1.Vendetta(enemy, unit.player(), new Never_1.default(), ruleRegistry));
             }
