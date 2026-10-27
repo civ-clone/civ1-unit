@@ -266,4 +266,20 @@ describe('pickup', (): void => {
     expect(idle.tile() === trireme.tile()).true;
     expect(trireme.cargo().includes(idle)).true;
   });
+
+  it('should take the aircraft aboard a Carrier out of port, awake or not', async (): Promise<void> => {
+    const { addCity, create, sail } = await setUp(),
+      carrier = create(Carrier, 2),
+      fighter = create(Fighter, 2);
+
+    addCity(2);
+    carrier.stow(fighter, fighter.tile());
+    // As the AI wakes the aircraft aboard its carriers each turn.
+    fighter.setBusy();
+
+    sail(carrier, 3);
+
+    expect(fighter.tile() === carrier.tile()).true;
+    expect(carrier.cargo().includes(fighter)).true;
+  });
 });

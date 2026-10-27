@@ -121,7 +121,8 @@ export const getRules = (
     new Moved(
       // A transport leaving one of its player's cities takes only the units sentried aboard (`Stowed`, or `Sleeping`
       // as `moved/collect-sleeping` reads it), as in Civ1: the rest have orders of their own there, or none yet, and
-      // stay behind (civ-clone/web-renderer#553). At sea, all of its cargo goes with it.
+      // stay behind (civ-clone/web-renderer#553). At sea, all of its cargo goes with it. So does an aircraft aboard a
+      // Carrier, awake or not: one aboard has no orders but to take off, which leaves it (`moved/take-off`).
       'civ1-unit:unit/moved/move-cargo',
       new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
       new Criterion(
@@ -138,6 +139,7 @@ export const getRules = (
         transport.cargo().forEach((cargo: Unit): void => {
           if (
             leftPort &&
+            !(cargo instanceof Air) &&
             !(cargo.busy() instanceof Stowed) &&
             !(cargo.busy() instanceof Sleeping)
           ) {
