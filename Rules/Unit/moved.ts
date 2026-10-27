@@ -119,6 +119,9 @@ export const getRules = (
       })
     ),
     new Moved(
+      // A transport leaving one of its player's cities takes only the units sentried aboard (`Stowed`, or `Sleeping`
+      // as `moved/collect-sleeping` reads it), as in Civ1: the rest have orders of their own there, or none yet, and
+      // stay behind (civ-clone/web-renderer#553). At sea, all of its cargo goes with it.
       'civ1-unit:unit/moved/move-cargo',
       new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
       new Criterion(
@@ -127,11 +130,25 @@ export const getRules = (
       new Criterion((unit: Unit): boolean =>
         (unit as NavalTransport).hasCargo()
       ),
-      new Effect((unit: Unit, action: Action): void =>
-        (unit as NavalTransport)
-          .cargo()
-          .forEach((unit: Unit): void => unit.action(action.forUnit(unit)))
-      )
+      new Effect((unit: Unit, action: Action): void => {
+        const transport = unit as NavalTransport,
+          leftPort =
+            cityRegistry.getByTile(action.from())?.player() === unit.player();
+
+        transport.cargo().forEach((cargo: Unit): void => {
+          if (
+            leftPort &&
+            !(cargo.busy() instanceof Stowed) &&
+            !(cargo.busy() instanceof Sleeping)
+          ) {
+            transport.unload(cargo);
+
+            return;
+          }
+
+          cargo.action(action.forUnit(cargo));
+        });
+      })
     ),
     // These two come after `move-cargo`, so a unit collected here isn't also sent along the move just made.
     new Moved(

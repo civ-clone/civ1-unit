@@ -1,4 +1,5 @@
-import { Carrier, Fighter, Trireme, Warrior } from '../Units';
+import { Carrier, Fighter, Transport, Trireme, Warrior } from '../Units';
+import Busy from '@civ-clone/core-unit/Rules/Busy';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import City from '@civ-clone/core-city/City';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
@@ -214,5 +215,55 @@ describe('pickup', (): void => {
     sail(trireme, 1);
 
     expect(warrior.tile() === trireme.tile()).false;
+  });
+
+  // civ-clone/web-renderer#553: a ship leaving port takes only the units sentried aboard it.
+  it('should leave in port the cargo given other orders there, or none, and take the sentried', async (): Promise<void> => {
+    const { addCity, create, sail, transportRegistry, unitRegistry } =
+        await setUp(),
+      transport = create(Transport, 2),
+      fortified = create(Warrior, 2),
+      idle = create(Warrior, 2),
+      stowed = create(Warrior, 2),
+      sleeper = create(Warrior, 2),
+      city = addCity(2);
+
+    [fortified, idle, stowed, sleeper].forEach((unit: Unit): void => {
+      transport.stow(unit, unit.tile());
+
+      unit.setBusy(new Stowed());
+    });
+
+    // Woken in port (as `Unload` does), then given orders there.
+    fortified.setBusy(new Busy());
+    idle.setBusy();
+    sleeper.setBusy(sleeping(sleeper, unitRegistry));
+
+    sail(transport, 3);
+
+    [stowed, sleeper].forEach((unit: Unit): void => {
+      expect(unit.tile() === transport.tile()).true;
+      expect(transport.cargo().includes(unit)).true;
+    });
+
+    [fortified, idle].forEach((unit: Unit): void => {
+      expect(unit.tile() === city.tile()).true;
+      expect(transportRegistry.hasUnit(unit)).false;
+    });
+
+    expect(fortified.busy() instanceof Busy).true;
+  });
+
+  it('should take all of its cargo along at sea', async (): Promise<void> => {
+    const { create, sail } = await setUp(),
+      trireme = create(Trireme, 1),
+      idle = create(Warrior, 1);
+
+    trireme.stow(idle, idle.tile());
+
+    sail(trireme, 2);
+
+    expect(idle.tile() === trireme.tile()).true;
+    expect(trireme.cargo().includes(idle)).true;
   });
 });
