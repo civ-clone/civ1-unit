@@ -55,9 +55,23 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
             unit.moves().set(0);
             unit.setActive(false);
         })),
-        new Moved_1.default('civ1-unit:unit/moved/move-cargo', new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit.hasCargo()), new Effect_1.default((unit, action) => unit
-            .cargo()
-            .forEach((unit) => unit.action(action.forUnit(unit))))),
+        new Moved_1.default(
+        // A transport leaving one of its player's cities takes only the units sentried aboard (`Stowed`, or `Sleeping`
+        // as `moved/collect-sleeping` reads it), as in Civ1: the rest have orders of their own there, or none yet, and
+        // stay behind (civ-clone/web-renderer#553). At sea, all of its cargo goes with it.
+        'civ1-unit:unit/moved/move-cargo', new Criterion_1.default((unit) => unit instanceof Types_1.NavalTransport), new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit.hasCargo()), new Effect_1.default((unit, action) => {
+            var _a;
+            const transport = unit, leftPort = ((_a = cityRegistry.getByTile(action.from())) === null || _a === void 0 ? void 0 : _a.player()) === unit.player();
+            transport.cargo().forEach((cargo) => {
+                if (leftPort &&
+                    !(cargo.busy() instanceof Stowed_1.default) &&
+                    !(cargo.busy() instanceof Sleeping_1.default)) {
+                    transport.unload(cargo);
+                    return;
+                }
+                cargo.action(action.forUnit(cargo));
+            });
+        })),
         // These two come after `move-cargo`, so a unit collected here isn't also sent along the move just made.
         new Moved_1.default(
         // A Carrier that moves onto its player's aircraft picks them up. Aircraft in a city have landed, so they're only
