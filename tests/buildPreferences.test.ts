@@ -14,12 +14,14 @@ import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/Availabl
 import BronzeWorking from '@civ-clone/base-science-advance-bronzeworking/BronzeWorking';
 import BuildPreferencesRegistry from '@civ-clone/core-city-build/BuildPreferencesRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
+import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete';
 import CityBuild from '@civ-clone/core-city-build/CityBuild';
 import CityBuildRegistry from '@civ-clone/core-city-build/CityBuildRegistry';
 import CityGrowthRegistry from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Conscription from '@civ-clone/base-science-advance-conscription/Conscription';
 import Created from '@civ-clone/core-city/Rules/Created';
+import Engine from '@civ-clone/core-engine/Engine';
 import Gunpowder from '@civ-clone/base-science-advance-gunpowder/Gunpowder';
 import LaborUnion from '@civ-clone/base-science-advance-laborunion/LaborUnion';
 import MapMaking from '@civ-clone/base-science-advance-mapmaking/MapMaking';
@@ -34,6 +36,7 @@ import Writing from '@civ-clone/base-science-advance-writing/Writing';
 import build from '../Rules/City/build';
 import buildCost from '../Rules/City/buildCost';
 import buildingComplete from '../Rules/City/buildingComplete';
+import cityBuildingComplete from '@civ-clone/civ1-city/Rules/City/building-complete';
 import created from '../Rules/City/created';
 import { expect } from 'chai';
 import researchComplete from '../Rules/Player/researchComplete';
@@ -147,6 +150,36 @@ describe('build preferences', (): void => {
         expect(cityBuild.building()).null;
       })
     );
+
+    it('should already be building the next when civ1-city announces the last, so it can go unannounced', async (): Promise<void> => {
+      const {
+          buildPreferencesRegistry,
+          city,
+          cityBuild,
+          complete,
+          ruleRegistry,
+        } = await setUp(),
+        engine = new Engine(),
+        buildingAtAnnouncement: unknown[] = [];
+
+      // civ1-city's ahead of civ1-unit's, as a game registers them, so only the priority can put the repeat first.
+      const unitRules = ruleRegistry.get(BuildingComplete);
+
+      ruleRegistry.unregister(...unitRules);
+      ruleRegistry.register(
+        ...cityBuildingComplete(engine, ruleRegistry),
+        ...unitRules
+      );
+      engine.on('city:building-complete', (announced: CityBuild): void => {
+        buildingAtAnnouncement.push(announced.building()?.item() ?? null);
+      });
+
+      buildPreferencesRegistry.set(city.player(), { repeat: true });
+
+      complete(Warrior);
+
+      expect(buildingAtAnnouncement).eql([Warrior]);
+    });
 
     it('should leave a city on Auto to choose for itself', async (): Promise<void> => {
       const { buildPreferencesRegistry, city, cityBuild, complete } =
