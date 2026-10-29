@@ -7,6 +7,7 @@ import buildingComplete from './Rules/City/buildingComplete';
 import canJoinCity from './Rules/Unit/canJoinCity';
 import canStow from './Rules/Unit/canStow';
 import cityCaptured from './Rules/City/captured';
+import cityCreated from './Rules/City/created';
 import created from './Rules/Unit/created';
 import defeated from './Rules/Unit/defeated';
 import destroyed from './Rules/Unit/destroyed';
@@ -19,6 +20,7 @@ import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
+import researchComplete from './Rules/Player/researchComplete';
 import stowed from './Rules/Unit/stowed';
 import strength from './Rules/Unit/strength';
 import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
@@ -70,6 +72,7 @@ export const register = (game: Game): void => {
   game.rules.register(
     ...buildCost(),
     ...buildingComplete(game.cityGrowth),
+    ...cityCreated(game.cityBuilds),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),
     ...cityCaptured(game.cities, game.units, game.cityGrowth),
@@ -114,6 +117,7 @@ export const register = (game: Game): void => {
     ),
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
+    ...researchComplete(game.cities, game.cityBuilds),
     ...stowed(),
     ...diplomat(
       game.cityBuilds,
