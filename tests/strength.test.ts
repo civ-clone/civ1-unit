@@ -21,6 +21,7 @@ import CityImprovementRegistry from '@civ-clone/core-city-improvement/CityImprov
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import { CityWalls } from '@civ-clone/library-city/CityImprovements';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
+import defenceBonus from '../AdditionalData/defenceBonus';
 import Effect from '@civ-clone/core-rule/Effect';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import Player from '@civ-clone/core-player/Player';
@@ -102,8 +103,16 @@ describe('unit:strength', (): void => {
       defenceOf = (defender: Unit, attacker: Unit): number =>
         strength(attacker, defender, ruleRegistry)[1].value();
 
+    const [bonus] = defenceBonus(
+        cityRegistry,
+        cityImprovementRegistry,
+        unitImprovementRegistry
+      ),
+      bonusOf = (unit: Unit) => bonus.data(unit);
+
     return {
       attackWith,
+      bonusOf,
       buildCity,
       defend,
       defenceOf,
@@ -230,5 +239,53 @@ describe('unit:strength', (): void => {
     ).perform();
 
     expect(defeated).deep.equal([attacker]);
+  });
+
+  describe('defenceBonus', (): void => {
+    it('should be null for a unit with no bonus', async (): Promise<void> => {
+      const { bonusOf, defend } = await setUp();
+
+      expect(bonusOf(defend(Spearman))).equal(null);
+    });
+
+    it('should give the terrain, then fortified, and the two together', async (): Promise<void> => {
+      const { bonusOf, defend } = await setUp();
+
+      expect(bonusOf(defend(Spearman, Hills, [Fortified]))).deep.equal({
+        multiplier: 3,
+        sources: [
+          { name: 'Hills', multiplier: 2 },
+          { name: 'Fortified', multiplier: 1.5 },
+        ],
+      });
+    });
+
+    it('should count City Walls instead of fortified, with no attacker to ignore them', async (): Promise<void> => {
+      const { bonusOf, buildCity, defend } = await setUp(),
+        defender = defend(Spearman, Grassland, [Fortified]);
+
+      buildCity(true);
+
+      expect(bonusOf(defender)).deep.equal({
+        multiplier: 3,
+        sources: [{ name: 'CityWalls', multiplier: 3 }],
+      });
+    });
+
+    it('should give a ship and an aircraft nothing outside a walled city', async (): Promise<void> => {
+      const { bonusOf, defend } = await setUp();
+
+      expect(bonusOf(defend(Sail, Hills, [Fortified]))).equal(null);
+      expect(bonusOf(defend(Fighter, Mountains))).equal(null);
+    });
+
+    it('should match the defence in battle', async (): Promise<void> => {
+      const { attackWith, bonusOf, defend, defenceOf } = await setUp(),
+        defender = defend(Spearman, Mountains, [Fortified]);
+
+      expect(defenceOf(defender, attackWith(Knight))).equal(
+        defender.defence().value() * bonusOf(defender)!.multiplier
+      );
+    });
   });
 });
