@@ -52,6 +52,7 @@ describe('defeated', (): void => {
       attacker,
       cityRegistry,
       enemy,
+      engine,
       player,
       ruleRegistry,
       stack,
@@ -153,5 +154,28 @@ describe('defeated', (): void => {
     others.forEach((unit: Unit): void => {
       expect(unit.destroyed()).false;
     });
+  });
+
+  it('should tell listeners which unit lost, which won, and the attack', async (): Promise<void> => {
+    const {
+        attacker,
+        engine,
+        ruleRegistry,
+        stack: [defender],
+        tile,
+      } = await setUp(),
+      action = new Action(attacker.tile(), tile, attacker, ruleRegistry),
+      heard: [Unit, Unit, Action | undefined][] = [];
+
+    engine.on('unit:defeated', (unit: Unit, by: Unit, attack?: Action) =>
+      heard.push([unit, by, attack])
+    );
+
+    ruleRegistry.process(Defeated, defender, attacker, action);
+
+    expect(heard.length).equal(1);
+    expect(heard[0][0]).equal(defender);
+    expect(heard[0][1]).equal(attacker);
+    expect(heard[0][2]).equal(action);
   });
 });

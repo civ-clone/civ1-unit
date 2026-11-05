@@ -11,8 +11,10 @@ const Defeated_1 = require("@civ-clone/core-unit/Rules/Defeated");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance) => [
-    new Defeated_1.default('civ1-unit:unit/defeated/emit-and-destroy', new Effect_1.default((unit, by) => {
-        engine.emit('unit:defeated', unit, by);
+    new Defeated_1.default('civ1-unit:unit/defeated/emit-and-destroy', 
+    // The action is the attack, so a listener can tell the attacker from the defender: `action.unit()` attacked.
+    new Effect_1.default((unit, by, action) => {
+        engine.emit('unit:defeated', unit, by, action);
         ruleRegistry.process(Destroyed_1.default, unit, by.player());
     })),
     new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', 
