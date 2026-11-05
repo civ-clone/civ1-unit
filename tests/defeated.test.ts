@@ -178,4 +178,28 @@ describe('defeated', (): void => {
     expect(heard[0][1]).equal(attacker);
     expect(heard[0][2]).equal(action);
   });
+
+  it('should tell listeners the attack when the attacker is the one that lost', async (): Promise<void> => {
+    const {
+        attacker,
+        engine,
+        ruleRegistry,
+        stack: [defender],
+        tile,
+      } = await setUp(),
+      action = new Action(attacker.tile(), tile, attacker, ruleRegistry),
+      heard: [Unit, Unit, Action | undefined][] = [];
+
+    engine.on('unit:defeated', (unit: Unit, by: Unit, attack?: Action) =>
+      heard.push([unit, by, attack])
+    );
+
+    ruleRegistry.process(Defeated, attacker, defender, action);
+
+    expect(heard.length).equal(1);
+    expect(heard[0][0]).equal(attacker);
+    expect(heard[0][1]).equal(defender);
+    expect(heard[0][2]).equal(action);
+    expect(heard[0][2]!.unit()).equal(attacker);
+  });
 });

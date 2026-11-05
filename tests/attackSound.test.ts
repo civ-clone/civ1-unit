@@ -7,6 +7,7 @@ import {
   Knight,
   Musketman,
   Settlers,
+  Transport,
   Warrior,
 } from '../Units';
 import attackSound, {
@@ -38,9 +39,10 @@ describe('attackSound', (): void => {
     expect(attackSoundFor(Bomber)).to.deep.equal([bombing, gunfire]);
   });
 
-  it("should give nothing to a unit that doesn't fight", (): void => {
-    expect(attackSoundFor(Settlers)).null;
-    expect(attackSoundFor(Diplomat)).null;
+  it("should give a unit that doesn't attack the sound of its defence, as Civ1 does", (): void => {
+    expect(attackSoundFor(Settlers)).to.deep.equal([melee]);
+    expect(attackSoundFor(Diplomat)).to.deep.equal([melee]);
+    expect(attackSoundFor(Transport)).to.deep.equal([gunfire]);
   });
 
   it("should give nothing to a unit that isn't in Civ1's unit table", (): void => {

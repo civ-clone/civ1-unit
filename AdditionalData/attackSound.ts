@@ -16,7 +16,10 @@ export const melee = 'melee',
   gunfire = 'gunfire',
   bombing = 'bombing';
 
-/** The sound for a unit of `UnitType`, or `null` for one that doesn't fight, or isn't in Civ1's unit table. */
+/**
+ * The sound for a unit of `UnitType`, or `null` for one that isn't in Civ1's unit table. A unit that doesn't attack
+ *  still has one, as Civ1 gives it: heard when it wins a defence (a Transport's is a gun's).
+ */
 export const attackSoundFor = (UnitType: typeof Unit): AttackSound | null => {
   const stats = baseStats.find(([Type]) => Type === UnitType);
 
@@ -25,10 +28,6 @@ export const attackSoundFor = (UnitType: typeof Unit): AttackSound | null => {
   }
 
   const [, attack = 1, defence = 1] = stats;
-
-  if (attack === 0) {
-    return null;
-  }
 
   const sound = attack > 4 || defence > 2 ? gunfire : melee;
 
