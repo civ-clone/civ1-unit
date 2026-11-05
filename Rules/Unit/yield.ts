@@ -55,46 +55,50 @@ import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
 import Yield from '@civ-clone/core-yield/Yield';
 
+/**
+ * Each unit's attack, defence, movement and visibility before any modifier (a veteran's, a city's walls), as Civ1's
+ *  unit table has them. Left out, a stat is 1.
+ */
+export const baseStats = [
+  [Artillery, 12, 2, 2],
+  [Battleship, 18, 12, 4, 2],
+  [Bomber, 12, 1, 8, 2],
+  [Cannon, 8],
+  [Caravan, 0],
+  [Carrier, 1, 12, 5, 2],
+  [Catapult, 6],
+  [Chariot, 4, 1, 2],
+  [Cruiser, 6, 6, 6, 2],
+  [Diplomat, 0, 0, 2],
+  [Fighter, 4, 2, 10, 2],
+  [Frigate, 2, 2, 3],
+  [Horseman, 2, 1, 2],
+  [Ironclad, 4, 4, 4],
+  [Knight, 4, 2, 2],
+  [MechanizedInfantry, 6, 6, 3],
+  [Musketman, 2, 3],
+  [Nuclear, 99, 0, 16],
+  [Rifleman, 3, 5],
+  [Sail, 1, 1, 3],
+  [Settlers, 0],
+  [Spearman, 1, 2],
+  [Submarine, 8, 2, 3, 2],
+  [Swordman, 3],
+  [Tank, 10, 5, 3],
+  [Transport, 0, 3, 4],
+  [Trireme, 1, 0, 3],
+  [Warrior],
+] as [typeof Unit, number?, number?, number?, number?][];
+
 export const getRules = (
   unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
   ruleRegistry: RuleRegistry = ruleRegistryInstance,
   transportRegistry: TransportRegistry = transportRegistryInstance
 ): (UnitYield | BaseYield)[] => [
-  ...(
-    [
-      [Artillery, 12, 2, 2],
-      [Battleship, 18, 12, 4, 2],
-      [Bomber, 12, 1, 8, 2],
-      [Cannon, 8],
-      [Caravan, 0],
-      [Carrier, 1, 12, 5, 2],
-      [Catapult, 6],
-      [Chariot, 4, 1, 2],
-      [Cruiser, 6, 6, 6, 2],
-      [Diplomat, 0, 0, 2],
-      [Fighter, 4, 2, 10, 2],
-      [Frigate, 2, 2, 3],
-      [Horseman, 2, 1, 2],
-      [Ironclad, 4, 4, 4],
-      [Knight, 4, 2, 2],
-      [MechanizedInfantry, 6, 6, 3],
-      [Musketman, 2, 3],
-      [Nuclear, 99, 0, 16],
-      [Rifleman, 3, 5],
-      [Sail, 1, 1, 3],
-      [Settlers, 0],
-      [Spearman, 1, 2],
-      [Submarine, 8, 2, 3, 2],
-      [Swordman, 3],
-      [Tank, 10, 5, 3],
-      [Transport, 0, 3, 4],
-      [Trireme, 1, 0, 3],
-      [Warrior],
-    ] as [typeof Unit, number, number?, number?, number?][]
-  ).flatMap(
+  ...baseStats.flatMap(
     ([UnitType, attack = 1, defence = 1, movement = 1, visibility = 1]: [
       typeof Unit,
-      number,
+      number?,
       number?,
       number?,
       number?

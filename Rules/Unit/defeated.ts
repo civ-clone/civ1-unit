@@ -40,8 +40,9 @@ export const getRules: (
 ): Defeated[] => [
   new Defeated(
     'civ1-unit:unit/defeated/emit-and-destroy',
-    new Effect((unit: Unit, by: Unit): void => {
-      engine.emit('unit:defeated', unit, by);
+    // The action is the attack, so a listener can tell the attacker from the defender: `action.unit()` attacked.
+    new Effect((unit: Unit, by: Unit, action?: Action): void => {
+      engine.emit('unit:defeated', unit, by, action);
 
       ruleRegistry.process(Destroyed, unit, by.player());
     })
