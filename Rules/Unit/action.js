@@ -323,7 +323,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         overruled('sneak-incite-revolt', (unit, to, from) => new Actions_1.SneakInciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), cityOwner(unit, to), ruleRegistry), ...diplomatCriteria, canIncite, peaceWithOwner),
         new Action_1.Action('civ1-unit:unit/action/subvert-city', ...diplomatCriteria, canIncite, peaceWithOwner, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SubvertCity(from, to, unit, cityRegistry.getByTile(to), costToIncite(to) * 2, ruleRegistry))),
         // The Diplomat stays, with no moves left (v474.05 `F22_0000_0000`).
-        new Action_1.Action('civ1-unit:unit/action/meet-with-king', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithKing(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/meet-with-leader', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithLeader(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
         // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
         //  check, and the Diplomat keeps its moves.
         new Action_1.Action('civ1-unit:unit/action/bribe-unit', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Units_1.Diplomat), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to) === null), new Criterion_1.default((unit, to) => {

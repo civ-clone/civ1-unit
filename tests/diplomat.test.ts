@@ -4,7 +4,7 @@ import {
   IndustrialSabotage,
   InciteRevolt,
   InvestigateCity,
-  MeetWithKing,
+  MeetWithLeader,
   SneakInciteRevolt,
   SneakStealTechnology,
   StealTechnology,
@@ -244,7 +244,7 @@ describe('Diplomats', (): void => {
         'StealTechnology',
         'IndustrialSabotage',
         'InciteRevolt',
-        'MeetWithKing',
+        'MeetWithLeader',
       ]);
       expect(actionsOf(diplomatUnit, city.tile())).to.not.include.members([
         'Attack',
@@ -690,21 +690,21 @@ describe('Diplomats', (): void => {
     });
   });
 
-  describe('meeting the king', (): void => {
+  describe('meeting the leader', (): void => {
     it('should tell the client, and leave the Diplomat where it is with no moves', (): void => {
       const player = addPlayer(0),
         rival = addPlayer(0),
         city = addCity(rival, world.get(5, 5)),
         diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
 
-      find(diplomatUnit, city.tile(), MeetWithKing).perform();
+      find(diplomatUnit, city.tile(), MeetWithLeader).perform();
 
       expect(diplomatUnit.destroyed()).to.false;
       expect(diplomatUnit.tile()).to.equal(world.get(4, 5));
       expect(diplomatUnit.moves().value()).to.equal(0);
       expect(
-        events.find(([event]) => event === 'player:meet-with-king')
-      ).to.deep.equal(['player:meet-with-king', player, rival]);
+        events.find(([event]) => event === 'player:meet-with-leader')
+      ).to.deep.equal(['player:meet-with-leader', player, rival]);
     });
   });
 });

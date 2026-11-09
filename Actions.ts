@@ -27,7 +27,7 @@ export {
   InciteRevolt,
   InvestigateCity,
   JoinCity,
-  MeetWithKing,
+  MeetWithLeader,
   Move,
   NoOrders,
   NuclearAttack,

@@ -46,7 +46,7 @@ import Embassy from '@civ-clone/base-unit-action-establish-embassy/Embassy';
 import EmbassyEstablished from '@civ-clone/base-unit-action-establish-embassy/Rules/EmbassyEstablished';
 import { Gold } from '@civ-clone/library-city/Yields';
 import InciteRevolt from '@civ-clone/base-unit-action-incite-revolt/InciteRevolt';
-import KingMet from '@civ-clone/base-unit-action-meet-with-king/Rules/KingMet';
+import LeaderMet from '@civ-clone/base-unit-action-meet-with-leader/Rules/LeaderMet';
 import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
 import RevoltIncited from '@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited';
@@ -99,7 +99,7 @@ export const getRules = (
   | CitySabotaged
   | RevoltIncited
   | UnitBribed
-  | KingMet
+  | LeaderMet
 )[] => {
   // Pays `cost` from `unit`'s owner's gold, if it has that much.
   const pay = (unit: Unit, cost: number): boolean => {
@@ -143,12 +143,12 @@ export const getRules = (
     ),
 
     // v474.05 opens the contact screen, then the Diplomat's turn is over. The talks themselves are the client's.
-    new KingMet(
-      'civ1-unit:unit/king-met/meet',
+    new LeaderMet(
+      'civ1-unit:unit/leader-met/meet',
       new Effect((unit: Unit, player: Player): void => {
         unit.moves().set(0);
 
-        engine.emit('player:meet-with-king', unit.player(), player);
+        engine.emit('player:meet-with-leader', unit.player(), player);
       })
     ),
 
