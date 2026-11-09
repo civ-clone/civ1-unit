@@ -11,7 +11,7 @@ import Advance from '@civ-clone/core-science/Advance';
 import CityInvestigated from '@civ-clone/base-unit-action-investigate-city/Rules/CityInvestigated';
 import CitySabotaged from '@civ-clone/base-unit-action-industrial-sabotage/Rules/CitySabotaged';
 import EmbassyEstablished from '@civ-clone/base-unit-action-establish-embassy/Rules/EmbassyEstablished';
-import KingMet from '@civ-clone/base-unit-action-meet-with-king/Rules/KingMet';
+import LeaderMet from '@civ-clone/base-unit-action-meet-with-leader/Rules/LeaderMet';
 import Player from '@civ-clone/core-player/Player';
 import RevoltIncited from '@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited';
 import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
@@ -40,6 +40,6 @@ export declare const getRules: (
   | CitySabotaged
   | RevoltIncited
   | UnitBribed
-  | KingMet
+  | LeaderMet
 )[];
 export default getRules;

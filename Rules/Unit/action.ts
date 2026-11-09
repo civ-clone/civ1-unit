@@ -42,7 +42,7 @@ import {
   InvestigateCity,
   JoinCity,
   LandAircraft,
-  MeetWithKing,
+  MeetWithLeader,
   Move,
   NoOrders,
   NuclearAttack,
@@ -944,11 +944,11 @@ export const getRules = (
 
     // The Diplomat stays, with no moves left (v474.05 `F22_0000_0000`).
     new Action(
-      'civ1-unit:unit/action/meet-with-king',
+      'civ1-unit:unit/action/meet-with-leader',
       ...diplomatCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          new MeetWithKing(
+          new MeetWithLeader(
             from,
             to,
             unit,

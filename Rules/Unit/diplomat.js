@@ -17,7 +17,7 @@ const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Embassy_1 = require("@civ-clone/base-unit-action-establish-embassy/Embassy");
 const EmbassyEstablished_1 = require("@civ-clone/base-unit-action-establish-embassy/Rules/EmbassyEstablished");
 const Yields_1 = require("@civ-clone/library-city/Yields");
-const KingMet_1 = require("@civ-clone/base-unit-action-meet-with-king/Rules/KingMet");
+const LeaderMet_1 = require("@civ-clone/base-unit-action-meet-with-leader/Rules/LeaderMet");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const RevoltIncited_1 = require("@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited");
 const SubvertCity_1 = require("@civ-clone/base-unit-action-incite-revolt/SubvertCity");
@@ -65,9 +65,9 @@ const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovem
             return true;
         })),
         // v474.05 opens the contact screen, then the Diplomat's turn is over. The talks themselves are the client's.
-        new KingMet_1.default('civ1-unit:unit/king-met/meet', new Effect_1.default((unit, player) => {
+        new LeaderMet_1.default('civ1-unit:unit/leader-met/meet', new Effect_1.default((unit, player) => {
             unit.moves().set(0);
-            engine.emit('player:meet-with-king', unit.player(), player);
+            engine.emit('player:meet-with-leader', unit.player(), player);
         })),
         // v474.05 walks the advances from a random one and takes the first the victim has and the thief doesn't, which
         //  favours an advance after a run the thief already knows; here each is as likely (civ-clone/web-renderer#58).
