@@ -6,6 +6,8 @@ import { Ocean } from '@civ-clone/civ1-world/Terrains';
 import Player from '@civ-clone/core-player/Player';
 import World from '@civ-clone/core-world/World';
 import { expect } from 'chai';
+import { OBSOLESCENCE } from '../RuleSets';
+import { obsoletedBy } from '../Requirements';
 import register from '../registerRules';
 
 // Through `register(game)` rather than constructing the rules directly, so a rule that is defined but never registered
@@ -53,6 +55,30 @@ describe('registerRules', (): void => {
     expect(trireme.stow(first)).true;
     expect(trireme.stow(second)).true;
     expect(trireme.stow(third)).false;
+  });
+
+  it('should group the rules that make units obsolete as a set that can be switched off', async (): Promise<void> => {
+    const { game } = await setUp(),
+      ids = obsoletedBy.map((entry) => entry.id);
+
+    expect(ids).to.have.length(13);
+    expect(game.ruleSets.get(OBSOLESCENCE)!.memberIds()).to.eql(ids);
+    expect((): void => game.ruleSets.check()).not.to.throw();
+    expect(game.ruleSets.state(OBSOLESCENCE)).to.equal('on');
+
+    game.ruleSets.set(OBSOLESCENCE, false);
+
+    expect(ids.every((id) => !game.rules.getById(id)!.enabled())).true;
+    // What a unit needs is not part of it.
+    expect(
+      game.rules
+        .getById('civ1-unit:city/build/requires-advance/Musketman')!
+        .enabled()
+    ).true;
+
+    game.ruleSets.set(OBSOLESCENCE, true);
+
+    expect(ids.every((id) => game.rules.getById(id)!.enabled())).true;
   });
 
   it('should tell the engine when a GoTo stops next to its destination', async (): Promise<void> => {
