@@ -212,6 +212,66 @@ describe('build preferences', (): void => {
       expect(cityBuild.building()).null;
       expect(cityBuild.cleared()).eql({ reason: 'completed', item: Warrior });
     });
+
+    // The queue is the player's own order for this city, so it comes before the standing one
+    //  (civ-clone/web-renderer#774, #877).
+    it('should build what is queued next, not another of the same', async (): Promise<void> => {
+      const { buildPreferencesRegistry, city, cityBuild } = await setUp(
+        [Warrior, Trireme],
+        [MapMaking]
+      );
+
+      buildPreferencesRegistry.set(city.player(), { repeat: true });
+      cityBuild.build(Warrior as unknown as typeof Buildable);
+      cityBuild.enqueue(Trireme as unknown as typeof Buildable);
+      cityBuild.add(new Production(cityBuild.remaining()));
+      cityBuild.check();
+
+      expect(cityBuild.building()!.item()).equal(Trireme);
+      expect(cityBuild.queued()).eql([]);
+    });
+
+    it('should build another of the same once the queue is empty', async (): Promise<void> => {
+      const { buildPreferencesRegistry, city, cityBuild } = await setUp(
+        [Warrior, Trireme],
+        [MapMaking]
+      );
+
+      buildPreferencesRegistry.set(city.player(), { repeat: true });
+      cityBuild.build(Warrior as unknown as typeof Buildable);
+      cityBuild.enqueue(Trireme as unknown as typeof Buildable);
+
+      [Warrior, Trireme].forEach((): void => {
+        cityBuild.add(new Production(cityBuild.remaining()));
+        cityBuild.check();
+      });
+
+      expect(cityBuild.building()!.item()).equal(Trireme);
+      expect(cityBuild.progress().value()).equal(0);
+      expect(cityBuild.queued()).eql([]);
+    });
+
+    it('should build another of the same when nothing queued can be built any more, and still say what was dropped', async (): Promise<void> => {
+      const {
+        availableBuildItemsRegistry,
+        buildPreferencesRegistry,
+        city,
+        cityBuild,
+      } = await setUp([Warrior, Trireme], [MapMaking]);
+
+      buildPreferencesRegistry.set(city.player(), { repeat: true });
+      cityBuild.build(Warrior as unknown as typeof Buildable);
+      cityBuild.enqueue(Trireme as unknown as typeof Buildable);
+      availableBuildItemsRegistry.unregister(
+        Trireme as unknown as typeof Buildable
+      );
+      cityBuild.add(new Production(cityBuild.remaining()));
+      cityBuild.check();
+
+      expect(cityBuild.building()!.item()).equal(Warrior);
+      expect(cityBuild.queued()).eql([]);
+      expect(cityBuild.queueDropped()).eql([Trireme]);
+    });
   });
 
   describe('new cities build a defender (civ-clone/web-renderer#691)', (): void => {
