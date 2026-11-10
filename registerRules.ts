@@ -87,8 +87,8 @@ export const register = (game: Game): void => {
 
   game.rules.register(
     ...buildCost(),
-    ...buildingComplete(game.cityGrowth),
-    ...cityCreated(game.cityBuilds),
+    ...buildingComplete(game.cityGrowth, game.buildPreferences),
+    ...cityCreated(game.cityBuilds, game.buildPreferences),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),
     ...cityCaptured(game.cities, game.units, game.cityGrowth),

@@ -100,4 +100,27 @@ describe('registerRules', (): void => {
     expect(emitted.length).to.equal(1);
     expect(emitted[0][0] === warrior && emitted[0][1] === tile).true;
   });
+  // Each game's own (civ-clone/web-renderer#873): a player's choice in one game doesn't reach another's rules.
+  it('should act on the game`s own build preferences', async (): Promise<void> => {
+    const { game, player, tile } = await setUp(),
+      other = new Game();
+
+    register(other);
+
+    const warrior = new Warrior(null, player, tile, game.rules),
+      cityBuild = {
+        auto: (): boolean => false,
+        city: () => ({ player: (): Player => player }),
+      },
+      id = 'civ1-unit:city/building-complete/repeat-military-unit',
+      repeats = (inGame: Game): boolean =>
+        inGame.rules.getById(id)!.validate(cityBuild, warrior);
+
+    expect(repeats(game)).false;
+
+    game.buildPreferences.set(player, { repeat: true });
+
+    expect(repeats(game)).true;
+    expect(repeats(other)).false;
+  });
 });
