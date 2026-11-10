@@ -1,6 +1,13 @@
 import action from './Rules/Unit/action';
 import activate from './Rules/Unit/activate';
-import { buildRequirements, describedRequirements } from './Requirements';
+import {
+  buildRequirements,
+  describedRequirements,
+  obsoletedBy,
+} from './Requirements';
+import { OBSOLESCENCE } from './RuleSets';
+import { Requirement } from '@civ-clone/core-requirement/Requirement';
+import RuleSet from '@civ-clone/core-rule/RuleSet';
 import { deriveBuildRules, navalNeedsCoastRule } from './Rules/City/build';
 import buildCost from './Rules/City/buildCost';
 import buildingComplete from './Rules/City/buildingComplete';
@@ -68,6 +75,15 @@ export const register = (game: Game): void => {
     ...buildRequirements
   );
   game.requirements.add(null, ...describedRequirements);
+
+  // Units going obsolete, as a set a new game can switch off (civ-clone/web-renderer#158): with it off, a city can go
+  //  on building Phalanxes after Gunpowder. A set of its own for each game, as a game may add to its sets.
+  game.ruleSets.register(
+    new RuleSet(
+      OBSOLESCENCE,
+      ...obsoletedBy.map((entry: Requirement): string => entry.id)
+    )
+  );
 
   game.rules.register(
     ...buildCost(),

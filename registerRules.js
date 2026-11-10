@@ -4,6 +4,8 @@ exports.register = void 0;
 const action_1 = require("./Rules/Unit/action");
 const activate_1 = require("./Rules/Unit/activate");
 const Requirements_1 = require("./Requirements");
+const RuleSets_1 = require("./RuleSets");
+const RuleSet_1 = require("@civ-clone/core-rule/RuleSet");
 const build_1 = require("./Rules/City/build");
 const buildCost_1 = require("./Rules/City/buildCost");
 const buildingComplete_1 = require("./Rules/City/buildingComplete");
@@ -39,6 +41,9 @@ const register = (game) => {
     //  were, between the rules above and below, so nothing else moves in the order rules run (civ-clone/web-renderer#37).
     game.requirements.add((0, build_1.deriveBuildRules)(game.playerResearch), ...Requirements_1.buildRequirements);
     game.requirements.add(null, ...Requirements_1.describedRequirements);
+    // Units going obsolete, as a set a new game can switch off (civ-clone/web-renderer#158): with it off, a city can go
+    //  on building Phalanxes after Gunpowder. A set of its own for each game, as a game may add to its sets.
+    game.ruleSets.register(new RuleSet_1.default(RuleSets_1.OBSOLESCENCE, ...Requirements_1.obsoletedBy.map((entry) => entry.id)));
     game.rules.register(...(0, buildCost_1.default)(), ...(0, buildingComplete_1.default)(game.cityGrowth), ...(0, created_1.default)(game.cityBuilds), ...(0, canJoinCity_1.default)(game.cityGrowth), ...(0, canStow_1.default)(), ...(0, captured_1.default)(game.cities, game.units, game.cityGrowth), ...(0, created_2.default)(game.units, game.engine), ...(0, defeated_1.default)(game.cities, game.rules, game.tileImprovements, game.units, game.engine), ...(0, destroyed_1.default)(game.units, game.unitImprovements, game.engine, game.transports, game.unitLosses), ...(0, detonated_1.default)(game.cities, game.cityImprovements, game.cityGrowth, game.rules, game.units, game.engine, game.rng, game.tileImprovements), ...(0, expectedMovementCost_1.default)(), ...(0, impassable_1.default)(game.interactions, game.tileImprovements, game.workedTiles), ...(0, halted_1.default)(game.engine), ...(0, lostAtSea_1.default)(game.engine, game.unitLosses, game.transports), ...(0, moved_1.default)(game.transports, game.rules, game.rng, game.engine, game.cities, game.turn, game.interactions, game.units), ...(0, movementCost_1.default)(game.tileImprovements, game.transports), ...(0, action_2.default)(game.units), ...(0, researchComplete_1.default)(game.cities, game.cityBuilds), ...(0, stowed_1.default)(), ...(0, diplomat_1.default)(game.cityBuilds, game.cityImprovements, game.cities, game.interactions, game.playerResearch, game.playerTreasuries, game.rules, game.turn, game.engine, game.rng), ...(0, transferred_1.default)(game.unitImprovements, game.engine, game.strategyNotes), ...(0, tradeRouteEstablished_1.default)(game.tradeRoutes, game.playerTreasuries, game.playerResearch, game.landMasses, game.engine), ...(0, turnEnd_1.default)(game.units, game.cities, game.transports, game.strategyNotes, game.rules), ...(0, strength_1.default)(game.cities, game.cityImprovements, game.unitImprovements), ...(0, yield_1.default)(game.unitImprovements, game.rules, game.transports), ...(0, unsupported_1.default)(game.engine), ...(0, validateMove_1.default)(game.rng));
 };
 exports.register = register;
