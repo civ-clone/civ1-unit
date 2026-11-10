@@ -61,12 +61,19 @@ describe('registerRules', (): void => {
     const { game } = await setUp(),
       ids = obsoletedBy.map((entry) => entry.id);
 
+    expect(OBSOLESCENCE).to.equal('civ1-unit:obsolescence');
     expect(ids).to.have.length(13);
+    expect(ids).to.include('civ1-unit:city/build/obsolete/Spearman');
     expect(game.ruleSets.get(OBSOLESCENCE)!.memberIds()).to.eql(ids);
     expect((): void => game.ruleSets.check()).not.to.throw();
     expect(game.ruleSets.state(OBSOLESCENCE)).to.equal('on');
 
     game.ruleSets.set(OBSOLESCENCE, false);
+
+    // One line in a save for the whole of it, so a unit added later goes with the rest.
+    expect(game.ruleSets.choices()).to.eql([
+      { id: 'civ1-unit:obsolescence', value: false },
+    ]);
 
     expect(ids.every((id) => !game.rules.getById(id)!.enabled())).true;
     // What a unit needs is not part of it.

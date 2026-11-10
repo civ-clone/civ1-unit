@@ -91,7 +91,7 @@
     "@civ-clone/core-random": "^0.1.0",
     "@civ-clone/core-registry": "^0.1.0",
     "@civ-clone/core-requirement": "^0.1.1",
-    "@civ-clone/core-rule": "^0.1.7",
+    "@civ-clone/core-rule": "^0.1.8",
     "@civ-clone/core-science": "^0.1.0",
     "@civ-clone/core-strategy": "^0.1.0",
     "@civ-clone/core-terrain": "^0.1.0",
