@@ -180,6 +180,19 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
       expect(city.destroyed()).false;
     });
 
+    it('should say it will wait from the moment Settlers are chosen, and not once the city is size 2', async (): Promise<void> => {
+      const { cityBuild, cityGrowth } = await setUp({ level: Chieftain });
+
+      expect(cityBuild.progress().value()).equal(0);
+      expect(cityBuild.remaining()).greaterThan(0);
+      expect(cityBuild.held()).eql([CHIEFTAIN_SETTLERS_RULE]);
+
+      cityGrowth.grow();
+
+      expect(cityBuild.held()).eql([]);
+      expect(cityBuild.building()!.item()).equal(Settlers);
+    });
+
     it('should complete it once the city has grown, which then shrinks back', async (): Promise<void> => {
       const { city, cityBuild, cityGrowth, game, produce } = await setUp({
         level: Chieftain,
