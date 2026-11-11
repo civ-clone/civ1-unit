@@ -5,6 +5,8 @@ const BuildPreferencesRegistry_1 = require("@civ-clone/core-city-build/BuildPref
 const CityGrowthRegistry_1 = require("@civ-clone/core-city-growth/CityGrowthRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Units_1 = require("../../Units");
+const UnitImprovements_1 = require("../../UnitImprovements");
+const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const BulidingComplete_1 = require("@civ-clone/core-city-build/Rules/BulidingComplete");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
@@ -24,7 +26,7 @@ const nearestOtherCity = (city, cityRegistry) => cityRegistry
         (0, civ1Distance_1.default)(city.tile(), nearest.tile())
     ? other
     : nearest, null);
-const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPreferencesRegistry = BuildPreferencesRegistry_1.instance, cityRegistry = CityRegistry_1.instance) => [
+const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPreferencesRegistry = BuildPreferencesRegistry_1.instance, cityRegistry = CityRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance) => [
     new BulidingComplete_1.default(
     // A player who keeps building military units gets another of the same, without being asked (civ-clone/web-renderer#690),
     //  unless the city can no longer build it, when it is left to them, as in Civ1. Not Civ1's: it asks after every
@@ -56,7 +58,19 @@ const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPrefe
     //  nearest city (`near_city`, `CORE.C`); so the Settlers are made again, homed in the nearest city left (none when
     //  that is another player's). Here the same unit is homed in its player's nearest other city before the city goes,
     //  so `civ1-city`'s `city/destroyed/destroy-supported-units` leaves it be: nothing is made twice, and a city of
-    //  another player's nearer than any of its own doesn't leave it with no home, as `Unit#setCity` can't give it none.
+    //  another player's nearer than any of its own doesn't leave it with no home, as `Unit#setCity` can't give it none
+    //  (civ-clone/web-renderer#969). The unit made again starts afresh (`UNITS.C`, `create_unit`):
+    //
+    //  ```c
+    //  armydata[owner][index].status = 0;
+    //  ```
+    //
+    //  which clears the Veteran the city's Barracks gave the first (`CITYMGT.C`:
+    //  `if ((townbuf[city].buildings & HAS_BARRACKS) && unit != -1) armydata[selected_owner][unit].status |=
+    //  UNIT_VETERAN;`), and the sentry, fortifying, fortified, assigned and terrain-work orders, none of which a unit
+    //  just built has here: only the `Created` rules have run on it, and the only improvement they give is Barracks'
+    //  Veteran (`civ1-city-improvement`'s `Rules/Unit/created`). So the same unit loses its Veteran. It was given as the
+    //  unit was made, inside `CityBuild#check`, before any `BuildingComplete` rule runs, so this always comes after it.
     //  `kill_civ` (`NEWGAME.C`) does nothing here, as the player has another city. A size-1 city that holds its Settlers
     //  (`Rules/City/hold` on Chieftain, or a ruleset's own `Hold` rule) never gets here. The Settlers are what shrank it
     //  (civ-clone/web-renderer#400).
@@ -68,6 +82,10 @@ const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPrefe
             if (home !== null) {
                 buildItem.setCity(home);
             }
+            unitImprovementRegistry
+                .getByUnit(buildItem)
+                .filter((improvement) => improvement instanceof UnitImprovements_1.Veteran)
+                .forEach((improvement) => unitImprovementRegistry.unregister(improvement));
         }
         cityGrowth.shrink(buildItem);
     })),

@@ -6,6 +6,10 @@ import {
   Warlord,
 } from '@civ-clone/civ1-difficulty/Difficulties';
 import { Settlers, Warrior } from '../Units';
+import Created from '@civ-clone/core-unit/Rules/Created';
+import Criterion from '@civ-clone/core-rule/Criterion';
+import Effect from '@civ-clone/core-rule/Effect';
+import { Veteran } from '../UnitImprovements';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
@@ -26,6 +30,30 @@ import { expect } from 'chai';
 import cityDestroyed from '@civ-clone/civ1-city/Rules/City/destroyed';
 import cityShrink from '@civ-clone/civ1-city/Rules/City/shrink';
 import registerUnit from '../registerRules';
+
+// Ids, not the objects: chai prints what it compares when an assertion fails, and a city or a unit leads to the whole
+//  game, which it can't print.
+// A city's Barracks as civ1-city-improvement gives them: a unit made in a city is a Veteran, as it is made.
+const barracks = (game: Game): void =>
+  game.rules.register(
+    new Created(
+      new Criterion((unit: Unit): boolean => unit.city() !== null),
+      new Effect((unit: Unit): void =>
+        game.unitImprovements.register(new Veteran(unit))
+      )
+    )
+  );
+
+const isVeteran = (game: Game, unit: Unit): boolean =>
+  game.unitImprovements
+    .getByUnit(unit)
+    .some((improvement) => improvement instanceof Veteran);
+
+// A unit that is Settlers too, as a ruleset might add.
+class Colonists extends Settlers {}
+
+const ids = (entities: ({ id(): string } | null)[]): (string | null)[] =>
+  entities.map((entity) => entity?.id() ?? null);
 
 // Settlers completed in a city of size 1 (civ-clone/web-renderer#959), as v474.05 `CITYMGT.C`: held on Chieftain; on
 //  any other level built, the city keeping its citizen when it is its player's only one, and removed otherwise, the
@@ -209,7 +237,19 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
       expect(settlers).instanceof(Settlers);
       expect(cityBuild.cleared()).eql({ reason: 'completed', item: Settlers });
       expect(cityGrowth.size()).equal(1);
-      expect(game.units.getByCity(city)).eql([settlers]);
+      expect(ids(game.units.getByCity(city))).eql(ids([settlers]));
+    });
+
+    it('should hold anything that is Settlers too', async (): Promise<void> => {
+      const { cityBuild, game, produce } = await setUp({ level: Chieftain });
+
+      game.availableCityBuildItems.register(
+        Colonists as unknown as typeof Buildable
+      );
+      cityBuild.build(Colonists as unknown as typeof Buildable);
+
+      expect(cityBuild.held()).eql([CHIEFTAIN_SETTLERS_RULE]);
+      expect(produce()).null;
     });
 
     it('should not hold Settlers in a larger city, or anything else in a city of size 1', async (): Promise<void> => {
@@ -247,7 +287,7 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
         expect(settlers).instanceof(Settlers);
         expect(city.destroyed()).false;
         expect(cityGrowth.size()).equal(1);
-        expect(game.units.getByCity(city)).eql([settlers]);
+        expect(ids(game.units.getByCity(city))).eql(ids([settlers]));
       });
 
       it('should remove the city when the player has others, the Settlers staying on its square, homed in the nearest of them', async (): Promise<void> => {
@@ -272,12 +312,12 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
 
         expect(settlers).instanceof(Settlers);
         expect(city.destroyed()).true;
-        expect(destroyed).eql([city]);
+        expect(ids(destroyed)).eql(ids([city]));
         expect(settlers.destroyed()).false;
-        expect(settlers.tile()).equal(city.tile());
-        expect(settlers.city()).equal(others[1]);
-        expect(game.units.getByCity(others[1])).eql([settlers]);
-        expect(game.units.getByTile(city.tile())).eql([settlers]);
+        expect(settlers.tile() === city.tile()).true;
+        expect(ids([settlers.city()])).eql(ids([others[1]]));
+        expect(ids(game.units.getByCity(others[1]))).eql(ids([settlers]));
+        expect(ids(game.units.getByTile(city.tile()))).eql(ids([settlers]));
       });
 
       it('should take the first of two cities as near', async (): Promise<void> => {
@@ -291,8 +331,8 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
         });
         const settlers = produce()!;
 
-        expect(settlers.city()).equal(others[0]);
-        expect(game.units.getByCity(others[0])).eql([settlers]);
+        expect(ids([settlers.city()])).eql(ids([others[0]]));
+        expect(ids(game.units.getByCity(others[0]))).eql(ids([settlers]));
       });
 
       it('should take a citizen from a larger city, as before', async (): Promise<void> => {
@@ -303,7 +343,56 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
         const settlers = produce();
 
         expect(cityGrowth.size()).equal(2);
-        expect(game.units.getByCity(city)).eql([settlers]);
+        expect(ids(game.units.getByCity(city))).eql(ids([settlers]));
+      });
+
+      it('should take a citizen from a larger city with others, leaving the Settlers homed there, a Veteran from its Barracks', async (): Promise<void> => {
+        const { city, cityGrowth, game, produce } = await setUp({
+          level,
+          size: 2,
+          at: [
+            [4, 4],
+            [7, 5],
+          ],
+        });
+
+        barracks(game);
+
+        const settlers = produce()!;
+
+        expect(city.destroyed()).false;
+        expect(cityGrowth.size()).equal(1);
+        expect(ids([settlers.city()])).eql(ids([city]));
+        expect(isVeteran(game, settlers)).true;
+      });
+
+      it('should make the Settlers that outlive a removed city as new, not a Veteran from its Barracks', async (): Promise<void> => {
+        const { city, game, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 5],
+          ],
+        });
+
+        barracks(game);
+
+        const settlers = produce()!;
+
+        expect(city.destroyed()).true;
+        expect(settlers.destroyed()).false;
+        expect(isVeteran(game, settlers)).false;
+      });
+
+      it("should build them as a Veteran from its Barracks in the player's only city", async (): Promise<void> => {
+        const { city, game, produce } = await setUp({ level });
+
+        barracks(game);
+
+        const settlers = produce()!;
+
+        expect(city.destroyed()).false;
+        expect(isVeteran(game, settlers)).true;
       });
     });
   });

@@ -21,7 +21,9 @@ export const getRules: (
 ): Hold[] => [
   // On Chieftain, a size-1 city doesn't complete Settlers: the build stays, with its shields, which go on adding up,
   //  until the city has grown (civ-clone/web-renderer#959). The level is the game's, so the computer players' cities
-  //  wait too. v474.05 `CITYMGT.C`, before the shields are spent and the unit made:
+  //  wait too. v474.05 `CITYMGT.C`, before the shields are spent and the unit made, below; it also empties any city's
+  //  shields once they pass 999 (`if (townbuf[city].shield_box > 999 || ...) townbuf[city].shield_box = 0;`, at the
+  //  start of `city_process`), which isn't modelled here (civ-clone/web-renderer#969):
   //
   //  ```c
   //  townbuf[city].shield_box += scratch_i;
