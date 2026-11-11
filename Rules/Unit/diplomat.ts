@@ -34,8 +34,6 @@ import {
   Turn,
   instance as turnInstance,
 } from '@civ-clone/core-turn-based-game/Turn';
-import Advance from '@civ-clone/core-science/Advance';
-import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
 import BribeUnit from '@civ-clone/base-unit-action-bribe-unit/BribeUnit';
 import City from '@civ-clone/core-city/City';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
@@ -51,6 +49,11 @@ import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
 import RevoltIncited from '@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited';
 import SubvertCity from '@civ-clone/base-unit-action-incite-revolt/SubvertCity';
+import stealAdvance, {
+  firstStealableAdvance,
+  stealableAdvances,
+} from '../../lib/stealAdvance';
+import { STEAL_RULE } from '../../RuleIds';
 import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
@@ -58,28 +61,8 @@ import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
-/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
-export const stealableAdvances = (
-  thief: Player,
-  victim: Player,
-  playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance
-): (typeof Advance)[] => {
-  // Either without research (as a test may make them) has nothing to steal, rather than making the lookup throw.
-  try {
-    const thiefResearch = playerResearchRegistry.getByPlayer(thief);
-
-    return playerResearchRegistry
-      .getByPlayer(victim)
-      .complete()
-      .map((advance: Advance): typeof Advance => advance.sourceClass())
-      .filter(
-        (AdvanceType: typeof Advance): boolean =>
-          !AdvanceType.repeatable && !thiefResearch.completed(AdvanceType)
-      );
-  } catch (e) {
-    return [];
-  }
-};
+// Moved to `lib/stealAdvance`, shared with `civ1-enhanced`; still exported here for what imports it from here.
+export { stealableAdvances };
 
 export const getRules = (
   cityBuildRegistry: CityBuildRegistry = cityBuildRegistryInstance,
@@ -152,30 +135,33 @@ export const getRules = (
       })
     ),
 
-    // v474.05 walks the advances from a random one and takes the first the victim has and the thief doesn't, which
-    //  favours an advance after a run the thief already knows; here each is as likely (civ-clone/web-renderer#58).
-    //  The city is marked as robbed, which any change of owner clears.
+    // v474.05 walks its list of advances from a random one and takes the first the victim has and the thief doesn't,
+    //  which favours an advance after a run the thief already knows (`lib/stealAdvance`'s `firstStealableAdvance`,
+    //  with the decompile). `civ1-enhanced` makes each as likely (civ-clone/web-renderer#58, #960). The city is marked
+    //  as robbed, which any change of owner clears.
     new TechnologyStolen(
-      'civ1-unit:unit/technology-stolen/steal',
+      STEAL_RULE,
       new Effect((unit: Unit, city: City): boolean => {
         const thief = unit.player(),
           victim = city.player(),
-          stealable = stealableAdvances(thief, victim, playerResearchRegistry);
+          AdvanceType = firstStealableAdvance(
+            thief,
+            victim,
+            randomNumberGenerator,
+            playerResearchRegistry
+          );
 
-        if (stealable.length === 0) {
+        if (AdvanceType === null) {
           return false;
         }
 
-        const AdvanceType =
-          stealable[Math.floor(randomNumberGenerator() * stealable.length)];
-
-        playerResearchRegistry.getByPlayer(thief).addAdvance(AdvanceType);
-
-        interactionRegistry.register(
-          new AdvanceStolen(thief, victim, city, ruleRegistry, turn) as never
-        );
-
-        engine.emit('player:advance-stolen', thief, victim, AdvanceType, city);
+        stealAdvance(thief, victim, city, AdvanceType, {
+          engine,
+          interactionRegistry,
+          playerResearchRegistry,
+          ruleRegistry,
+          turn,
+        });
 
         return true;
       })

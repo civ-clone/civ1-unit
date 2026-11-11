@@ -26,14 +26,19 @@ import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
-import City from '@civ-clone/core-city/City';
-import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
+import {
+  HALVE_CITIES_PRIORITY,
+  halveCity,
+  hasSdiDefence,
+} from '../../lib/nuclear';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
 import Detonated from '@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated';
 import Effect from '@civ-clone/core-rule/Effect';
+import { HALVE_CITIES_RULE } from '../../RuleIds';
 import High from '@civ-clone/core-rule/Priorities/High';
+import Low from '@civ-clone/core-rule/Priorities/Low';
 import { Pollution } from '@civ-clone/civ1-world/TileImprovements';
-import { SdiDefence } from '@civ-clone/library-city/CityImprovements';
+import Priority from '@civ-clone/core-rule/Priority';
 import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
@@ -60,14 +65,7 @@ export const getRules: (
   randomNumberGenerator: () => number = rngInstance,
   tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance
 ): Detonated[] => {
-  const area = (tile: Tile): Tile[] => [tile, ...tile.getNeighbours()],
-    hasSdiDefence = (city: City): boolean =>
-      cityImprovementRegistry
-        .getByCity(city)
-        .some(
-          (cityImprovement: CityImprovement): boolean =>
-            cityImprovement instanceof SdiDefence
-        );
+  const area = (tile: Tile): Tile[] => [tile, ...tile.getNeighbours()];
 
   return [
     new Detonated(
@@ -87,7 +85,7 @@ export const getRules: (
         area(tile).forEach((areaTile: Tile): void => {
           const city = cityRegistry.getByTile(areaTile);
 
-          if (city !== null && hasSdiDefence(city)) {
+          if (city !== null && hasSdiDefence(city, cityImprovementRegistry)) {
             engine.emit('city:sdi-protected', city, unit);
 
             return;
@@ -107,9 +105,13 @@ export const getRules: (
 
     new Detonated(
       // Every city in the area loses half its size, rounded down. SDI Defense doesn't stop this: in v474.05 it only
-      //  spares the units in the city, though players commonly believe (and Civ2 has it) that it stops the whole
-      //  attack (Dom's decision on civ-clone/web-renderer#129).
-      'civ1-unit:unit/detonated/halve-cities',
+      //  spares the units in the city (civd `BATTLE.C`: `atom()` skips the stack of a city with `HAS_SDI`, then
+      //  `nuke_fallout()` halves every city in the area, `townbuf[c].size -= townbuf[c].size / 2;`), though players
+      //  commonly believe (and Civ2 has it) that it stops the whole attack (Dom's decision on
+      //  civ-clone/web-renderer#129). `civ1-enhanced` can have it spare the city too (civ-clone/web-renderer#960).
+      //  `HALVE_CITIES_PRIORITY`, after the units and before the fallout, as before, whichever rule is in force.
+      HALVE_CITIES_RULE,
+      new Priority(HALVE_CITIES_PRIORITY),
       new Effect((unit: Unit, tile: Tile): void =>
         area(tile).forEach((areaTile: Tile): void => {
           const city = cityRegistry.getByTile(areaTile);
@@ -118,19 +120,16 @@ export const getRules: (
             return;
           }
 
-          const cityGrowth = cityGrowthRegistry.getByCity(city),
-            loss = Math.floor(cityGrowth.size() / 2);
-
-          for (let i = 0; i < loss; i++) {
-            cityGrowth.shrink(unit);
-          }
+          halveCity(city, unit, cityGrowthRegistry);
         })
       )
     ),
 
     new Detonated(
-      // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance.
+      // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance. `Low`,
+      //  last, as before, after the cities are halved.
       'civ1-unit:unit/detonated/fallout',
+      new Low(),
       new Effect((unit: Unit, tile: Tile): void =>
         area(tile)
           .filter(

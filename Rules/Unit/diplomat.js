@@ -10,7 +10,6 @@ const PlayerResearchRegistry_1 = require("@civ-clone/core-science/PlayerResearch
 const PlayerTreasuryRegistry_1 = require("@civ-clone/core-treasury/PlayerTreasuryRegistry");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const Turn_1 = require("@civ-clone/core-turn-based-game/Turn");
-const AdvanceStolen_1 = require("@civ-clone/base-unit-action-steal-technology/AdvanceStolen");
 const CityInvestigated_1 = require("@civ-clone/base-unit-action-investigate-city/Rules/CityInvestigated");
 const CitySabotaged_1 = require("@civ-clone/base-unit-action-industrial-sabotage/Rules/CitySabotaged");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
@@ -21,27 +20,14 @@ const LeaderMet_1 = require("@civ-clone/base-unit-action-meet-with-leader/Rules/
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const RevoltIncited_1 = require("@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited");
 const SubvertCity_1 = require("@civ-clone/base-unit-action-incite-revolt/SubvertCity");
+const stealAdvance_1 = require("../../lib/stealAdvance");
+Object.defineProperty(exports, "stealableAdvances", { enumerable: true, get: function () { return stealAdvance_1.stealableAdvances; } });
+const RuleIds_1 = require("../../RuleIds");
 const TechnologyStolen_1 = require("@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen");
 const UnitBribed_1 = require("@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 const core_random_1 = require("@civ-clone/core-random");
-/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
-const stealableAdvances = (thief, victim, playerResearchRegistry = PlayerResearchRegistry_1.instance) => {
-    // Either without research (as a test may make them) has nothing to steal, rather than making the lookup throw.
-    try {
-        const thiefResearch = playerResearchRegistry.getByPlayer(thief);
-        return playerResearchRegistry
-            .getByPlayer(victim)
-            .complete()
-            .map((advance) => advance.sourceClass())
-            .filter((AdvanceType) => !AdvanceType.repeatable && !thiefResearch.completed(AdvanceType));
-    }
-    catch (e) {
-        return [];
-    }
-};
-exports.stealableAdvances = stealableAdvances;
 const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityRegistry = CityRegistry_1.instance, interactionRegistry = InteractionRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, turn = Turn_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance) => {
     // Pays `cost` from `unit`'s owner's gold, if it has that much.
     const pay = (unit, cost) => {
@@ -69,18 +55,22 @@ const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovem
             unit.moves().set(0);
             engine.emit('player:meet-with-leader', unit.player(), player);
         })),
-        // v474.05 walks the advances from a random one and takes the first the victim has and the thief doesn't, which
-        //  favours an advance after a run the thief already knows; here each is as likely (civ-clone/web-renderer#58).
-        //  The city is marked as robbed, which any change of owner clears.
-        new TechnologyStolen_1.default('civ1-unit:unit/technology-stolen/steal', new Effect_1.default((unit, city) => {
-            const thief = unit.player(), victim = city.player(), stealable = (0, exports.stealableAdvances)(thief, victim, playerResearchRegistry);
-            if (stealable.length === 0) {
+        // v474.05 walks its list of advances from a random one and takes the first the victim has and the thief doesn't,
+        //  which favours an advance after a run the thief already knows (`lib/stealAdvance`'s `firstStealableAdvance`,
+        //  with the decompile). `civ1-enhanced` makes each as likely (civ-clone/web-renderer#58, #960). The city is marked
+        //  as robbed, which any change of owner clears.
+        new TechnologyStolen_1.default(RuleIds_1.STEAL_RULE, new Effect_1.default((unit, city) => {
+            const thief = unit.player(), victim = city.player(), AdvanceType = (0, stealAdvance_1.firstStealableAdvance)(thief, victim, randomNumberGenerator, playerResearchRegistry);
+            if (AdvanceType === null) {
                 return false;
             }
-            const AdvanceType = stealable[Math.floor(randomNumberGenerator() * stealable.length)];
-            playerResearchRegistry.getByPlayer(thief).addAdvance(AdvanceType);
-            interactionRegistry.register(new AdvanceStolen_1.default(thief, victim, city, ruleRegistry, turn));
-            engine.emit('player:advance-stolen', thief, victim, AdvanceType, city);
+            (0, stealAdvance_1.default)(thief, victim, city, AdvanceType, {
+                engine,
+                interactionRegistry,
+                playerResearchRegistry,
+                ruleRegistry,
+                turn,
+            });
             return true;
         })),
         // v474.05: a random improvement (never the Palace or a Wonder) half the time, or always if the shield box is

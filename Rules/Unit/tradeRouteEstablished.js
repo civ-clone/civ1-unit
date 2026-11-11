@@ -66,8 +66,10 @@ const getRules = (tradeRouteRegistry = TradeRouteRegistry_1.instance, playerTrea
         })),
         // The home city keeps its best three routes. A route to a city it already trades with stays where it is; otherwise
         //  an empty slot is filled, or the least valuable route is replaced if the new one is worth more (the first wins a
-        //  tie). If none is worth less, the route isn't kept, but the goods were still sold. v474.05 skips a slot holding the
-        //  same city, which can leave it with two routes to one city; we don't copy that (Dom, 2026-09-30).
+        //  tie). If none is worth less, the route isn't kept, but the goods were still sold. As v474.05 (civd `CAPTURE.C`
+        //  `rpath()`), which never leaves a city with two routes to one city: it stops at a slot holding the same city,
+        //  before any slot is filled (`if (k == c) return 1;`), and `rpath()` is all that fills one
+        //  (civ-clone/web-renderer#960).
         new TradeRouteEstablished_1.default('civ1-unit:unit/trade-route-established/route', new Effect_1.default((unit, city) => {
             const home = unit.city(), player = unit.player(), routes = tradeRouteRegistry.getByCity(home);
             if (routes.some((route) => route.to() === city)) {
