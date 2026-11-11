@@ -6,14 +6,5 @@ import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
 import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import Detonated from '@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated';
-export declare const getRules: (
-  cityRegistry?: CityRegistry,
-  cityImprovementRegistry?: CityImprovementRegistry,
-  cityGrowthRegistry?: CityGrowthRegistry,
-  ruleRegistry?: RuleRegistry,
-  unitRegistry?: UnitRegistry,
-  engine?: Engine,
-  randomNumberGenerator?: () => number,
-  tileImprovementRegistry?: TileImprovementRegistry
-) => Detonated[];
+export declare const getRules: (cityRegistry?: CityRegistry, cityImprovementRegistry?: CityImprovementRegistry, cityGrowthRegistry?: CityGrowthRegistry, ruleRegistry?: RuleRegistry, unitRegistry?: UnitRegistry, engine?: Engine, randomNumberGenerator?: () => number, tileImprovementRegistry?: TileImprovementRegistry) => Detonated[];
 export default getRules;

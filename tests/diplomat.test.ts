@@ -24,6 +24,7 @@ import { Palace, Temple } from '@civ-clone/library-city/CityImprovements';
 import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
+import Barbarian from '@civ-clone/base-civilization-barbarian/Barbarian';
 import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/AvailableCityBuildItemsRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
@@ -446,6 +447,30 @@ describe('Diplomats', (): void => {
       expect(playerResearchRegistry.getByPlayer(player).completed(Currency)).to
         .false;
       expect(random).to.eql([0.9]);
+    });
+
+    // civ-clone/web-renderer#960: v474.05's `has_tech()` knows no advance of the Barbarians'. Steal Technology is still
+    //  offered against their city, as `action`'s `canSteal` is shared with `civ1-enhanced`'s rule; v474.05 offers it
+    //  too, and says "No new technology found.", keeping the Diplomat.
+    it('should take nothing from a Barbarian city, having drawn once, and keep the Diplomat', (): void => {
+      const player = addPlayer(0),
+        barbarians = addPlayer(0, LibraryWriting, LibraryAlphabet),
+        city = addCity(barbarians, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      barbarians.setCivilization(new Barbarian());
+      random.push(3.5 / 72, 0.9);
+
+      find(diplomatUnit, city.tile(), StealTechnology).perform();
+
+      expect(
+        playerResearchRegistry.getByPlayer(player).completed(LibraryWriting)
+      ).to.false;
+      expect(diplomatUnit.destroyed()).to.false;
+      expect(random).to.eql([0.9]);
+      expect(events.map(([event]) => event)).not.to.include(
+        'player:advance-stolen'
+      );
     });
 
     it('should never take a repeatable advance', (): void => {

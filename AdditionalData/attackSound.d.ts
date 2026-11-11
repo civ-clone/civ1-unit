@@ -8,15 +8,11 @@ import Unit from '@civ-clone/core-unit/Unit';
  *  player watching is on, not on the unit.
  */
 export type AttackSound = string[];
-export declare const melee = 'melee',
-  gunfire = 'gunfire',
-  bombing = 'bombing';
+export declare const melee = "melee", gunfire = "gunfire", bombing = "bombing";
 /**
  * The sound for a unit of `UnitType`, or `null` for one that isn't in Civ1's unit table. A unit that doesn't attack
  *  still has one, as Civ1 gives it: heard when it wins a defence (a Transport's is a gun's).
  */
-export declare const attackSoundFor: (
-  UnitType: typeof Unit
-) => AttackSound | null;
+export declare const attackSoundFor: (UnitType: typeof Unit) => AttackSound | null;
 export declare const getAdditionalData: () => AdditionalData[];
 export default getAdditionalData;

@@ -6,14 +6,5 @@ import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegis
 import { Turn } from '@civ-clone/core-turn-based-game/Turn';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import Moved from '@civ-clone/core-unit/Rules/Moved';
-export declare const getRules: (
-  transportRegistry?: TransportRegistry,
-  ruleRegistry?: RuleRegistry,
-  randomNumberGenerator?: () => number,
-  engine?: Engine,
-  cityRegistry?: CityRegistry,
-  turn?: Turn,
-  interactionRegistry?: InteractionRegistry,
-  unitRegistry?: UnitRegistry
-) => Moved[];
+export declare const getRules: (transportRegistry?: TransportRegistry, ruleRegistry?: RuleRegistry, randomNumberGenerator?: () => number, engine?: Engine, cityRegistry?: CityRegistry, turn?: Turn, interactionRegistry?: InteractionRegistry, unitRegistry?: UnitRegistry) => Moved[];
 export default getRules;

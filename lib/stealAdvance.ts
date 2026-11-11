@@ -210,10 +210,17 @@ export const civ1Advances: (typeof Advance | null)[] = [
  *             continue;
  *         give_advance(player, tech, target_civ);
  *
+ * and `has_tech()` (civd `ECONOMY.C`) knows nothing of the Barbarians, civilization 0:
+ *
+ *     if (adv >= 71)
+ *         return 0;
+ *     if (civ == 0)
+ *         return 0;
+ *
  * One draw, always, then the first advance from a random place in `civ1Advances` that `victim` knows and `thief`
- * doesn't, so an advance after a run `thief` knows is likelier. The Barbarians (`player == 0`) take nothing. An advance
- * v474.05 doesn't have (another package's) comes after the 72, in the order `victim` learnt them; with none, the walk is
- * v474.05's. `null` if there is nothing to take.
+ * doesn't, so an advance after a run `thief` knows is likelier. Nothing is taken by the Barbarians (`player == 0`), nor
+ * from them (`has_tech(target_civ, …)` is 0 for every slot), though the draw is still made. `null` if there is nothing
+ * to take.
  */
 export const firstStealableAdvance = (
   thief: Player,
@@ -223,10 +230,14 @@ export const firstStealableAdvance = (
 ): typeof Advance | null => {
   const start = Math.floor(randomNumberGenerator() * civ1Advances.length);
 
-  if (isBarbarian(thief)) {
+  if (isBarbarian(thief) || isBarbarian(victim)) {
     return null;
   }
 
+  // The walk: v474.05's 72 slots first, then any advance it doesn't have (another package's) that `thief` could take,
+  //  in the order `victim` learnt them. The start is drawn over the 72 slots only, as v474.05 draws it, not over the
+  //  whole list: with no such advance the walk is exactly v474.05's, and with some they are only reached by a walk
+  //  that passes slot 71 before finding anything.
   const stealable = stealableAdvances(thief, victim, playerResearchRegistry),
     order = [
       ...civ1Advances,

@@ -1,6 +1,8 @@
 import * as Advances from '@civ-clone/library-science/Advances';
 import {
   Alphabet,
+  Chemistry,
+  Combustion,
   Currency,
   FusionPower,
   Gunpowder,
@@ -141,6 +143,44 @@ describe('stealing an advance, as v474.05', (): void => {
 
     expect(steal()).to.null;
     expect(draws).to.eql([at(5)]);
+  });
+
+  it('should take nothing from the Barbarians, having drawn, as v474.05 knows no advance of theirs', (): void => {
+    const { draws, steal, victim } = setUp(
+      [],
+      [Writing, Alphabet, Extra],
+      [at(5)]
+    );
+
+    victim.setCivilization(new Barbarian());
+
+    expect(steal()).to.null;
+    expect(draws).to.eql([at(5)]);
+  });
+
+  it('should draw the start over the 72 slots, not over the list with the other advances after them', (): void => {
+    class Another extends Advance {}
+
+    // With Extra and Another the list is 74 long: a start drawn or scaled over it would be 37 (Combustion), not 36
+    //  (Chemistry).
+    expect(
+      setUp([], [Extra, Another, Combustion, Chemistry], [at(36)]).steal()
+    ).to.equal(Chemistry);
+    expect(setUp([], [Extra, Another, Combustion], [at(36)]).steal()).to.equal(
+      Combustion
+    );
+    // The last slot, never known, wraps to Extra, after the 72 and before the start of the list.
+    expect(setUp([], [Extra, Alphabet], [at(71)]).steal()).to.equal(Extra);
+  });
+
+  it('should walk the other advances in the order the victim learnt them', (): void => {
+    class Another extends Advance {}
+
+    expect(setUp([], [Another, Extra], [at(67)]).steal()).to.equal(Another);
+    expect(setUp([], [Extra, Another], [at(67)]).steal()).to.equal(Extra);
+    expect(setUp([Extra], [Extra, Another], [at(67)]).steal()).to.equal(
+      Another
+    );
   });
 
   it("should take an advance v474.05 doesn't have after its 72, in the order the victim learnt them", (): void => {

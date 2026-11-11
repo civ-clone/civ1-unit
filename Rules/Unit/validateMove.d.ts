@@ -6,7 +6,5 @@ import ValidateMove from '@civ-clone/core-unit/Rules/ValidateMove';
  * `expectedMovementCost` prices routes from the same number.
  */
 export declare const shortfallFactor = 0.5;
-export declare const getRules: (
-  randomNumberGenerator?: () => number
-) => ValidateMove[];
+export declare const getRules: (randomNumberGenerator?: () => number) => ValidateMove[];
 export default getRules;

@@ -8,11 +8,5 @@ import Unit from '@civ-clone/core-unit/Unit';
 export declare const goods: string[];
 export declare const goodsFor: (unit: Unit) => string;
 export declare const routesPerCity = 3;
-export declare const getRules: (
-  tradeRouteRegistry?: TradeRouteRegistry,
-  playerTreasuryRegistry?: PlayerTreasuryRegistry,
-  playerResearchRegistry?: PlayerResearchRegistry,
-  landMassRegistry?: LandMassRegistry,
-  engine?: Engine
-) => TradeRouteEstablished[];
+export declare const getRules: (tradeRouteRegistry?: TradeRouteRegistry, playerTreasuryRegistry?: PlayerTreasuryRegistry, playerResearchRegistry?: PlayerResearchRegistry, landMassRegistry?: LandMassRegistry, engine?: Engine) => TradeRouteEstablished[];
 export default getRules;

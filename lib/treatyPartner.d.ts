@@ -15,11 +15,5 @@ import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
  * founded, and every tile a city works, until a foreign unit steps on it):
  * here a tile counts while it's worked.
  */
-export declare const treatyPartner: (
-  unit: Unit,
-  tile: Tile,
-  interactionRegistry: InteractionRegistry,
-  tileImprovementRegistry: TileImprovementRegistry,
-  workedTileRegistry: WorkedTileRegistry
-) => Player | null;
+export declare const treatyPartner: (unit: Unit, tile: Tile, interactionRegistry: InteractionRegistry, tileImprovementRegistry: TileImprovementRegistry, workedTileRegistry: WorkedTileRegistry) => Player | null;
 export default treatyPartner;

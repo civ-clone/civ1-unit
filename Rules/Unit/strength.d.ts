@@ -17,19 +17,9 @@ export declare const ignoreCityWalls: (typeof Unit)[];
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
  * attacker but those in `ignoreCityWalls`.
  */
-export declare const defenceMultipliers: (
-  defender: Unit,
-  attacker: Unit | null,
-  cityRegistry?: CityRegistry,
-  cityImprovementRegistry?: CityImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry
-) => [string, number][];
+export declare const defenceMultipliers: (defender: Unit, attacker: Unit | null, cityRegistry?: CityRegistry, cityImprovementRegistry?: CityImprovementRegistry, unitImprovementRegistry?: UnitImprovementRegistry) => [string, number][];
 /**
  * Civ1's defence bonuses in battle: `defenceMultipliers`, each added to the defence under its own name.
  */
-export declare const getRules: (
-  cityRegistry?: CityRegistry,
-  cityImprovementRegistry?: CityImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry
-) => Strength[];
+export declare const getRules: (cityRegistry?: CityRegistry, cityImprovementRegistry?: CityImprovementRegistry, unitImprovementRegistry?: UnitImprovementRegistry) => Strength[];
 export default getRules;
