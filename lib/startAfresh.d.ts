@@ -2,9 +2,9 @@ import { StrategyNoteRegistry } from '@civ-clone/core-strategy/StrategyNoteRegis
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
 /**
- * Where `unit/transferred/start-afresh` runs among the `Transferred` rules: between `High` and `Normal`, so before
- * `unit/transferred/emit` tells a client the unit has changed sides. A rule that takes its place (`civ1-enhanced`'s)
- * runs there too, whichever package loads first.
+ * Where a rule that takes the place of `unit/transferred/start-afresh` (`civ1-enhanced`'s) runs among the
+ * `Transferred` rules: between `High` and `Normal`, so before `unit/transferred/emit` tells a client the unit has
+ * changed sides, whichever package loads first. `start-afresh` itself is registered just before `emit`.
  */
 export declare const START_AFRESH_PRIORITY = 1500;
 /**

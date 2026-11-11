@@ -2,7 +2,7 @@ import {
   Engine,
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
-import startAfresh, { START_AFRESH_PRIORITY } from '../../lib/startAfresh';
+import startAfresh from '../../lib/startAfresh';
 import {
   StrategyNoteRegistry,
   instance as strategyNoteRegistryInstance,
@@ -13,7 +13,6 @@ import {
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import Effect from '@civ-clone/core-rule/Effect';
 import Player from '@civ-clone/core-player/Player';
-import Priority from '@civ-clone/core-rule/Priority';
 import { START_AFRESH_RULE } from '../../RuleIds';
 import Transferred from '@civ-clone/core-unit/Rules/Transferred';
 import Unit from '@civ-clone/core-unit/Unit';
@@ -32,10 +31,9 @@ export const getRules: (
   //  arrives as a new unit would: not a veteran, not fortified, with no moves until its new owner's turn (Rome on 640K
   //  a Day, p273), and, an aircraft, with its fuel full. Otherwise a Bomber a turn out when it's bribed would be lost at
   //  the end of the briber's turn, before its new owner could move it. `civ1-enhanced` can have it keep its veteran
-  //  status (civ-clone/web-renderer#960). `START_AFRESH_PRIORITY`, before the client is told, whichever is in force.
+  //  status (civ-clone/web-renderer#960), at `lib/startAfresh`'s `START_AFRESH_PRIORITY`, before `emit` as this is.
   new Transferred(
     START_AFRESH_RULE,
-    new Priority(START_AFRESH_PRIORITY),
     new Effect((unit: Unit): void =>
       startAfresh(unit, false, unitImprovementRegistry, strategyNoteRegistry)
     )
