@@ -39,7 +39,6 @@ import buildingComplete from '../Rules/City/buildingComplete';
 import cityBuildingComplete from '@civ-clone/civ1-city/Rules/City/building-complete';
 import created from '../Rules/City/created';
 import { expect } from 'chai';
-import researchComplete from '../Rules/Player/researchComplete';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import simpleRLELoader from '@civ-clone/simple-world-generator/tests/lib/simpleRLELoader';
 
@@ -92,8 +91,7 @@ describe('build preferences', (): void => {
       ...build(playerResearchRegistry),
       ...buildCost(),
       ...buildingComplete(cityGrowthRegistry, buildPreferencesRegistry),
-      ...created(cityBuildRegistry, buildPreferencesRegistry),
-      ...researchComplete(cityRegistry, cityBuildRegistry)
+      ...created(cityBuildRegistry, buildPreferencesRegistry)
     );
 
     const complete = (UnitType: typeof Unit): void => {
@@ -326,8 +324,10 @@ describe('build preferences', (): void => {
     });
   });
 
-  describe('a build that can no longer be made (civ-clone/web-renderer#693)', (): void => {
-    it('should stop building Spearman when Gunpowder is discovered, and say why', async (): Promise<void> => {
+  // Dropping a build a discovery made obsolete is `civ1-enhanced`'s rule now (civ-clone/web-renderer#693, #954). Here,
+  //  as v474.05, the city goes on building it, and finishes it.
+  describe('a build that a discovery makes obsolete', (): void => {
+    it('should go on building Spearman after Gunpowder is discovered, and finish it', async (): Promise<void> => {
       const { cityBuild, playerResearch } = await setUp(undefined, [
         BronzeWorking,
       ]);
@@ -336,23 +336,15 @@ describe('build preferences', (): void => {
       cityBuild.add(new Production(5));
       playerResearch.addAdvance(Gunpowder);
 
-      expect(cityBuild.building()).null;
-      expect(cityBuild.progress().value()).equal(5);
-      expect(cityBuild.cleared()).eql({
-        reason: 'unavailable',
-        item: Spearman,
-      });
-    });
-
-    it('should leave a build that can still be made', async (): Promise<void> => {
-      const { cityBuild, playerResearch } = await setUp(undefined, [
-        BronzeWorking,
-      ]);
-
-      cityBuild.build(Spearman as unknown as typeof Buildable);
-      playerResearch.addAdvance(Conscription);
-
       expect(cityBuild.building()!.item()).equal(Spearman);
+      expect(cityBuild.progress().value()).equal(5);
+      expect(cityBuild.available().some((item) => item.item() === Spearman))
+        .false;
+
+      cityBuild.add(new Production(cityBuild.remaining()));
+
+      expect(cityBuild.check()).instanceOf(Spearman);
+      expect(cityBuild.cleared()).eql({ reason: 'completed', item: Spearman });
     });
   });
 });
