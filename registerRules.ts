@@ -27,7 +27,6 @@ import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
-import researchComplete from './Rules/Player/researchComplete';
 import stowed from './Rules/Unit/stowed';
 import strength from './Rules/Unit/strength';
 import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
@@ -133,7 +132,6 @@ export const register = (game: Game): void => {
     ),
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
-    ...researchComplete(game.cities, game.cityBuilds),
     ...stowed(),
     ...diplomat(
       game.cityBuilds,
