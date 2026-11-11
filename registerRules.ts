@@ -22,6 +22,7 @@ import detonated from './Rules/Unit/detonated';
 import diplomat from './Rules/Unit/diplomat';
 import expectedMovementCost from './Rules/Unit/expectedMovementCost';
 import halted from './Rules/Unit/halted';
+import hold from './Rules/City/hold';
 import impassable from './Rules/Unit/impassable';
 import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
@@ -86,7 +87,13 @@ export const register = (game: Game): void => {
 
   game.rules.register(
     ...buildCost(),
-    ...buildingComplete(game.cityGrowth, game.buildPreferences),
+    ...buildingComplete(
+      game.cityGrowth,
+      game.buildPreferences,
+      game.cities,
+      game.unitImprovements
+    ),
+    ...hold(game.cityGrowth, game.difficulty),
     ...cityCreated(game.cityBuilds, game.buildPreferences),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),
