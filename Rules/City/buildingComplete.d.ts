@@ -3,5 +3,8 @@ import { CityGrowthRegistry } from '@civ-clone/core-city-growth/CityGrowthRegist
 import { Caravan } from '../../Units';
 import BuildingComplete from '@civ-clone/core-city-build/Rules/BulidingComplete';
 export declare const notRepeated: (typeof Caravan)[];
-export declare const getRules: (cityGrowthRegistry?: CityGrowthRegistry, buildPreferencesRegistry?: BuildPreferencesRegistry) => BuildingComplete[];
+export declare const getRules: (
+  cityGrowthRegistry?: CityGrowthRegistry,
+  buildPreferencesRegistry?: BuildPreferencesRegistry
+) => BuildingComplete[];
 export default getRules;

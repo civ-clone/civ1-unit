@@ -7,5 +7,7 @@ import Unit from '@civ-clone/core-unit/Unit';
  */
 export declare const requiredAdvances: [typeof Unit, typeof Advance][];
 /** The advance `UnitType` needs, or `null` when it needs none. */
-export declare const requiredAdvanceFor: (UnitType: typeof Unit) => typeof Advance | null;
+export declare const requiredAdvanceFor: (
+  UnitType: typeof Unit
+) => typeof Advance | null;
 export default requiredAdvances;

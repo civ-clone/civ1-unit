@@ -6,11 +6,8 @@ import UnitAction from '@civ-clone/core-unit/Action';
 export declare const baseTerrainMovementCost: [typeof Terrain, number][];
 export declare const terrainMovementCost: (terrain: Terrain) => number | null;
 type TerrainJob = [
-    typeof UnitAction,
-    [
-        typeof Terrain,
-        number
-    ][] | ((terrain: Terrain) => number | null)
+  typeof UnitAction,
+  [typeof Terrain, number][] | ((terrain: Terrain) => number | null)
 ];
 /**
  * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
@@ -31,6 +28,12 @@ export declare const civ1TerrainJobTurns: TerrainJob[];
  * T + turns. So a road on Grassland (2 in Civ1) is there at the start of the
  * next turn, as it is in Civ1.
  */
-export declare const terrainJobTurns: (Action: typeof UnitAction, terrain: Terrain) => number | null;
-export declare const getRules: (tileImprovementRegistry?: TileImprovementRegistry, transportRegistry?: TransportRegistry) => MovementCost[];
+export declare const terrainJobTurns: (
+  Action: typeof UnitAction,
+  terrain: Terrain
+) => number | null;
+export declare const getRules: (
+  tileImprovementRegistry?: TileImprovementRegistry,
+  transportRegistry?: TransportRegistry
+) => MovementCost[];
 export default getRules;

@@ -16,5 +16,24 @@ import { stealableAdvances } from '../../lib/stealAdvance';
 import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
 export { stealableAdvances };
-export declare const getRules: (cityBuildRegistry?: CityBuildRegistry, cityImprovementRegistry?: CityImprovementRegistry, cityRegistry?: CityRegistry, interactionRegistry?: InteractionRegistry, playerResearchRegistry?: PlayerResearchRegistry, playerTreasuryRegistry?: PlayerTreasuryRegistry, ruleRegistry?: RuleRegistry, turn?: Turn, engine?: Engine, randomNumberGenerator?: () => number) => (EmbassyEstablished | CityInvestigated | TechnologyStolen | CitySabotaged | RevoltIncited | UnitBribed | LeaderMet)[];
+export declare const getRules: (
+  cityBuildRegistry?: CityBuildRegistry,
+  cityImprovementRegistry?: CityImprovementRegistry,
+  cityRegistry?: CityRegistry,
+  interactionRegistry?: InteractionRegistry,
+  playerResearchRegistry?: PlayerResearchRegistry,
+  playerTreasuryRegistry?: PlayerTreasuryRegistry,
+  ruleRegistry?: RuleRegistry,
+  turn?: Turn,
+  engine?: Engine,
+  randomNumberGenerator?: () => number
+) => (
+  | EmbassyEstablished
+  | CityInvestigated
+  | TechnologyStolen
+  | CitySabotaged
+  | RevoltIncited
+  | UnitBribed
+  | LeaderMet
+)[];
 export default getRules;

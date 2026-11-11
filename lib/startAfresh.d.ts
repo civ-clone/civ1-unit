@@ -12,5 +12,10 @@ export declare const START_AFRESH_PRIORITY = 1500;
  * owner's turn and, an aircraft, with its fuel full; and not a veteran, unless `keepVeteran`. Shared by `civ1-unit`'s
  * `unit/transferred/start-afresh` and `civ1-enhanced`'s, which keeps the unit's veteran status.
  */
-export declare const startAfresh: (unit: Unit, keepVeteran?: boolean, unitImprovementRegistry?: UnitImprovementRegistry, strategyNoteRegistry?: StrategyNoteRegistry) => void;
+export declare const startAfresh: (
+  unit: Unit,
+  keepVeteran?: boolean,
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  strategyNoteRegistry?: StrategyNoteRegistry
+) => void;
 export default startAfresh;

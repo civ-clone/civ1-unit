@@ -8,6 +8,16 @@ import Unit from '@civ-clone/core-unit/Unit';
  * Each unit's attack, defence, movement and visibility before any modifier (a veteran's, a city's walls), as Civ1's
  *  unit table has them. Left out, a stat is 1.
  */
-export declare const baseStats: [typeof Unit, (number | undefined)?, (number | undefined)?, (number | undefined)?, (number | undefined)?][];
-export declare const getRules: (unitImprovementRegistry?: UnitImprovementRegistry, ruleRegistry?: RuleRegistry, transportRegistry?: TransportRegistry) => (UnitYield | BaseYield)[];
+export declare const baseStats: [
+  typeof Unit,
+  (number | undefined)?,
+  (number | undefined)?,
+  (number | undefined)?,
+  (number | undefined)?
+][];
+export declare const getRules: (
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  ruleRegistry?: RuleRegistry,
+  transportRegistry?: TransportRegistry
+) => (UnitYield | BaseYield)[];
 export default getRules;

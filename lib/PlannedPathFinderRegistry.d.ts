@@ -23,16 +23,24 @@ import Unit from '@civ-clone/core-unit/Unit';
  * search would no longer find.
  */
 export declare class PlannedPathFinderRegistry extends PathFinderRegistry {
-    private _from;
-    private _path;
-    private _pathFinderRegistry;
-    private _revision;
-    private _revisionOfPath;
-    private _to;
-    private _unit;
-    constructor(unit: Unit, from: Tile, to: Tile, path: Path, pathFinderRegistry?: PathFinderRegistry, revision?: () => number, revisionOfPath?: number);
-    entries(): IConstructor<PathFinder>[];
-    /** The planned route, once, if it is the one being asked for. */
-    take(unit: Unit, from: Tile, to: Tile): Path | null;
+  private _from;
+  private _path;
+  private _pathFinderRegistry;
+  private _revision;
+  private _revisionOfPath;
+  private _to;
+  private _unit;
+  constructor(
+    unit: Unit,
+    from: Tile,
+    to: Tile,
+    path: Path,
+    pathFinderRegistry?: PathFinderRegistry,
+    revision?: () => number,
+    revisionOfPath?: number
+  );
+  entries(): IConstructor<PathFinder>[];
+  /** The planned route, once, if it is the one being asked for. */
+  take(unit: Unit, from: Tile, to: Tile): Path | null;
 }
 export default PlannedPathFinderRegistry;

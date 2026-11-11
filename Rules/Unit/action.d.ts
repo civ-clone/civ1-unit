@@ -21,5 +21,28 @@ import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
-export declare const getRules: (cityNameRegistry?: CityNameRegistry, cityRegistry?: CityRegistry, ruleRegistry?: RuleRegistry, tileImprovementRegistry?: TileImprovementRegistry, unitImprovementRegistry?: UnitImprovementRegistry, unitRegistry?: UnitRegistry, terrainFeatureRegistry?: TerrainFeatureRegistry, transportRegistry?: TransportRegistry, turn?: Turn, interactionRegistry?: InteractionRegistry, workedTileRegistry?: WorkedTileRegistry, pathFinderRegistry?: PathFinderRegistry, strategyNoteRegistry?: StrategyNoteRegistry, cityGrowthRegistry?: CityGrowthRegistry, landMassRegistry?: LandMassRegistry, cityBuildRegistry?: CityBuildRegistry, cityImprovementRegistry?: CityImprovementRegistry, playerResearchRegistry?: PlayerResearchRegistry, playerTreasuryRegistry?: PlayerTreasuryRegistry, strategyRegistry?: StrategyRegistry, engine?: Engine, playerGovernmentRegistry?: PlayerGovernmentRegistry) => Action[];
+export declare const getRules: (
+  cityNameRegistry?: CityNameRegistry,
+  cityRegistry?: CityRegistry,
+  ruleRegistry?: RuleRegistry,
+  tileImprovementRegistry?: TileImprovementRegistry,
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  unitRegistry?: UnitRegistry,
+  terrainFeatureRegistry?: TerrainFeatureRegistry,
+  transportRegistry?: TransportRegistry,
+  turn?: Turn,
+  interactionRegistry?: InteractionRegistry,
+  workedTileRegistry?: WorkedTileRegistry,
+  pathFinderRegistry?: PathFinderRegistry,
+  strategyNoteRegistry?: StrategyNoteRegistry,
+  cityGrowthRegistry?: CityGrowthRegistry,
+  landMassRegistry?: LandMassRegistry,
+  cityBuildRegistry?: CityBuildRegistry,
+  cityImprovementRegistry?: CityImprovementRegistry,
+  playerResearchRegistry?: PlayerResearchRegistry,
+  playerTreasuryRegistry?: PlayerTreasuryRegistry,
+  strategyRegistry?: StrategyRegistry,
+  engine?: Engine,
+  playerGovernmentRegistry?: PlayerGovernmentRegistry
+) => Action[];
 export default getRules;

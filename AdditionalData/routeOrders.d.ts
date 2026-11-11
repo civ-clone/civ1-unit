@@ -5,5 +5,7 @@ import AdditionalData from '@civ-clone/core-data-object/AdditionalData';
  * them beside Go to without knowing the rule (civ-clone/web-renderer#195). The engine still decides, when one is
  * chosen, whether there is a route.
  */
-export declare const getAdditionalData: (playerResearchRegistry?: PlayerResearchRegistry) => AdditionalData[];
+export declare const getAdditionalData: (
+  playerResearchRegistry?: PlayerResearchRegistry
+) => AdditionalData[];
 export default getAdditionalData;

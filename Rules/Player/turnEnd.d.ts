@@ -7,5 +7,11 @@ import TurnEnd from '@civ-clone/core-player/Rules/TurnEnd';
 import Unit from '@civ-clone/core-unit/Unit';
 export declare const aircraftRange: [typeof Unit, number][];
 export declare const turnsAloftKey: (unit: Unit) => string;
-export declare const getRules: (unitRegistry?: UnitRegistry, cityRegistry?: CityRegistry, transportRegistry?: TransportRegistry, strategyNoteRegistry?: StrategyNoteRegistry, ruleRegistry?: RuleRegistry) => TurnEnd[];
+export declare const getRules: (
+  unitRegistry?: UnitRegistry,
+  cityRegistry?: CityRegistry,
+  transportRegistry?: TransportRegistry,
+  strategyNoteRegistry?: StrategyNoteRegistry,
+  ruleRegistry?: RuleRegistry
+) => TurnEnd[];
 export default getRules;
