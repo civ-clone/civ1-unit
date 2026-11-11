@@ -8,19 +8,20 @@ const Engine_1 = require("@civ-clone/core-engine/Engine");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/TileImprovementRegistry");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
+const nuclear_1 = require("../../lib/nuclear");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Detonated_1 = require("@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
+const RuleIds_1 = require("../../RuleIds");
 const High_1 = require("@civ-clone/core-rule/Priorities/High");
+const Low_1 = require("@civ-clone/core-rule/Priorities/Low");
 const TileImprovements_1 = require("@civ-clone/civ1-world/TileImprovements");
-const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
+const Priority_1 = require("@civ-clone/core-rule/Priority");
 const core_random_1 = require("@civ-clone/core-random");
 // What a nuclear weapon does, from v474.05 (`Segment_29f3.cs` `F0_29f3_0d4d` and `F0_29f3_0ec3`,
 //  civ-clone/web-renderer#129), to the `Tile` it detonates over and the 8 around it.
 const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance) => {
-    const area = (tile) => [tile, ...tile.getNeighbours()], hasSdiDefence = (city) => cityImprovementRegistry
-        .getByCity(city)
-        .some((cityImprovement) => cityImprovement instanceof CityImprovements_1.SdiDefence);
+    const area = (tile) => [tile, ...tile.getNeighbours()];
     return [
         new Detonated_1.default(
         // Before anything changes, as v474.05 announces it, so a client can see what's there to be hit.
@@ -32,7 +33,7 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
         //  city with SDI Defense.
         'civ1-unit:unit/detonated/destroy-units', new Effect_1.default((unit, tile) => area(tile).forEach((areaTile) => {
             const city = cityRegistry.getByTile(areaTile);
-            if (city !== null && hasSdiDefence(city)) {
+            if (city !== null && (0, nuclear_1.hasSdiDefence)(city, cityImprovementRegistry)) {
                 engine.emit('city:sdi-protected', city, unit);
                 return;
             }
@@ -46,21 +47,22 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
         }))),
         new Detonated_1.default(
         // Every city in the area loses half its size, rounded down. SDI Defense doesn't stop this: in v474.05 it only
-        //  spares the units in the city, though players commonly believe (and Civ2 has it) that it stops the whole
-        //  attack (Dom's decision on civ-clone/web-renderer#129).
-        'civ1-unit:unit/detonated/halve-cities', new Effect_1.default((unit, tile) => area(tile).forEach((areaTile) => {
+        //  spares the units in the city (civd `BATTLE.C`: `atom()` skips the stack of a city with `HAS_SDI`, then
+        //  `nuke_fallout()` halves every city in the area, `townbuf[c].size -= townbuf[c].size / 2;`), though players
+        //  commonly believe (and Civ2 has it) that it stops the whole attack (Dom's decision on
+        //  civ-clone/web-renderer#129). `civ1-enhanced` can have it spare the city too (civ-clone/web-renderer#960).
+        //  `HALVE_CITIES_PRIORITY`, after the units and before the fallout, as before, whichever rule is in force.
+        RuleIds_1.HALVE_CITIES_RULE, new Priority_1.default(nuclear_1.HALVE_CITIES_PRIORITY), new Effect_1.default((unit, tile) => area(tile).forEach((areaTile) => {
             const city = cityRegistry.getByTile(areaTile);
             if (city === null) {
                 return;
             }
-            const cityGrowth = cityGrowthRegistry.getByCity(city), loss = Math.floor(cityGrowth.size() / 2);
-            for (let i = 0; i < loss; i++) {
-                cityGrowth.shrink(unit);
-            }
+            (0, nuclear_1.halveCity)(city, unit, cityGrowthRegistry);
         }))),
         new Detonated_1.default(
-        // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance.
-        'civ1-unit:unit/detonated/fallout', new Effect_1.default((unit, tile) => area(tile)
+        // Fallout: each land `Tile` in the area without a city or pollution is polluted, with a 2 in 3 chance. `Low`,
+        //  last, as before, after the cities are halved.
+        'civ1-unit:unit/detonated/fallout', new Low_1.default(), new Effect_1.default((unit, tile) => area(tile)
             .filter((areaTile) => areaTile.isLand() &&
             cityRegistry.getByTile(areaTile) === null &&
             !tileImprovementRegistry

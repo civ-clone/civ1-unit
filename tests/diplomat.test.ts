@@ -11,6 +11,12 @@ import {
   SubvertCity,
 } from '../Actions';
 import { Bomber, Chariot, Diplomat, Settlers, Warrior } from '../Units';
+import {
+  Currency,
+  Alphabet as LibraryAlphabet,
+  Writing as LibraryWriting,
+} from '@civ-clone/library-science/Advances';
+import { START_AFRESH_RULE, STEAL_RULE } from '../RuleIds';
 import { Fortified, Veteran } from '../UnitImprovements';
 import { Gold, Production } from '@civ-clone/library-city/Yields';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
@@ -18,6 +24,7 @@ import { Palace, Temple } from '@civ-clone/library-city/CityImprovements';
 import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
+import Barbarian from '@civ-clone/base-civilization-barbarian/Barbarian';
 import AvailableCityBuildItemsRegistry from '@civ-clone/core-city-build/AvailableCityBuildItemsRegistry';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
@@ -59,6 +66,8 @@ import transferred from '../Rules/Unit/transferred';
 import turnEnd, { turnsAloftKey } from '../Rules/Player/turnEnd';
 import StrategyNote from '@civ-clone/core-strategy/StrategyNote';
 import StrategyNoteRegistry from '@civ-clone/core-strategy/StrategyNoteRegistry';
+import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
+import Transferred from '@civ-clone/core-unit/Rules/Transferred';
 import TurnEnd from '@civ-clone/core-player/Rules/TurnEnd';
 import lostAtSea from '../Rules/Unit/lostAtSea';
 import unitYield from '../Rules/Unit/yield';
@@ -415,6 +424,55 @@ describe('Diplomats', (): void => {
       ).to.not.include('StealTechnology');
     });
 
+    // civ-clone/web-renderer#960: v474.05 walks its list of advances from a random one (`lib/stealAdvance`).
+    it("should take the first advance it can, walking v474.05's list from a random place, with one draw", (): void => {
+      const player = addPlayer(0),
+        rival = addPlayer(0, LibraryWriting, Currency, LibraryAlphabet),
+        city = addCity(rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      expect(
+        ruleRegistry.get(TechnologyStolen).map((rule) => rule.id())
+      ).to.eql([STEAL_RULE]);
+      expect(STEAL_RULE).to.equal('civ1-unit:unit/technology-stolen/steal');
+
+      // Slot 3 of 72, after Currency (2): the walk goes on to Writing (22).
+      random.push(3.5 / 72, 0.9);
+
+      find(diplomatUnit, city.tile(), StealTechnology).perform();
+
+      expect(
+        playerResearchRegistry.getByPlayer(player).completed(LibraryWriting)
+      ).to.true;
+      expect(playerResearchRegistry.getByPlayer(player).completed(Currency)).to
+        .false;
+      expect(random).to.eql([0.9]);
+    });
+
+    // civ-clone/web-renderer#960: v474.05's `has_tech()` knows no advance of the Barbarians'. Steal Technology is still
+    //  offered against their city, as `action`'s `canSteal` is shared with `civ1-enhanced`'s rule; v474.05 offers it
+    //  too, and says "No new technology found.", keeping the Diplomat.
+    it('should take nothing from a Barbarian city, having drawn once, and keep the Diplomat', (): void => {
+      const player = addPlayer(0),
+        barbarians = addPlayer(0, LibraryWriting, LibraryAlphabet),
+        city = addCity(barbarians, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      barbarians.setCivilization(new Barbarian());
+      random.push(3.5 / 72, 0.9);
+
+      find(diplomatUnit, city.tile(), StealTechnology).perform();
+
+      expect(
+        playerResearchRegistry.getByPlayer(player).completed(LibraryWriting)
+      ).to.false;
+      expect(diplomatUnit.destroyed()).to.false;
+      expect(random).to.eql([0.9]);
+      expect(events.map(([event]) => event)).not.to.include(
+        'player:advance-stolen'
+      );
+    });
+
     it('should never take a repeatable advance', (): void => {
       class Repeatable extends Advance {
         static readonly repeatable = true;
@@ -549,6 +607,34 @@ describe('Diplomats', (): void => {
   });
 
   describe('bribery', (): void => {
+    it('should start the unit afresh before telling a client it has changed sides', (): void => {
+      expect(START_AFRESH_RULE).to.equal(
+        'civ1-unit:unit/transferred/start-afresh'
+      );
+      expect(ruleRegistry.get(Transferred).map((rule) => rule.id())).to.eql([
+        START_AFRESH_RULE,
+        'civ1-unit:unit/transferred/emit',
+      ]);
+    });
+
+    it('should leave a bribed veteran neither veteran nor fortified, with no moves, as v474.05', (): void => {
+      const player = addPlayer(5000),
+        rival = addPlayer(0),
+        chariot = addUnit(Chariot, rival, world.get(5, 5)),
+        diplomatUnit = addUnit(Diplomat, player, world.get(4, 5));
+
+      unitImprovementRegistry.register(
+        new Veteran(chariot),
+        new Fortified(chariot)
+      );
+
+      find(diplomatUnit, world.get(5, 5), BribeUnit).perform();
+
+      expect(chariot.player()).to.equal(player);
+      expect(unitImprovementRegistry.getByUnit(chariot)).to.eql([]);
+      expect(chariot.moves().value()).to.equal(0);
+    });
+
     it('should be offered for a lone unit outside a city, and not a stack', (): void => {
       const player = addPlayer(0),
         rival = addPlayer(0),

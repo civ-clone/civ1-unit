@@ -7,21 +7,15 @@ import { PlayerResearchRegistry } from '@civ-clone/core-science/PlayerResearchRe
 import { PlayerTreasuryRegistry } from '@civ-clone/core-treasury/PlayerTreasuryRegistry';
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
 import { Turn } from '@civ-clone/core-turn-based-game/Turn';
-import Advance from '@civ-clone/core-science/Advance';
 import CityInvestigated from '@civ-clone/base-unit-action-investigate-city/Rules/CityInvestigated';
 import CitySabotaged from '@civ-clone/base-unit-action-industrial-sabotage/Rules/CitySabotaged';
 import EmbassyEstablished from '@civ-clone/base-unit-action-establish-embassy/Rules/EmbassyEstablished';
 import LeaderMet from '@civ-clone/base-unit-action-meet-with-leader/Rules/LeaderMet';
-import Player from '@civ-clone/core-player/Player';
 import RevoltIncited from '@civ-clone/base-unit-action-incite-revolt/Rules/RevoltIncited';
+import { stealableAdvances } from '../../lib/stealAdvance';
 import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
-/** The advances `victim` knows and `thief` doesn't, other than repeatable ones: what a Diplomat could steal. */
-export declare const stealableAdvances: (
-  thief: Player,
-  victim: Player,
-  playerResearchRegistry?: PlayerResearchRegistry
-) => (typeof Advance)[];
+export { stealableAdvances };
 export declare const getRules: (
   cityBuildRegistry?: CityBuildRegistry,
   cityImprovementRegistry?: CityImprovementRegistry,

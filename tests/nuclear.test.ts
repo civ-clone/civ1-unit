@@ -9,6 +9,8 @@ import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import City from '@civ-clone/core-city/City';
 import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
+import Detonated from '@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated';
+import { HALVE_CITIES_RULE } from '../RuleIds';
 import Effect from '@civ-clone/core-rule/Effect';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Game } from '@civ-clone/core-game/Game';
@@ -74,6 +76,18 @@ describe('nuclear', (): void => {
 
     return { actions, city, enemy, game, player, unit, world };
   };
+
+  it('announces it, destroys the units, halves the cities, then leaves fallout, in that order', async (): Promise<void> => {
+    const { game } = await setUp();
+
+    expect(HALVE_CITIES_RULE).to.equal('civ1-unit:unit/detonated/halve-cities');
+    expect(game.rules.get(Detonated).map((rule) => rule.id())).to.eql([
+      'civ1-unit:unit/detonated/emit',
+      'civ1-unit:unit/detonated/destroy-units',
+      HALVE_CITIES_RULE,
+      'civ1-unit:unit/detonated/fallout',
+    ]);
+  });
 
   it('is only offered against a rival unit or city, never empty land or your own units', async (): Promise<void> => {
     const { actions, city, enemy, player, unit, world } = await setUp(),
