@@ -29,6 +29,7 @@ import Strength from '@civ-clone/core-unit/Rules/Strength';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
+import { terrainRow } from '@civ-clone/base-terrain-properties/lib/terrainTable';
 
 // Civ1's defence multiplier for each terrain (v474.05's terrain table; Rome on 640K Table 7-2, p. 259). Every other
 //  terrain is ×1.
@@ -86,9 +87,7 @@ export const defenceMultipliers = (
   }
 
   const multipliers: [string, number][] = [],
-    terrain = terrainDefence.find(
-      ([TerrainType]): boolean => tile.terrain() instanceof TerrainType
-    );
+    terrain = terrainRow(terrainDefence, tile.terrain());
 
   if (terrain) {
     const [TerrainType, multiplier] = terrain;

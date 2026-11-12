@@ -45,6 +45,12 @@ import Terrain from '@civ-clone/core-terrain/Terrain';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import { cachedTerrainLookup } from '@civ-clone/base-terrain-properties/lib/terrainTable';
+import {
+  TerrainJob as BaseTerrainJob,
+  multipleOf,
+  terrainJobTurns as jobTurns,
+} from '@civ-clone/base-terrain-properties/lib/jobTurns';
 
 // I wonder if this would be easier to manage as a `Yield` on the `Terrain`?
 export const baseTerrainMovementCost: [typeof Terrain, number][] = [
@@ -63,7 +69,8 @@ export const baseTerrainMovementCost: [typeof Terrain, number][] = [
 ];
 
 /**
- * The table above, as a lookup, cached by the terrain's own constructor.
+ * The table above, as a lookup, cached by the terrain's own constructor (see
+ * `base-terrain-properties`' `cachedTerrainLookup`).
  *
  * This used to be expressed as one `MovementCost` rule per cell — one per
  * terrain for moving, and one per (action, terrain) pair for everything else,
@@ -87,30 +94,10 @@ export const baseTerrainMovementCost: [typeof Terrain, number][] = [
  * caller to choose; nothing in the table can do that today, and a terrain that
  * wants its own cost should have its own row.
  */
-const cachedTerrainMovementCost = new Map<Function, number | null>();
+export const terrainMovementCost: (terrain: Terrain) => number | null =
+  cachedTerrainLookup(baseTerrainMovementCost);
 
-export const terrainMovementCost = (terrain: Terrain): number | null => {
-  const cached = cachedTerrainMovementCost.get(terrain.constructor);
-
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  const match = baseTerrainMovementCost.find(
-      ([TerrainType]: [typeof Terrain, number]): boolean =>
-        terrain instanceof TerrainType
-    ),
-    cost = match === undefined ? null : match[1];
-
-  cachedTerrainMovementCost.set(terrain.constructor, cost);
-
-  return cost;
-};
-
-type TerrainJob = [
-  typeof UnitAction,
-  [typeof Terrain, number][] | ((terrain: Terrain) => number | null)
-];
+type TerrainJob = BaseTerrainJob<typeof UnitAction>;
 
 /**
  * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
@@ -140,22 +127,8 @@ export const civ1TerrainJobTurns: TerrainJob[] = [
       [Mountains, 10],
     ],
   ],
-  [
-    BuildRoad,
-    (terrain: Terrain): number | null => {
-      const cost = terrainMovementCost(terrain);
-
-      return cost === null ? null : 2 * cost;
-    },
-  ],
-  [
-    BuildRailroad,
-    (terrain: Terrain): number | null => {
-      const cost = terrainMovementCost(terrain);
-
-      return cost === null ? null : 4 * cost;
-    },
-  ],
+  [BuildRoad, multipleOf(terrainMovementCost, 2)],
+  [BuildRailroad, multipleOf(terrainMovementCost, 4)],
   // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
   //  civ-clone/web-renderer#32).
   [CleanPollution, (): number => 4],
@@ -185,26 +158,7 @@ export const civ1TerrainJobTurns: TerrainJob[] = [
 export const terrainJobTurns = (
   Action: typeof UnitAction,
   terrain: Terrain
-): number | null => {
-  const job = civ1TerrainJobTurns.find(
-    ([JobAction]: TerrainJob): boolean => JobAction === Action
-  );
-
-  if (job === undefined) {
-    return null;
-  }
-
-  const [, turns] = job,
-    civ1Turns =
-      typeof turns === 'function'
-        ? turns(terrain)
-        : turns.find(
-            ([TerrainType]: [typeof Terrain, number]): boolean =>
-              terrain instanceof TerrainType
-          )?.[1] ?? null;
-
-  return civ1Turns === null ? null : civ1Turns - 1;
-};
+): number | null => jobTurns(civ1TerrainJobTurns, Action, terrain);
 
 export const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
