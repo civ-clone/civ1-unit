@@ -10,6 +10,8 @@ const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportReg
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const MovementCost_1 = require("@civ-clone/core-unit/Rules/MovementCost");
+const terrainTable_1 = require("@civ-clone/base-terrain-properties/lib/terrainTable");
+const jobTurns_1 = require("@civ-clone/base-terrain-properties/lib/jobTurns");
 // I wonder if this would be easier to manage as a `Yield` on the `Terrain`?
 exports.baseTerrainMovementCost = [
     [Terrains_1.Arctic, 2],
@@ -26,7 +28,8 @@ exports.baseTerrainMovementCost = [
     [Terrains_1.Tundra, 1],
 ];
 /**
- * The table above, as a lookup, cached by the terrain's own constructor.
+ * The table above, as a lookup, cached by the terrain's own constructor (see
+ * `base-terrain-properties`' `cachedTerrainLookup`).
  *
  * This used to be expressed as one `MovementCost` rule per cell — one per
  * terrain for moving, and one per (action, terrain) pair for everything else,
@@ -50,17 +53,7 @@ exports.baseTerrainMovementCost = [
  * caller to choose; nothing in the table can do that today, and a terrain that
  * wants its own cost should have its own row.
  */
-const cachedTerrainMovementCost = new Map();
-const terrainMovementCost = (terrain) => {
-    const cached = cachedTerrainMovementCost.get(terrain.constructor);
-    if (cached !== undefined) {
-        return cached;
-    }
-    const match = exports.baseTerrainMovementCost.find(([TerrainType]) => terrain instanceof TerrainType), cost = match === undefined ? null : match[1];
-    cachedTerrainMovementCost.set(terrain.constructor, cost);
-    return cost;
-};
-exports.terrainMovementCost = terrainMovementCost;
+exports.terrainMovementCost = (0, terrainTable_1.cachedTerrainLookup)(exports.baseTerrainMovementCost);
 /**
  * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
  * v474.05's terrain modification table for irrigating and mining (OpenCivOne
@@ -89,20 +82,8 @@ exports.civ1TerrainJobTurns = [
             [Terrains_1.Mountains, 10],
         ],
     ],
-    [
-        Actions_1.BuildRoad,
-        (terrain) => {
-            const cost = (0, exports.terrainMovementCost)(terrain);
-            return cost === null ? null : 2 * cost;
-        },
-    ],
-    [
-        Actions_1.BuildRailroad,
-        (terrain) => {
-            const cost = (0, exports.terrainMovementCost)(terrain);
-            return cost === null ? null : 4 * cost;
-        },
-    ],
+    [Actions_1.BuildRoad, (0, jobTurns_1.multipleOf)(exports.terrainMovementCost, 2)],
+    [Actions_1.BuildRailroad, (0, jobTurns_1.multipleOf)(exports.terrainMovementCost, 4)],
     // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
     //  civ-clone/web-renderer#32).
     [Actions_1.CleanPollution, () => 4],
@@ -128,17 +109,7 @@ exports.civ1TerrainJobTurns = [
  * T + turns. So a road on Grassland (2 in Civ1) is there at the start of the
  * next turn, as it is in Civ1.
  */
-const terrainJobTurns = (Action, terrain) => {
-    var _a, _b;
-    const job = exports.civ1TerrainJobTurns.find(([JobAction]) => JobAction === Action);
-    if (job === undefined) {
-        return null;
-    }
-    const [, turns] = job, civ1Turns = typeof turns === 'function'
-        ? turns(terrain)
-        : (_b = (_a = turns.find(([TerrainType]) => terrain instanceof TerrainType)) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : null;
-    return civ1Turns === null ? null : civ1Turns - 1;
-};
+const terrainJobTurns = (Action, terrain) => (0, jobTurns_1.terrainJobTurns)(exports.civ1TerrainJobTurns, Action, terrain);
 exports.terrainJobTurns = terrainJobTurns;
 const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, transportRegistry = TransportRegistry_1.instance) => [
     // One rule, not one per terrain: see `terrainMovementCost`. Was

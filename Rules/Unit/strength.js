@@ -11,6 +11,7 @@ const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const UnitImprovements_1 = require("../../UnitImprovements");
 const Strength_1 = require("@civ-clone/core-unit/Rules/Strength");
+const terrainTable_1 = require("@civ-clone/base-terrain-properties/lib/terrainTable");
 // Civ1's defence multiplier for each terrain (v474.05's terrain table; Rome on 640K Table 7-2, p. 259). Every other
 //  terrain is ×1.
 exports.terrainDefence = [
@@ -47,7 +48,7 @@ const defenceMultipliers = (defender, attacker, cityRegistry = CityRegistry_1.in
     if (defender instanceof Types_1.Naval && !cityWalls) {
         return [];
     }
-    const multipliers = [], terrain = exports.terrainDefence.find(([TerrainType]) => tile.terrain() instanceof TerrainType);
+    const multipliers = [], terrain = (0, terrainTable_1.terrainRow)(exports.terrainDefence, tile.terrain());
     if (terrain) {
         const [TerrainType, multiplier] = terrain;
         multipliers.push([TerrainType.name, multiplier]);

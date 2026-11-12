@@ -61,6 +61,7 @@
     "@civ-clone/base-science-advance-thewheel": "^0.1.0",
     "@civ-clone/base-science-advance-trade": "^0.1.0",
     "@civ-clone/base-science-advance-writing": "^0.1.0",
+    "@civ-clone/base-terrain-properties": "^0.1.0",
     "@civ-clone/base-unit-action-bribe-unit": "^0.1.0",
     "@civ-clone/base-unit-action-embark": "^0.1.0",
     "@civ-clone/base-unit-action-establish-embassy": "^0.1.0",
