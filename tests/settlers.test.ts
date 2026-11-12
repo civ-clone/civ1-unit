@@ -365,6 +365,21 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
         expect(ids(game.units.getByCity(others[0]))).eql(ids([settlers]));
       });
 
+      it('should measure as v474.05 does (`map_dist`): the longer axis and half the shorter, not a straight line', async (): Promise<void> => {
+        // 3 across and 3 down is 4 by v474.05's measure, as is 4 across, so the first founded is taken; in a
+        //  straight line it is the further.
+        const { others, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 7],
+            [8, 4],
+          ],
+        });
+
+        expect(ids([produce()!.city()])).eql(ids([others[0]]));
+      });
+
       it("should take the first founded of the player's city and another player's as near", async (): Promise<void> => {
         const ownFirst = await setUp({
           level,
