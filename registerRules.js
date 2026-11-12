@@ -29,6 +29,7 @@ const action_2 = require("./Rules/Player/action");
 const stowed_1 = require("./Rules/Unit/stowed");
 const strength_1 = require("./Rules/Unit/strength");
 const tradeRouteEstablished_1 = require("./Rules/Unit/tradeRouteEstablished");
+const traits_1 = require("./Rules/Unit/traits");
 const transferred_1 = require("./Rules/Unit/transferred");
 const turnEnd_1 = require("./Rules/Player/turnEnd");
 const yield_1 = require("./Rules/Unit/yield");
@@ -36,6 +37,9 @@ const unsupported_1 = require("./Rules/Unit/unsupported");
 const validateMove_1 = require("./Rules/Unit/validateMove");
 const core_game_1 = require("@civ-clone/core-game");
 const register = (game) => {
+    // What each unit type can do (fortify, found cities, ignore zones of control...), first, so that no rule registered
+    //  below can be asked about a unit before its traits are declared.
+    game.rules.register(...(0, traits_1.default)());
     game.rules.register(...(0, action_1.default)(game.cityNames, game.cities, game.rules, game.tileImprovements, game.unitImprovements, game.units, game.terrainFeatures, game.transports, game.turn, game.interactions, game.workedTiles, game.pathFinders, game.strategyNotes, game.cityGrowth, game.landMasses, game.cityBuilds, game.cityImprovements, game.playerResearch, game.playerTreasuries, game.strategies, game.engine, game.playerGovernments), ...(0, activate_1.default)(game.unitImprovements), (0, build_1.navalNeedsCoastRule)());
     // Which units a city may build, from the entries in `Requirements`: their rules land where the build rules always
     //  were, between the rules above and below, so nothing else moves in the order rules run (civ-clone/web-renderer#37).
