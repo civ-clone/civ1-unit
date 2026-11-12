@@ -91,7 +91,8 @@ export const register = (game: Game): void => {
       game.cityGrowth,
       game.buildPreferences,
       game.cities,
-      game.unitImprovements
+      game.unitImprovements,
+      game.engine
     ),
     ...hold(game.cityGrowth, game.difficulty),
     ...cityCreated(game.cityBuilds, game.buildPreferences),

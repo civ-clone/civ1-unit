@@ -58,7 +58,7 @@ import TechnologyStolen from '@civ-clone/base-unit-action-steal-technology/Rules
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
-import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
+import homeCity from '../../lib/homeCity';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
 // Moved to `lib/stealAdvance`, shared with `civ1-enhanced`; still exported here for what imports it from here.
@@ -239,7 +239,7 @@ export const getRules = (
     ),
 
     // v474.05 recreates the unit for the briber, which its `CreateUnit` homes in the nearest city if that's the
-    //  briber's, and in none otherwise (Rome on 640K a Day, p356, "The Homeless Soldiers' Solution").
+    //  briber's, and in none otherwise (Rome on 640K a Day, p356, "The Homeless Soldiers' Solution"; `lib/homeCity`).
     new UnitBribed(
       'civ1-unit:unit/unit-bribed/transfer',
       new Effect((unit: Unit, target: Unit, action: BribeUnit): boolean => {
@@ -250,19 +250,7 @@ export const getRules = (
           return false;
         }
 
-        const [nearest] = cityRegistry
-          .entries()
-          .filter((city: City): boolean => !city.destroyed())
-          .sort(
-            (a: City, b: City): number =>
-              civ1Distance(a.tile(), target.tile()) -
-              civ1Distance(b.tile(), target.tile())
-          );
-
-        target.transfer(
-          briber,
-          nearest !== undefined && nearest.player() === briber ? nearest : null
-        );
+        target.transfer(briber, homeCity(briber, target.tile(), cityRegistry));
 
         engine.emit(
           'unit:bribed',

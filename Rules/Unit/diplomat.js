@@ -26,7 +26,7 @@ const RuleIds_1 = require("../../RuleIds");
 const TechnologyStolen_1 = require("@civ-clone/base-unit-action-steal-technology/Rules/TechnologyStolen");
 const UnitBribed_1 = require("@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
-const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
+const homeCity_1 = require("../../lib/homeCity");
 const core_random_1 = require("@civ-clone/core-random");
 const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityRegistry = CityRegistry_1.instance, interactionRegistry = InteractionRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, turn = Turn_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance) => {
     // Pays `cost` from `unit`'s owner's gold, if it has that much.
@@ -105,18 +105,13 @@ const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovem
             return true;
         })),
         // v474.05 recreates the unit for the briber, which its `CreateUnit` homes in the nearest city if that's the
-        //  briber's, and in none otherwise (Rome on 640K a Day, p356, "The Homeless Soldiers' Solution").
+        //  briber's, and in none otherwise (Rome on 640K a Day, p356, "The Homeless Soldiers' Solution"; `lib/homeCity`).
         new UnitBribed_1.default('civ1-unit:unit/unit-bribed/transfer', new Effect_1.default((unit, target, action) => {
             const briber = unit.player(), previousOwner = target.player();
             if (!pay(unit, action.cost())) {
                 return false;
             }
-            const [nearest] = cityRegistry
-                .entries()
-                .filter((city) => !city.destroyed())
-                .sort((a, b) => (0, civ1Distance_1.default)(a.tile(), target.tile()) -
-                (0, civ1Distance_1.default)(b.tile(), target.tile()));
-            target.transfer(briber, nearest !== undefined && nearest.player() === briber ? nearest : null);
+            target.transfer(briber, (0, homeCity_1.default)(briber, target.tile(), cityRegistry));
             engine.emit('unit:bribed', target, briber, previousOwner, action.cost());
             return true;
         })),
