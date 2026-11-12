@@ -27,6 +27,7 @@ import { Production } from '@civ-clone/civ1-world/Yields';
 import Unit from '@civ-clone/core-unit/Unit';
 import World from '@civ-clone/core-world/World';
 import { expect } from 'chai';
+import cityBuildingComplete from '@civ-clone/civ1-city/Rules/City/building-complete';
 import cityDestroyed from '@civ-clone/civ1-city/Rules/City/destroyed';
 import cityShrink from '@civ-clone/civ1-city/Rules/City/shrink';
 import registerUnit from '../registerRules';
@@ -61,17 +62,19 @@ const ids = (entities: ({ id(): string } | null)[]): (string | null)[] =>
 describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void => {
   // A game with this package's rules and civ1-city's for shrinking and destroying a city, at `level` (none set unless
   //  told), with a Grassland world and one player, whose cities are at `at`, the first building Settlers at `size`,
-  //  and another player's cities at `foreign`.
+  //  and another player's cities at `foreign`, founded after the player's, or before with `foreignFirst`.
   const setUp = async ({
     level = null,
     size = 1,
     at = [[4, 4]],
     foreign = [],
+    foreignFirst = false,
   }: {
     level?: typeof Difficulty | null;
     size?: number;
     at?: [number, number][];
     foreign?: [number, number][];
+    foreignFirst?: boolean;
   } = {}) => {
     const game = new Game();
 
@@ -79,6 +82,8 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
     //  into the default game too, which the other suites here share. A city is registered with its build and growth
     //  below, as its `city/created` rules would.
     game.rules.register(
+      // civ1-city's announcement of a build, to see what is said before it.
+      ...cityBuildingComplete(game.engine, game.rules),
       ...cityDestroyed(
         game.tileImprovements,
         game.cities,
@@ -135,12 +140,15 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
 
         return city;
       },
+      foundForeign = () =>
+        foreign.map(
+          (position, index): City => found(other, position, `Foreign ${index}`)
+        ),
+      foreignBefore = foreignFirst ? foundForeign() : [],
       [city, ...others] = at.map(
         (position, index): City => found(player, position, `City ${index}`)
       ),
-      foreignCities = foreign.map(
-        (position, index): City => found(other, position, `Foreign ${index}`)
-      ),
+      foreignCities = foreignFirst ? foreignBefore : foundForeign(),
       cityBuild: CityBuild = game.cityBuilds.getByCity(city),
       cityGrowth = game.cityGrowth.getByCity(city);
 
@@ -299,8 +307,7 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
             [7, 5],
             [1, 9],
           ],
-          // Nearer than any of the player's: v474.05 would leave them with no home.
-          foreign: [[5, 5]],
+          foreign: [[9, 4]],
         });
         const destroyed: City[] = [];
 
@@ -320,6 +327,29 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
         expect(ids(game.units.getByTile(city.tile()))).eql(ids([settlers]));
       });
 
+      it("should leave the Settlers with no home when the nearest city is another player's, as v474.05 (civ-clone/web-renderer#969)", async (): Promise<void> => {
+        const { city, game, others, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [10, 10],
+            [7, 5],
+          ],
+          foreign: [[5, 5]],
+        });
+
+        const settlers = produce()!;
+
+        expect(city.destroyed()).true;
+        expect(settlers.destroyed()).false;
+        expect(settlers.city()).null;
+        expect(ids(game.units.getByTile(city.tile()))).eql(ids([settlers]));
+        others.forEach((other: City): void => {
+          expect(game.units.getByCity(other)).length(0);
+        });
+        expect(isVeteran(game, settlers)).false;
+      });
+
       it('should take the first of two cities as near', async (): Promise<void> => {
         const { game, others, produce } = await setUp({
           level,
@@ -333,6 +363,163 @@ describe('Settlers in a city of size 1 (civ-clone/web-renderer#959)', (): void =
 
         expect(ids([settlers.city()])).eql(ids([others[0]]));
         expect(ids(game.units.getByCity(others[0]))).eql(ids([settlers]));
+      });
+
+      it('should measure as v474.05 does (`map_dist`): the longer axis and half the shorter, not a straight line', async (): Promise<void> => {
+        // 3 across and 3 down is 4 by v474.05's measure, as is 4 across, so the first founded is taken; in a
+        //  straight line it is the further.
+        const { others, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 7],
+            [8, 4],
+          ],
+        });
+
+        expect(ids([produce()!.city()])).eql(ids([others[0]]));
+      });
+
+      it("should take the first founded of the player's city and another player's as near", async (): Promise<void> => {
+        const ownFirst = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [4, 7],
+          ],
+          foreign: [[7, 4]],
+        });
+
+        expect(ids([ownFirst.produce()!.city()])).eql(
+          ids([ownFirst.others[0]])
+        );
+
+        const foreignFirst = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [4, 7],
+          ],
+          foreign: [[7, 4]],
+          foreignFirst: true,
+        });
+        const settlers = foreignFirst.produce()!;
+
+        expect(foreignFirst.city.destroyed()).true;
+        expect(settlers.destroyed()).false;
+        expect(settlers.city()).null;
+      });
+
+      it('should say the city was abandoned, once, before the Settlers are announced', async (): Promise<void> => {
+        const { city, game, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 5],
+          ],
+        });
+        const events: [string, string, string | null][] = [];
+
+        game.engine.on('city:abandoned', (abandoned: City, unit: Unit) =>
+          events.push(['city:abandoned', abandoned.id(), unit.id()])
+        );
+        game.engine.on(
+          'city:building-complete',
+          (cityBuild: CityBuild, built: Unit) =>
+            events.push([
+              'city:building-complete',
+              cityBuild.city().id(),
+              built.id(),
+            ])
+        );
+        game.engine.on('city:destroyed', (destroyed: City) =>
+          events.push(['city:destroyed', destroyed.id(), null])
+        );
+
+        const settlers = produce()!;
+
+        expect(events).eql([
+          ['city:abandoned', city.id(), settlers.id()],
+          ['city:building-complete', city.id(), settlers.id()],
+          ['city:destroyed', city.id(), null],
+        ]);
+      });
+
+      it('should not say a city that keeps its citizen, or only shrinks, was abandoned', async (): Promise<void> => {
+        const abandoned: City[] = [];
+
+        for (const setting of [
+          {},
+          {
+            size: 2,
+            at: [
+              [4, 4],
+              [7, 5],
+            ] as [number, number][],
+          },
+        ]) {
+          const { game, produce } = await setUp({ level, ...setting });
+
+          game.engine.on('city:abandoned', (city: City) =>
+            abandoned.push(city)
+          );
+
+          expect(produce()).instanceof(Settlers);
+        }
+
+        // Nor one with others that builds anything else.
+        const warriors = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 5],
+          ],
+        });
+
+        warriors.game.engine.on('city:abandoned', (city: City) =>
+          abandoned.push(city)
+        );
+        warriors.cityBuild.build(Warrior as unknown as typeof Buildable);
+
+        expect(warriors.produce()).instanceof(Warrior);
+        expect(warriors.city.destroyed()).false;
+        expect(abandoned).length(0);
+      });
+
+      it('should pass over a city already destroyed', async (): Promise<void> => {
+        const { city, others, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [5, 5],
+            [7, 5],
+          ],
+        });
+
+        others[0].destroy();
+
+        const settlers = produce()!;
+
+        expect(city.destroyed()).true;
+        expect(ids([settlers.city()])).eql(ids([others[1]]));
+      });
+
+      it('should not say the city was abandoned while a ruleset has the Settlers not remove it', async (): Promise<void> => {
+        const { city, game, produce } = await setUp({
+          level,
+          at: [
+            [4, 4],
+            [7, 5],
+          ],
+        });
+        const abandoned: City[] = [];
+
+        game.rules.getById(SETTLERS_SHRINK_CITY_RULE)!.disable();
+        game.engine.on('city:abandoned', (city: City) => abandoned.push(city));
+
+        expect(produce()).instanceof(Settlers);
+        expect(city.destroyed()).false;
+        expect(abandoned).length(0);
       });
 
       it('should take a citizen from a larger city, as before', async (): Promise<void> => {
