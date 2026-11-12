@@ -53,7 +53,11 @@ import UnitAction from '@civ-clone/core-unit/Action';
 import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
+import { Despotism } from '@civ-clone/library-government/Governments';
+import PlayerGovernment from '@civ-clone/core-government/PlayerGovernment';
+import PlayerGovernmentRegistry from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import action from '../Rules/Unit/action';
+import cityCost from '@civ-clone/civ1-city/Rules/City/cost';
 import buildCost from '../Rules/City/buildCost';
 import cityCaptured from '../Rules/City/captured';
 import created from '../Rules/Unit/created';
@@ -580,17 +584,87 @@ describe('Diplomats', (): void => {
       expect(events.map(([event]) => event)).to.include('city:incited');
     });
 
-    it('should leave the defectors from a city of size 1, which the capture destroys, with no home', (): void => {
+    // v474.05 `city_revolt` (`DIPLOMAT.C`) homes every unit it brings over in the city, whatever its size or the
+    //  unit's home before (civ-clone/web-renderer#969).
+    [1, 2].forEach((size: number): void =>
+      it(`should home the defectors in a city of size ${size}, wherever their home was`, (): void => {
+        const player = addPlayer(1000),
+          rival = addPlayer(0),
+          other = addCity(rival, world.get(9, 9)),
+          city = addCity(rival, world.get(5, 5), size),
+          diplomatUnit = addUnit(Diplomat, player, world.get(4, 5)),
+          garrison = addUnit(Warrior, rival, city.tile(), city),
+          visitor = addUnit(Warrior, rival, city.tile(), other),
+          homeless = addUnit(Warrior, rival, city.tile()),
+          nearby = addUnit(Chariot, rival, world.get(6, 6), other);
+
+        find(diplomatUnit, city.tile(), InciteRevolt).perform();
+
+        expect(
+          [garrison, visitor, homeless, nearby].map((unit) => [
+            unit.player() === player,
+            unit.city() === city,
+          ])
+        ).to.deep.equal([
+          [true, true],
+          [true, true],
+          [true, true],
+          [true, true],
+        ]);
+        expect(unitRegistry.getByCity(other)).to.deep.equal([]);
+        expect(unitRegistry.getByCity(city)).to.have.length(4);
+      })
+    );
+
+    it('should have the incited city pay for the defectors it now supports', (): void => {
       const player = addPlayer(1000),
         rival = addPlayer(0),
+        other = addCity(rival, world.get(9, 9)),
         city = addCity(rival, world.get(5, 5)),
         diplomatUnit = addUnit(Diplomat, player, world.get(4, 5)),
-        garrison = addUnit(Warrior, rival, city.tile(), city);
+        settlers = addUnit(Settlers, rival, city.tile(), other),
+        playerGovernmentRegistry = new PlayerGovernmentRegistry(),
+        // civ1-city's `Cost` rules, as a game has them: Settlers cost their home Food under any government.
+        costRules = cityCost(
+          cityGrowthRegistry,
+          playerGovernmentRegistry,
+          unitRegistry
+        );
 
-      find(diplomatUnit, city.tile(), InciteRevolt).perform();
+      [player, rival].forEach((each: Player): void => {
+        const government = new PlayerGovernment(each, undefined, ruleRegistry);
 
-      expect(garrison.player()).to.equal(player);
-      expect(garrison.city()).to.null;
+        government.set(new Despotism());
+        playerGovernmentRegistry.register(government);
+      });
+      ruleRegistry.register(...costRules);
+
+      try {
+        const supportedBy = (of: City) =>
+          of
+            .yields()
+            .filter(
+              // By name: the class is civ1-city's dependency, not this package's.
+              (cityYield: any) =>
+                cityYield.constructor.name === 'UnitSupportFood' &&
+                cityYield.unit() === settlers
+            )
+            .map((cityYield) => cityYield.value());
+
+        expect([supportedBy(other), supportedBy(city)]).to.deep.equal([
+          [-1],
+          [],
+        ]);
+
+        find(diplomatUnit, city.tile(), InciteRevolt).perform();
+
+        expect([supportedBy(other), supportedBy(city)]).to.deep.equal([
+          [],
+          [-1],
+        ]);
+      } finally {
+        ruleRegistry.unregister(...costRules);
+      }
     });
 
     it('should do nothing, and keep the Diplomat, without the gold', (): void => {
