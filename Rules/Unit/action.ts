@@ -170,7 +170,7 @@ import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import Effect from '@civ-clone/core-rule/Effect';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
-import Path from '@civ-clone/core-world-path/Path';
+import RoutePlanner from '@civ-clone/base-unit-action-rules/lib/RoutePlanner';
 import {
   PlayerGovernmentRegistry,
   instance as playerGovernmentRegistryInstance,
@@ -178,7 +178,6 @@ import {
 import routeOrders from '../../lib/routeOrders';
 import hasSenate from '../../lib/senate';
 import treatyPartner from '../../lib/treatyPartner';
-import PlannedPathFinderRegistry from '../../lib/PlannedPathFinderRegistry';
 import { joinableCity } from '@civ-clone/base-unit-action-join-city/joinableCity';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -256,40 +255,14 @@ export const getRules = (
       isA(unit, Air) &&
       (landsInCity(unit, to) || landingTransport(unit, to) !== null);
 
-  // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
-  //  before any effect runs, so it's kept with what it's a route for, and the effect only uses a route that matches.
-  type PlannedRoute = {
-    unit: Unit;
-    from: Tile;
-    to: Tile;
-    path: Path;
-    revision: number;
-  };
-
-  let plannedGoTo: PlannedRoute | null = null;
-
-  // The route the `road-to` and `railroad-to` criteria found, as `plannedGoTo` is for `GoTo`: the very route the `goto`
-  //  criterion found for the same journey a moment before, when it did, so offering them costs no search of their own.
-  let plannedRoute: PlannedRoute | null = null;
-
-  // Counts the changes to where units (and cities) are, which is what a route depends on besides the tiles
-  //  themselves. A route is only followed if nothing has changed since it was found, so one that was kept for a
-  //  `GoTo` that is performed later (not in the same `handleAction`) is searched for again instead.
-  let routingRevision = 0;
-
-  [
-    'city:captured',
-    'city:created',
-    'city:destroyed',
-    'unit:created',
-    'unit:destroyed',
-    'unit:moved',
-    'unit:transferred',
-  ].forEach((event: string): void => {
-    engine.on(event, (): void => {
-      routingRevision++;
-      plannedGoTo = null;
-    });
+  // The routes the `goto`, `road-to` and `railroad-to` criteria find, kept for the actions their effects build
+  //  (civ-clone/web-renderer#307). Every action's criteria are validated before any effect runs, so `goto` comes before
+  //  `road-to` and `railroad-to`, which reuse its route.
+  const routePlanner = new RoutePlanner({
+    engine,
+    pathFinderRegistry,
+    ruleRegistry,
+    strategyNoteRegistry,
   });
 
   const attackCriteria = [
@@ -1737,57 +1710,10 @@ export const getRules = (
         (unit: Unit, to: Tile, from: Tile) =>
           to !== from && !to.isNeighbourOf(from)
       ),
-      new Criterion((unit: Unit, to: Tile, from: Tile) => {
-        const [PathFinder] = pathFinderRegistry.entries();
-
-        plannedGoTo = null;
-
-        if (!PathFinder) {
-          return false;
-        }
-
-        const path = new PathFinder(unit, from, to).generate();
-
-        if (!(path instanceof Path)) {
-          return false;
-        }
-
-        plannedGoTo = { unit, from, to, path, revision: routingRevision };
-
-        return true;
-      }),
-      new Effect((unit: Unit, to: Tile, from: Tile): UnitAction => {
-        const planned = plannedGoTo,
-          isPlanned =
-            planned !== null &&
-            planned.unit === unit &&
-            planned.from === from &&
-            planned.to === to &&
-            planned.revision === routingRevision;
-
-        plannedGoTo = null;
-
-        // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
-        //  performed (civ-clone/web-renderer#307).
-        return new GoTo(
-          from,
-          to,
-          unit,
-          ruleRegistry,
-          isPlanned
-            ? new PlannedPathFinderRegistry(
-                unit,
-                from,
-                to,
-                planned.path,
-                pathFinderRegistry,
-                () => routingRevision,
-                planned.revision
-              )
-            : pathFinderRegistry,
-          strategyNoteRegistry
-        );
-      })
+      routePlanner.goTo(),
+      // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
+      //  performed (civ-clone/web-renderer#307).
+      routePlanner.goToEffect(GoTo)
     ),
 
     // Road to and Railroad to (civ-clone/web-renderer#195): a worker goes to a distant square, building on each square
@@ -1809,67 +1735,8 @@ export const getRules = (
           new Criterion((unit: Unit): boolean =>
             routeOrders(unit, playerResearchRegistry).includes(RouteAction)
           ),
-          new Criterion((unit: Unit, to: Tile, from: Tile) => {
-            const found = plannedGoTo as PlannedRoute | null;
-
-            plannedRoute = null;
-
-            if (
-              found !== null &&
-              found.unit === unit &&
-              found.from === from &&
-              found.to === to &&
-              found.revision === routingRevision
-            ) {
-              plannedRoute = found;
-
-              return true;
-            }
-
-            const [PathFinder] = pathFinderRegistry.entries();
-
-            if (!PathFinder) {
-              return false;
-            }
-
-            const path = new PathFinder(unit, from, to).generate();
-
-            if (!(path instanceof Path)) {
-              return false;
-            }
-
-            plannedRoute = { unit, from, to, path, revision: routingRevision };
-
-            return true;
-          }),
-          new Effect((unit: Unit, to: Tile, from: Tile): UnitAction => {
-            const planned = plannedRoute as PlannedRoute | null,
-              isPlanned =
-                planned !== null &&
-                planned.unit === unit &&
-                planned.from === from &&
-                planned.to === to &&
-                planned.revision === routingRevision;
-
-            return new RouteAction(
-              from,
-              to,
-              unit,
-              ruleRegistry,
-              isPlanned
-                ? new PlannedPathFinderRegistry(
-                    unit,
-                    from,
-                    to,
-                    planned.path,
-                    pathFinderRegistry,
-                    () => routingRevision,
-                    planned.revision
-                  )
-                : pathFinderRegistry,
-              strategyNoteRegistry
-            );
-          })
+          routePlanner.route(),
+          routePlanner.routeEffect(RouteAction)
         )
     ),
 
