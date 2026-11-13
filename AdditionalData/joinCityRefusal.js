@@ -5,7 +5,7 @@ const CityGrowthRegistry_1 = require("@civ-clone/core-city-growth/CityGrowthRegi
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const canJoinCity_1 = require("../Rules/Unit/canJoinCity");
 const AdditionalData_1 = require("@civ-clone/core-data-object/AdditionalData");
-const Units_1 = require("../Units");
+const FoundsCities_1 = require("@civ-clone/base-unit-trait-founds-cities/FoundsCities");
 const Unit_1 = require("@civ-clone/core-unit/Unit");
 /**
  * Why a unit standing in one of its player's cities isn't offered `JoinCity`, so a renderer can say so (as v474.05's
@@ -14,7 +14,7 @@ const Unit_1 = require("@civ-clone/core-unit/Unit");
  */
 const getAdditionalData = (cityRegistry = CityRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance) => [
     new AdditionalData_1.default(Unit_1.default, 'joinCityRefusal', (unit) => {
-        if (!(unit instanceof Units_1.Settlers)) {
+        if (!unit.hasTrait(FoundsCities_1.default)) {
             return null;
         }
         const city = cityRegistry.getByTile(unit.tile());

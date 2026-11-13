@@ -30,6 +30,7 @@ import stowed from '../Rules/Unit/stowed';
 import Tile from '@civ-clone/core-world/Tile';
 import UnitAction from '@civ-clone/core-unit/Action';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 describe('aircraft', (): void => {
   const setUp = async () => {
@@ -43,6 +44,8 @@ describe('aircraft', (): void => {
       world = new World(new FillGenerator(10, 10, Grassland), ruleRegistry);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         undefined,
         cityRegistry,
@@ -241,6 +244,31 @@ describe('aircraft', (): void => {
     ).perform();
 
     expect(fighter.moves().value()).greaterThan(0);
+  });
+
+  it('should let only a Fighter attack a square holding only aircraft', async (): Promise<void> => {
+    const { player, ruleRegistry, unitRegistry, world } = await setUp(),
+      enemy = new Player(ruleRegistry),
+      fighter = new Fighter(null, player, world.get(5, 5), ruleRegistry),
+      bomber = new Bomber(null, player, world.get(5, 6), ruleRegistry),
+      target = new Bomber(null, enemy, world.get(6, 6), ruleRegistry);
+
+    unitRegistry.register(fighter, bomber, target);
+
+    [fighter, bomber].forEach((unit: Unit): void =>
+      unit.moves().set(unit.movement())
+    );
+
+    expect(
+      fighter
+        .actions(target.tile())
+        .some((action: UnitAction): boolean => action instanceof Attack)
+    ).true;
+    expect(
+      bomber
+        .actions(target.tile())
+        .some((action: UnitAction): boolean => action instanceof Attack)
+    ).false;
   });
   it('should land a Fighter on a friendly Carrier, stowing it and ending its turn', async (): Promise<void> => {
     const {

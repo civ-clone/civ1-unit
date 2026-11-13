@@ -33,6 +33,7 @@ import movementCost from '../Rules/Unit/movementCost';
 import stowed from '../Rules/Unit/stowed';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 export const generateIslands: (
   ruleRegistry: RuleRegistry
@@ -127,6 +128,8 @@ describe('Trireme', (): void => {
     unitImprovementRegistry = new UnitImprovementRegistry();
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...action(
       cityNameRegistry,
       cityRegistry,
@@ -393,6 +396,8 @@ describe('Trireme', (): void => {
       unit = new Trireme(null, player, world.get(2, 2), ruleRegistry);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         cityNameRegistry,
         cityRegistry,
@@ -443,6 +448,8 @@ describe('Trireme', (): void => {
       unit = new Trireme(null, player, tile, ruleRegistry);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         cityNameRegistry,
         cityRegistry,

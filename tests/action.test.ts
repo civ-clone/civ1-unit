@@ -95,6 +95,7 @@ import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
 import { PathFinderRegistry } from '@civ-clone/core-world-path/PathFinderRegistry';
 import BasePathFinder from '@civ-clone/simple-world-path/BasePathFinder';
+import traits from '../Rules/Unit/traits';
 
 describe('Action', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -161,6 +162,8 @@ describe('Action', (): void => {
     };
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...action(
       cityNameRegistry,
       cityRegistry,

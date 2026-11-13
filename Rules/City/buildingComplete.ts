@@ -15,6 +15,8 @@ import {
   instance as engineInstance,
 } from '@civ-clone/core-engine/Engine';
 import { Caravan, Diplomat, Settlers } from '../../Units';
+import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
+import NonCombatant from '@civ-clone/base-unit-trait-non-combatant/NonCombatant';
 import { Veteran } from '../../UnitImprovements';
 import {
   UnitImprovementRegistry,
@@ -30,8 +32,17 @@ import { SETTLERS_SHRINK_CITY_RULE } from '../../RuleIds';
 import Unit from '@civ-clone/core-unit/Unit';
 import homeCity from '../../lib/homeCity';
 
-// The units a player who keeps building military units is still asked about (civ-clone/web-renderer#690).
+/**
+ * The units a player who keeps building military units is still asked about (civ-clone/web-renderer#690).
+ *
+ * @deprecated The rule asks for `NonCombatant` or `FoundsCities` (`Rules/Unit/traits`), which these are in Civ1. Kept
+ *  for one release.
+ */
 export const notRepeated = [Caravan, Diplomat, Settlers];
+
+// A unit made in a city that `FoundsCities` (Settlers): it costs the city a citizen.
+const foundsCities = (buildItem: BuildableInstance): boolean =>
+  buildItem instanceof Unit && buildItem.hasTrait(FoundsCities);
 
 export const getRules: (
   cityGrowthRegistry?: CityGrowthRegistry,
@@ -80,9 +91,8 @@ export const getRules: (
   //  (civ-clone/web-renderer#400).
   const shrinkCity = new BuildingComplete(
     SETTLERS_SHRINK_CITY_RULE,
-    new Criterion(
-      (cityBuild: CityBuild, buildItem: BuildableInstance) =>
-        buildItem instanceof Settlers
+    new Criterion((cityBuild: CityBuild, buildItem: BuildableInstance) =>
+      foundsCities(buildItem)
     ),
     new Criterion(
       (cityBuild: CityBuild): boolean =>
@@ -120,7 +130,8 @@ export const getRules: (
       new Criterion(
         (cityBuild: CityBuild, buildItem: BuildableInstance): boolean =>
           buildItem instanceof Unit &&
-          !notRepeated.some((UnitType) => buildItem instanceof UnitType) &&
+          !buildItem.hasTrait(NonCombatant) &&
+          !buildItem.hasTrait(FoundsCities) &&
           !cityBuild.auto() &&
           buildPreferencesRegistry.get(cityBuild.city().player()).repeat
       ),
@@ -148,7 +159,7 @@ export const getRules: (
       new Criterion(
         (cityBuild: CityBuild, buildItem: BuildableInstance): boolean =>
           shrinkCity.enabled() &&
-          buildItem instanceof Settlers &&
+          foundsCities(buildItem) &&
           cityGrowthRegistry.getByCity(cityBuild.city()).size() === 1 &&
           cityRegistry.getByPlayer(cityBuild.city().player()).length > 1
       ),

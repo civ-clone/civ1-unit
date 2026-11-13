@@ -28,6 +28,7 @@ import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 describe('RoadTo and RailroadTo', (): void => {
   const setUp = async () => {
@@ -63,6 +64,8 @@ describe('RoadTo and RailroadTo', (): void => {
     );
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         undefined,
         cityRegistry,

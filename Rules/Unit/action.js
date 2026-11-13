@@ -18,7 +18,6 @@ const Embassy_1 = require("@civ-clone/base-unit-action-establish-embassy/Embassy
 const AdvanceStolen_1 = require("@civ-clone/base-unit-action-steal-technology/AdvanceStolen");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const diplomat_1 = require("./diplomat");
-const Units_1 = require("../../Units");
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const InteractionRegistry_1 = require("@civ-clone/core-diplomacy/InteractionRegistry");
 const TileImprovements_1 = require("@civ-clone/civ1-world/TileImprovements");
@@ -52,7 +51,18 @@ const UnitImprovements_1 = require("../../UnitImprovements");
 const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
-const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Land), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => unit instanceof Types_1.Naval), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
+const Detonates_1 = require("@civ-clone/base-unit-trait-detonates/Detonates");
+const DiplomaticMissions_1 = require("@civ-clone/base-unit-trait-diplomatic-missions/DiplomaticMissions");
+const Fortifies_1 = require("@civ-clone/base-unit-trait-fortifies/Fortifies");
+const FoundsCities_1 = require("@civ-clone/base-unit-trait-founds-cities/FoundsCities");
+const IgnoresZoneOfControl_1 = require("@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl");
+const Interceptor_1 = require("@civ-clone/base-unit-trait-interceptor/Interceptor");
+const NonCombatant_1 = require("@civ-clone/base-unit-trait-non-combatant/NonCombatant");
+const Submerged_1 = require("@civ-clone/base-unit-trait-submerged/Submerged");
+const Terraforms_1 = require("@civ-clone/base-unit-trait-terraforms/Terraforms");
+const TradeMissions_1 = require("@civ-clone/base-unit-trait-trade-missions/TradeMissions");
+const traits_1 = require("@civ-clone/core-unit/traits");
+const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => (0, traits_1.isA)(unit, Types_1.Land)), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => (0, traits_1.isA)(unit, Types_1.Naval)), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance, playerGovernmentRegistry = PlayerGovernmentRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const landsInCity = (unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }, landingTransport = (unit, to) => {
@@ -64,7 +74,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             tileUnit.hasCapacity() &&
             tileUnit.canStow(unit));
         return (_a = transport) !== null && _a !== void 0 ? _a : null;
-    }, canLandAircraft = (unit, to) => unit instanceof Types_1.Air &&
+    }, canLandAircraft = (unit, to) => (0, traits_1.isA)(unit, Types_1.Air) &&
         (landsInCity(unit, to) || landingTransport(unit, to) !== null);
     let plannedGoTo = null;
     // The route the `road-to` and `railroad-to` criteria found, as `plannedGoTo` is for `GoTo`: the very route the `goto`
@@ -92,9 +102,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
         // Diplomats and Caravans never attack: v474.05 stops them before any combat.
-        new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
+        new Criterion_1.default((unit) => !unit.hasTrait(NonCombatant_1.default)),
         // A Nuclear unit never fights: it detonates (`nuclear-attack`, below).
-        new Criterion_1.default((unit) => !(unit instanceof Units_1.Nuclear)),
+        new Criterion_1.default((unit) => !unit.hasTrait(Detonates_1.default)),
         new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
             .some((tileUnit) => tileUnit.player() !== unit.player())),
@@ -104,16 +114,15 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // Where the Unit is either...
         new Or_1.default(new And_1.default(
         // ...an Air Unit...
-        new Criterion_1.default((unit) => unit instanceof Types_1.Air), 
+        new Criterion_1.default((unit) => (0, traits_1.isA)(unit, Types_1.Air)), 
         // ...and either...
         new Or_1.default(
         // ...not every Unit on the Tile is another Air Unit...
         new Criterion_1.default((unit, to) => !unitRegistry
             .getByTile(to)
-            .every((tileUnit) => tileUnit instanceof Types_1.Air)), 
-        // ...or the Unit is a Fighter.
-        // TODO: `AirAttacker` type? This would allow Mobile SAM etc
-        new Criterion_1.default((unit, to) => unit instanceof Units_1.Fighter))), new And_1.default(
+            .every((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Air))), 
+        // ...or the Unit is an `Interceptor` (a Fighter).
+        new Criterion_1.default((unit, to) => unit.hasTrait(Interceptor_1.default)))), new And_1.default(
         // ...or a Land Unit...
         isLandUnit, 
         // ...and either...
@@ -123,12 +132,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // ...or it's attacking another Land Unit.
         new Criterion_1.default((unit, to) => unitRegistry
             .getByTile(to)
-            .some((tileUnit) => tileUnit instanceof Types_1.Land)))), new And_1.default(
+            .some((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Land))))), new And_1.default(
         // ...or a Naval Unit...
         isNavalUnit, new Or_1.default(
-        // ...that is either, not a `Submarine` (as they can only attack other `Naval` `Unit`s...
-        // TODO: Add a type for this? NavalBombardier?
-        new Criterion_1.default((unit, to) => !(unit instanceof Units_1.Submarine)), 
+        // ...that is either, not `Submerged` (a Submarine: they can only attack other `Naval` `Unit`s...
+        new Criterion_1.default((unit, to) => !unit.hasTrait(Submerged_1.default)), 
         // ...or the `Tile` is `Water`.
         new Criterion_1.default((unit, to) => to.isWater())))),
     ], captureCityCriteria = [
@@ -136,7 +144,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         Action_1.hasMovesLeft,
         isLandUnit,
         // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
-        new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
+        new Criterion_1.default((unit) => !unit.hasTrait(NonCombatant_1.default)),
         new Criterion_1.default((unit, to) => tileHasCity(to, cityRegistry)),
         new Criterion_1.default((unit, to) => unitRegistry.getByTile(to).length === 0),
         new Criterion_1.default((unit, to) => cityRegistry.getByTile(to).player() !== unit.player()),
@@ -154,7 +162,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     }, nuclearAttackCriteria = [
         Action_1.isNeighbouringTile,
         Action_1.hasMovesLeft,
-        new Criterion_1.default((unit) => unit instanceof Units_1.Nuclear),
+        new Criterion_1.default((unit) => unit.hasTrait(Detonates_1.default)),
         new Criterion_1.default((unit, to) => nuclearTargets(unit, to).length > 0),
     ];
     // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
@@ -162,7 +170,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     //  city isn't building a Wonder (civ-clone/web-renderer#57).
     const canEstablishTradeRoute = (unit, to, from = unit.tile()) => {
         const home = unit.city(), city = cityRegistry.getByTile(to);
-        if (!(unit instanceof Units_1.Caravan) || home === null || city === null) {
+        if (!unit.hasTrait(TradeMissions_1.default) || home === null || city === null) {
             return false;
         }
         if (city.player() !== unit.player()) {
@@ -184,7 +192,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     //  it, with moves left, and not from a ship. Units in the city don't matter: the Diplomat never enters it.
     const diplomatCity = (unit, to, from = unit.tile()) => {
         const city = cityRegistry.getByTile(to);
-        return unit instanceof Units_1.Diplomat &&
+        return unit.hasTrait(DiplomaticMissions_1.default) &&
             from.isLand() &&
             city !== null &&
             city.player() !== unit.player()
@@ -241,9 +249,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         Action_1.hasMovesLeft,
         Action_1.isCurrentTile,
         // Every land unit but Diplomats and Caravans can pillage in Civ1, so
-        // Settlers (`Worker`) can as well as the military units.
-        new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable || unit instanceof Types_1.Worker),
-        new Criterion_1.default((unit) => !(unit instanceof Types_1.Diplomatic)),
+        // Settlers (`Terraforms`) can as well as the military units (`Fortifies`).
+        //  Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit but the `NonCombatant`s.
+        new Criterion_1.default((unit) => unit.hasTrait(Fortifies_1.default) || unit.hasTrait(Terraforms_1.default)),
+        new Criterion_1.default((unit) => !unit.hasTrait(NonCombatant_1.default)),
         new Criterion_1.default((unit, to) => tileImprovementRegistry
             .getByTile(to)
             // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
@@ -264,20 +273,20 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Or_1.default(new Criterion_1.default((unit, to) => to.isWater()), new Criterion_1.default((unit, to) => { var _a; return ((_a = cityRegistry.getByTile(to)) === null || _a === void 0 ? void 0 : _a.player()) === unit.player(); }))), 
         // `Air` `Unit`s can move anywhere. Where they could land, `LandAircraft` is offered first, and this lets them fly
         // over instead.
-        new Criterion_1.default((unit) => unit instanceof Types_1.Air)),
+        new Criterion_1.default((unit) => (0, traits_1.isA)(unit, Types_1.Air))),
         // This is analogous to the original Civilization unit adjacency rules.
         // You may only move your `Unit` to the `Tile` if...
         new Or_1.default(new Criterion_1.default(
         // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-        (unit, to, from) => !(unit instanceof Types_1.Land)), new Criterion_1.default(
-        // ...it's a `Diplomatic` `Unit`...
-        (unit, to) => unit instanceof Types_1.Diplomatic), new Criterion_1.default(
+        (unit, to, from) => !(0, traits_1.isA)(unit, Types_1.Land)), new Criterion_1.default(
+        // ...it ignores zones of control (a Diplomat or a Caravan)...
+        (unit, to) => unit.hasTrait(IgnoresZoneOfControl_1.default)), new Criterion_1.default(
         // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
-        (unit, to, from = unit.tile()) => !(from.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => tileUnit instanceof Types_1.Land &&
+        (unit, to, from = unit.tile()) => !(from.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Land) &&
             // Ignore `LandUnit`s in `Transport` on `Water`
             tileUnit.tile().terrain() instanceof Types_2.Land &&
             tileUnit.player() !== unit.player())) &&
-            to.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => tileUnit instanceof Types_1.Land &&
+            to.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Land) &&
                 // Ignore `LandUnit`s in `Transport` on `Water`
                 tileUnit.tile().terrain() instanceof Types_2.Land &&
                 tileUnit.player() !== unit.player())))), new Criterion_1.default(
@@ -326,7 +335,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Action_1.Action('civ1-unit:unit/action/meet-with-leader', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithLeader(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
         // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
         //  check, and the Diplomat keeps its moves.
-        new Action_1.Action('civ1-unit:unit/action/bribe-unit', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit instanceof Units_1.Diplomat), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to) === null), new Criterion_1.default((unit, to) => {
+        new Action_1.Action('civ1-unit:unit/action/bribe-unit', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit.hasTrait(DiplomaticMissions_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to) === null), new Criterion_1.default((unit, to) => {
             const units = unitRegistry.getByTile(to);
             return units.length === 1 && units[0].player() !== unit.player();
         }), new Effect_1.default((unit, to, from = unit.tile()) => {
@@ -393,7 +402,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // Pillaging a treaty partner's land breaks the treaty (v474.05 `CheckPlayerTurn.cs` ~L642-686).
         new Action_1.Action('civ1-unit:unit/action/sneak-pillage', ...pillageCriteria, pillagingPartnersLand, isFree, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn))),
         overruled('sneak-pillage', (unit, to, from) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn), ...pillageCriteria, pillagingPartnersLand),
-        new Action_1.Action('civ1-unit:unit/action/fortify', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/fortify', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(Fortifies_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
         new Action_1.Action('civ1-unit:unit/action/sleep', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
         new Action_1.Action(
         // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
@@ -406,10 +415,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                     .some((unitImprovement) => unitImprovement instanceof UnitImprovements_1.Fortified))), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Activate(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/disband', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
         new Action_1.Action('civ1-unit:unit/action/no-orders', Action_1.isCurrentTile, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/found-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/found-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(FoundsCities_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to, from = unit.tile()) => !tileHasCity(from, cityRegistry)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
         // On one of its player's cities, where `found-city` is not offered, so the two can share a key. The size limit is a
         // `CanJoinCity` rule (`canJoinCity.ts`).
-        new Action_1.Action('civ1-unit:unit/action/join-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Units_1.Settlers), new Criterion_1.default((unit, to, from = unit.tile()) => (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry) !== null), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.JoinCity(from, to, unit, (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry), ruleRegistry, cityGrowthRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/join-city', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(FoundsCities_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry) !== null), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.JoinCity(from, to, unit, (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry), ruleRegistry, cityGrowthRegistry))),
         ...[
             [
                 TileImprovements_1.Irrigation,
@@ -432,7 +441,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                     .getByTile(to)
                     .some((tileImprovement) => tileImprovement instanceof TileImprovements_1.Road)),
             ],
-        ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(`civ1-unit:unit/action/improvement/${Improvement.name}`, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => ruleRegistry
+        ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(`civ1-unit:unit/action/improvement/${Improvement.name}`, new Criterion_1.default((unit) => unit.hasTrait(Terraforms_1.default)), Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => ruleRegistry
             .get(Available_1.default)
             .some((rule) => rule.validate(from, Improvement, unit.player()))), Action_1.isCurrentTile, ...additionalCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn)))),
         ...[
@@ -441,9 +450,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             // The mine command: Civ1 turns each of these into Forest.
             [Actions_1.PlantForest, Terrains_1.Plains, Terrains_1.Grassland, Terrains_1.Jungle, Terrains_1.Swamp],
             [Actions_1.ClearSwamp, Terrains_1.Swamp],
-        ].map(([ActionType, ...TerrainTypes]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => TerrainTypes.some((TerrainType) => from.terrain() instanceof TerrainType)), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
+        ].map(([ActionType, ...TerrainTypes]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(Terraforms_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => TerrainTypes.some((TerrainType) => from.terrain() instanceof TerrainType)), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
         // Only on a polluted tile, as v474.05's menu offers it (`GameMenus.cs` L308, civ-clone/web-renderer#32).
-        new Action_1.Action('civ1-unit:unit/action/clean-pollution', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Criterion_1.default((unit, to, from = unit.tile()) => tileImprovementRegistry
+        new Action_1.Action('civ1-unit:unit/action/clean-pollution', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(Terraforms_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => tileImprovementRegistry
             .getByTile(from)
             .some((improvement) => improvement instanceof TileImprovements_1.Pollution)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.CleanPollution(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
         new Action_1.Action('civ1-unit:unit/action/embark', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, isLandUnit, new Criterion_1.default((unit, to) => to.terrain() instanceof Types_2.Water), new Criterion_1.default((unit, to) => unitRegistry
@@ -468,7 +477,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
         // unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also unloads a unit
         // that walks off a ship in a city with a `Move`.
-        new Criterion_1.default((unit) => !(unit instanceof Types_1.Air)), new Or_1.default(new Criterion_1.default((unit, to) => !(unit instanceof Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
+        new Criterion_1.default((unit) => !(0, traits_1.isA)(unit, Types_1.Air)), new Or_1.default(new Criterion_1.default((unit, to) => !(0, traits_1.isA)(unit, Types_1.Land)), new Criterion_1.default((unit, to) => to.isLand())), new Criterion_1.default((unit, to, from = unit.tile()) => transportRegistry.getByUnit(unit).transport().tile() === from), new Effect_1.default((unit, to, from = unit.tile()) => {
             const transport = transportRegistry.getByUnit(unit).transport();
             return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
         })),
@@ -544,10 +553,10 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         // Standing orders, run by the game's strategies (`base-strategy-explore`, `base-strategy-terrain-work`). Offered
         //  whether or not the game has the strategy: without it, the order hands the unit straight back.
         new Action_1.Action('civ1-unit:unit/action/explore', Action_1.hasMovesLeft, Action_1.isCurrentTile, 
-        // Land units that fight (and Diplomats and Caravans, which are `Fortifiable` too) and ships. Not Settlers, which
+        // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
         //  have work to do, nor aircraft, which have fuel to mind.
-        new Criterion_1.default((unit) => unit instanceof Types_1.Fortifiable || unit instanceof Types_1.Naval), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Explore(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
-        new Action_1.Action('civ1-unit:unit/action/automate', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit instanceof Types_1.Worker), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Automate(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
+        new Criterion_1.default((unit) => unit.hasTrait(Fortifies_1.default) || (0, traits_1.isA)(unit, Types_1.Naval)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Explore(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
+        new Action_1.Action('civ1-unit:unit/action/automate', Action_1.hasMovesLeft, Action_1.isCurrentTile, new Criterion_1.default((unit) => unit.hasTrait(Terraforms_1.default)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Automate(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
     ];
 };
 exports.getRules = getRules;

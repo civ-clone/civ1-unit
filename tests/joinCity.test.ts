@@ -25,6 +25,7 @@ import foodStorage from '@civ-clone/civ1-city/Rules/City/food-storage';
 import grow from '@civ-clone/civ1-city/Rules/City/grow';
 import growthCost from '@civ-clone/civ1-city/Rules/City/growth-cost';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
+import traits from '../Rules/Unit/traits';
 
 describe('JoinCity', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -65,6 +66,8 @@ describe('JoinCity', (): void => {
         .filter((action: UnitAction): boolean => action instanceof ActionType);
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...created(
       tileImprovementRegistry,
       cityBuildRegistry,

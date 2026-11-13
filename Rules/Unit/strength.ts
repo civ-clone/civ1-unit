@@ -1,5 +1,5 @@
 import { Air, Naval } from '../../Types';
-import { Artillery, Bomber } from '../../Units';
+import * as Units from '../../Units';
 import {
   CityImprovementRegistry,
   instance as cityImprovementRegistryInstance,
@@ -24,6 +24,10 @@ import { Attack, Defence } from '@civ-clone/core-unit/Yields';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import { CityWalls } from '@civ-clone/library-city/CityImprovements';
 import Effect from '@civ-clone/core-rule/Effect';
+import IgnoresFortifications from '@civ-clone/base-unit-trait-ignores-fortifications/IgnoresFortifications';
+import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import { hasTrait } from '@civ-clone/core-unit/traits';
+import traits from './traits';
 import { Fortified } from '../../UnitImprovements';
 import Strength from '@civ-clone/core-unit/Rules/Strength';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -42,8 +46,22 @@ export const terrainDefence: [typeof Terrain, number][] = [
   [Mountains, 3],
 ];
 
-// The units City Walls don't help against: v474.05 skips the walls for an attacker with an attack of 12.
-export const ignoreCityWalls: (typeof Unit)[] = [Artillery, Bomber];
+/**
+ * The units City Walls don't help against: v474.05 skips the walls for an attacker with an attack of 12.
+ *
+ * @deprecated The rules ask the attacker for `IgnoresFortifications` (`Rules/Unit/traits`), which a ruleset can change.
+ *  This is what civ1-unit's own declarations give, in `Units` order, kept for one release.
+ */
+export const ignoreCityWalls: (typeof Unit)[] = ((): (typeof Unit)[] => {
+  const declarations = new RuleRegistry();
+
+  declarations.register(...traits());
+
+  return (Object.values(Units) as (typeof Unit)[]).filter(
+    (UnitType: typeof Unit): boolean =>
+      hasTrait(UnitType, IgnoresFortifications, declarations)
+  );
+})();
 
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
@@ -54,7 +72,7 @@ export const ignoreCityWalls: (typeof Unit)[] = [Artillery, Bomber];
  * Veteran's ×1.5, which v474.05 applies last: the product is the same.
  *
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
- * attacker but those in `ignoreCityWalls`.
+ * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
 export const defenceMultipliers = (
   defender: Unit,
@@ -71,9 +89,7 @@ export const defenceMultipliers = (
     city = cityRegistry.getByTile(tile),
     cityWalls =
       city !== null &&
-      !ignoreCityWalls.some(
-        (UnitType: typeof Unit): boolean => attacker instanceof UnitType
-      ) &&
+      !(attacker !== null && attacker.hasTrait(IgnoresFortifications)) &&
       cityImprovementRegistry
         .getByCity(city)
         .some(

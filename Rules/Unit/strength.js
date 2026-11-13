@@ -2,13 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = exports.defenceMultipliers = exports.ignoreCityWalls = exports.terrainDefence = void 0;
 const Types_1 = require("../../Types");
-const Units_1 = require("../../Units");
+const Units = require("../../Units");
 const CityImprovementRegistry_1 = require("@civ-clone/core-city-improvement/CityImprovementRegistry");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
+const IgnoresFortifications_1 = require("@civ-clone/base-unit-trait-ignores-fortifications/IgnoresFortifications");
+const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
+const traits_1 = require("@civ-clone/core-unit/traits");
+const traits_2 = require("./traits");
 const UnitImprovements_1 = require("../../UnitImprovements");
 const Strength_1 = require("@civ-clone/core-unit/Rules/Strength");
 const terrainTable_1 = require("@civ-clone/base-terrain-properties/lib/terrainTable");
@@ -22,8 +26,17 @@ exports.terrainDefence = [
     [Terrains_1.Hills, 2],
     [Terrains_1.Mountains, 3],
 ];
-// The units City Walls don't help against: v474.05 skips the walls for an attacker with an attack of 12.
-exports.ignoreCityWalls = [Units_1.Artillery, Units_1.Bomber];
+/**
+ * The units City Walls don't help against: v474.05 skips the walls for an attacker with an attack of 12.
+ *
+ * @deprecated The rules ask the attacker for `IgnoresFortifications` (`Rules/Unit/traits`), which a ruleset can change.
+ *  This is what civ1-unit's own declarations give, in `Units` order, kept for one release.
+ */
+exports.ignoreCityWalls = (() => {
+    const declarations = new RuleRegistry_1.default();
+    declarations.register(...(0, traits_2.default)());
+    return Object.values(Units).filter((UnitType) => (0, traits_1.hasTrait)(UnitType, IgnoresFortifications_1.default, declarations));
+})();
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
  * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3) or being
@@ -33,14 +46,14 @@ exports.ignoreCityWalls = [Units_1.Artillery, Units_1.Bomber];
  * Veteran's ×1.5, which v474.05 applies last: the product is the same.
  *
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
- * attacker but those in `ignoreCityWalls`.
+ * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
 const defenceMultipliers = (defender, attacker, cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance) => {
     if (defender instanceof Types_1.Air) {
         return [];
     }
     const tile = defender.tile(), city = cityRegistry.getByTile(tile), cityWalls = city !== null &&
-        !exports.ignoreCityWalls.some((UnitType) => attacker instanceof UnitType) &&
+        !(attacker !== null && attacker.hasTrait(IgnoresFortifications_1.default)) &&
         cityImprovementRegistry
             .getByCity(city)
             .some((cityImprovement) => cityImprovement instanceof CityImprovements_1.CityWalls);

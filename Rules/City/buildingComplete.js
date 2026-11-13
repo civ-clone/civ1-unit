@@ -6,6 +6,8 @@ const CityGrowthRegistry_1 = require("@civ-clone/core-city-growth/CityGrowthRegi
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Engine_1 = require("@civ-clone/core-engine/Engine");
 const Units_1 = require("../../Units");
+const FoundsCities_1 = require("@civ-clone/base-unit-trait-founds-cities/FoundsCities");
+const NonCombatant_1 = require("@civ-clone/base-unit-trait-non-combatant/NonCombatant");
 const UnitImprovements_1 = require("../../UnitImprovements");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const BulidingComplete_1 = require("@civ-clone/core-city-build/Rules/BulidingComplete");
@@ -15,8 +17,15 @@ const Priorities_1 = require("@civ-clone/core-rule/Priorities");
 const RuleIds_1 = require("../../RuleIds");
 const Unit_1 = require("@civ-clone/core-unit/Unit");
 const homeCity_1 = require("../../lib/homeCity");
-// The units a player who keeps building military units is still asked about (civ-clone/web-renderer#690).
+/**
+ * The units a player who keeps building military units is still asked about (civ-clone/web-renderer#690).
+ *
+ * @deprecated The rule asks for `NonCombatant` or `FoundsCities` (`Rules/Unit/traits`), which these are in Civ1. Kept
+ *  for one release.
+ */
 exports.notRepeated = [Units_1.Caravan, Units_1.Diplomat, Units_1.Settlers];
+// A unit made in a city that `FoundsCities` (Settlers): it costs the city a citizen.
+const foundsCities = (buildItem) => buildItem instanceof Unit_1.default && buildItem.hasTrait(FoundsCities_1.default);
 const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPreferencesRegistry = BuildPreferencesRegistry_1.instance, cityRegistry = CityRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, engine = Engine_1.instance) => {
     // Settlers cost their city a citizen, unless it is a size-1 city that is its player's only one, which keeps it. A
     //  size-1 city with others is removed, and the Settlers stay on its square (civ-clone/web-renderer#959). v474.05
@@ -50,7 +59,7 @@ const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPrefe
     //  `kill_civ` (`NEWGAME.C`) does nothing here, as the player has another city. A size-1 city that holds its Settlers
     //  (`Rules/City/hold` on Chieftain, or a ruleset's own `Hold` rule) never gets here. The Settlers are what shrank it
     //  (civ-clone/web-renderer#400).
-    const shrinkCity = new BulidingComplete_1.default(RuleIds_1.SETTLERS_SHRINK_CITY_RULE, new Criterion_1.default((cityBuild, buildItem) => buildItem instanceof Units_1.Settlers), new Criterion_1.default((cityBuild) => cityGrowthRegistry.getByCity(cityBuild.city()).size() > 1 ||
+    const shrinkCity = new BulidingComplete_1.default(RuleIds_1.SETTLERS_SHRINK_CITY_RULE, new Criterion_1.default((cityBuild, buildItem) => foundsCities(buildItem)), new Criterion_1.default((cityBuild) => cityGrowthRegistry.getByCity(cityBuild.city()).size() > 1 ||
         cityRegistry.getByPlayer(cityBuild.city().player()).length > 1), new Effect_1.default((cityBuild, buildItem) => {
         const city = cityBuild.city(), cityGrowth = cityGrowthRegistry.getByCity(city);
         if (cityGrowth.size() === 1) {
@@ -68,7 +77,8 @@ const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPrefe
         //  unless the city can no longer build it, when it is left to them, as in Civ1. Not Civ1's: it asks after every
         //  unit. Before the completion is announced, so the announcement can tell the city carried on.
         'civ1-unit:city/building-complete/repeat-military-unit', new Priorities_1.High(), new Criterion_1.default((cityBuild, buildItem) => buildItem instanceof Unit_1.default &&
-            !exports.notRepeated.some((UnitType) => buildItem instanceof UnitType) &&
+            !buildItem.hasTrait(NonCombatant_1.default) &&
+            !buildItem.hasTrait(FoundsCities_1.default) &&
             !cityBuild.auto() &&
             buildPreferencesRegistry.get(cityBuild.city().player()).repeat), new Effect_1.default((cityBuild, buildItem) => {
             const UnitType = buildItem.constructor;
@@ -85,7 +95,7 @@ const getRules = (cityGrowthRegistry = CityGrowthRegistry_1.instance, buildPrefe
         //  leaves `city_process` straight after `vanish` (`goto label_exit;`, `CITYMGT.C`), before the message for a
         //  unit built (civ-clone/web-renderer#969). Not while a ruleset has switched that rule off.
         'civ1-unit:city/building-complete/abandoned', new Priorities_1.High(), new Criterion_1.default((cityBuild, buildItem) => shrinkCity.enabled() &&
-            buildItem instanceof Units_1.Settlers &&
+            foundsCities(buildItem) &&
             cityGrowthRegistry.getByCity(cityBuild.city()).size() === 1 &&
             cityRegistry.getByPlayer(cityBuild.city().player()).length > 1), new Effect_1.default((cityBuild, buildItem) => {
             engine.emit('city:abandoned', cityBuild.city(), buildItem);

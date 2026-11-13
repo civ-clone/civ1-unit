@@ -25,7 +25,7 @@ export declare const inciteCost: (
 ) => number;
 /**
  * What `unit` costs to bribe (v474.05 `F22_0000_0639`; Rome on 640K a Day, p273):
- * `(owner's gold + 750) / (distance + 2) × build cost / 10`, halved unless it's Settlers.
+ * `(owner's gold + 750) / (distance + 2) × build cost / 10`, halved unless it `FoundsCities` (Settlers).
  */
 export declare const bribeCost: (
   unit: Unit,

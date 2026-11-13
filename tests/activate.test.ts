@@ -26,6 +26,7 @@ import created from '../Rules/Unit/created';
 import { expect } from 'chai';
 import StaticWorldGenerator from '@civ-clone/simple-world-generator/tests/lib/StaticWorldGenerator';
 import unitYield from '../Rules/Unit/yield';
+import traits from '../Rules/Unit/traits';
 
 describe('unit:activate', () => {
   const ruleRegistry = new RuleRegistry(),
@@ -39,6 +40,8 @@ describe('unit:activate', () => {
     transportRegistry = new TransportRegistry();
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...action(
       cityNameRegistry,
       cityRegistry,

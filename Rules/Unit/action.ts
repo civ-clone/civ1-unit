@@ -4,15 +4,7 @@ import {
   isCurrentTile,
   isNeighbouringTile,
 } from '@civ-clone/core-unit/Rules/Action';
-import {
-  Air,
-  Diplomatic,
-  Fortifiable,
-  Land as LandUnit,
-  Naval,
-  NavalTransport,
-  Worker,
-} from '../../Types';
+import { Air, Land as LandUnit, Naval, NavalTransport } from '../../Types';
 import {
   AbortMove,
   Activate,
@@ -107,14 +99,6 @@ import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
 import { stealableAdvances } from './diplomat';
 import {
-  Caravan,
-  Diplomat,
-  Fighter,
-  Nuclear,
-  Settlers,
-  Submarine,
-} from '../../Units';
-import {
   Forest,
   Grassland,
   Jungle,
@@ -207,12 +191,23 @@ import { Fortified } from '../../UnitImprovements';
 import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
+import Detonates from '@civ-clone/base-unit-trait-detonates/Detonates';
+import DiplomaticMissions from '@civ-clone/base-unit-trait-diplomatic-missions/DiplomaticMissions';
+import Fortifies from '@civ-clone/base-unit-trait-fortifies/Fortifies';
+import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
+import IgnoresZoneOfControl from '@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl';
+import Interceptor from '@civ-clone/base-unit-trait-interceptor/Interceptor';
+import NonCombatant from '@civ-clone/base-unit-trait-non-combatant/NonCombatant';
+import Submerged from '@civ-clone/base-unit-trait-submerged/Submerged';
+import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
+import TradeMissions from '@civ-clone/base-unit-trait-trade-missions/TradeMissions';
+import { isA } from '@civ-clone/core-unit/traits';
 
 const isLandUnit = new Criterion(
-    (unit: Unit, to: Tile, from: Tile = unit.tile()) => unit instanceof LandUnit
+    (unit: Unit, to: Tile, from: Tile = unit.tile()) => isA(unit, LandUnit)
   ),
   isNavalUnit = new Criterion(
-    (unit: Unit, to: Tile, from: Tile = unit.tile()) => unit instanceof Naval
+    (unit: Unit, to: Tile, from: Tile = unit.tile()) => isA(unit, Naval)
   ),
   tileHasCity = (tile: Tile, cityRegistry: CityRegistry): boolean =>
     cityRegistry.getByTile(tile) !== null;
@@ -258,7 +253,7 @@ export const getRules = (
       return (transport as unknown as ITransport) ?? null;
     },
     canLandAircraft = (unit: Unit, to: Tile): boolean =>
-      unit instanceof Air &&
+      isA(unit, Air) &&
       (landsInCity(unit, to) || landingTransport(unit, to) !== null);
 
   // The route the `goto` criterion found, for the `GoTo` its effect builds: every action's criteria are validated
@@ -301,9 +296,9 @@ export const getRules = (
       isNeighbouringTile,
       hasMovesLeft,
       // Diplomats and Caravans never attack: v474.05 stops them before any combat.
-      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
+      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
       // A Nuclear unit never fights: it detonates (`nuclear-attack`, below).
-      new Criterion((unit: Unit): boolean => !(unit instanceof Nuclear)),
+      new Criterion((unit: Unit): boolean => !unit.hasTrait(Detonates)),
       new Criterion((unit: Unit, to: Tile): boolean =>
         unitRegistry
           .getByTile(to)
@@ -318,7 +313,7 @@ export const getRules = (
       new Or(
         new And(
           // ...an Air Unit...
-          new Criterion((unit: Unit): boolean => unit instanceof Air),
+          new Criterion((unit: Unit): boolean => isA(unit, Air)),
           // ...and either...
           new Or(
             // ...not every Unit on the Tile is another Air Unit...
@@ -326,12 +321,11 @@ export const getRules = (
               (unit: Unit, to: Tile): boolean =>
                 !unitRegistry
                   .getByTile(to)
-                  .every((tileUnit: Unit): boolean => tileUnit instanceof Air)
+                  .every((tileUnit: Unit): boolean => isA(tileUnit, Air))
             ),
-            // ...or the Unit is a Fighter.
-            // TODO: `AirAttacker` type? This would allow Mobile SAM etc
-            new Criterion(
-              (unit: Unit, to: Tile): boolean => unit instanceof Fighter
+            // ...or the Unit is an `Interceptor` (a Fighter).
+            new Criterion((unit: Unit, to: Tile): boolean =>
+              unit.hasTrait(Interceptor)
             )
           )
         ),
@@ -348,7 +342,7 @@ export const getRules = (
             new Criterion((unit: Unit, to: Tile): boolean =>
               unitRegistry
                 .getByTile(to)
-                .some((tileUnit: Unit): boolean => tileUnit instanceof LandUnit)
+                .some((tileUnit: Unit): boolean => isA(tileUnit, LandUnit))
             )
           )
         ),
@@ -356,11 +350,8 @@ export const getRules = (
           // ...or a Naval Unit...
           isNavalUnit,
           new Or(
-            // ...that is either, not a `Submarine` (as they can only attack other `Naval` `Unit`s...
-            // TODO: Add a type for this? NavalBombardier?
-            new Criterion(
-              (unit: Unit, to: Tile) => !(unit instanceof Submarine)
-            ),
+            // ...that is either, not `Submerged` (a Submarine: they can only attack other `Naval` `Unit`s...
+            new Criterion((unit: Unit, to: Tile) => !unit.hasTrait(Submerged)),
             // ...or the `Tile` is `Water`.
             new Criterion((unit: Unit, to: Tile) => to.isWater())
           )
@@ -372,7 +363,7 @@ export const getRules = (
       hasMovesLeft,
       isLandUnit,
       // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
-      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
+      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
       new Criterion((unit: Unit, to: Tile): boolean =>
         tileHasCity(to, cityRegistry)
       ),
@@ -405,7 +396,7 @@ export const getRules = (
     nuclearAttackCriteria = [
       isNeighbouringTile,
       hasMovesLeft,
-      new Criterion((unit: Unit): boolean => unit instanceof Nuclear),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(Detonates)),
       new Criterion(
         (unit: Unit, to: Tile): boolean => nuclearTargets(unit, to).length > 0
       ),
@@ -422,7 +413,7 @@ export const getRules = (
     const home = unit.city(),
       city = cityRegistry.getByTile(to);
 
-    if (!(unit instanceof Caravan) || home === null || city === null) {
+    if (!unit.hasTrait(TradeMissions) || home === null || city === null) {
       return false;
     }
 
@@ -459,7 +450,7 @@ export const getRules = (
     ): City | null => {
       const city = cityRegistry.getByTile(to);
 
-      return unit instanceof Diplomat &&
+      return unit.hasTrait(DiplomaticMissions) &&
         from.isLand() &&
         city !== null &&
         city.player() !== unit.player()
@@ -617,12 +608,13 @@ export const getRules = (
       hasMovesLeft,
       isCurrentTile,
       // Every land unit but Diplomats and Caravans can pillage in Civ1, so
-      // Settlers (`Worker`) can as well as the military units.
+      // Settlers (`Terraforms`) can as well as the military units (`Fortifies`).
+      //  Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit but the `NonCombatant`s.
       new Criterion(
         (unit: Unit): boolean =>
-          unit instanceof Fortifiable || unit instanceof Worker
+          unit.hasTrait(Fortifies) || unit.hasTrait(Terraforms)
       ),
-      new Criterion((unit: Unit): boolean => !(unit instanceof Diplomatic)),
+      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
       new Criterion(
         (unit: Unit, to: Tile): boolean =>
           tileImprovementRegistry
@@ -681,7 +673,7 @@ export const getRules = (
         ),
         // `Air` `Unit`s can move anywhere. Where they could land, `LandAircraft` is offered first, and this lets them fly
         // over instead.
-        new Criterion((unit: Unit): boolean => unit instanceof Air)
+        new Criterion((unit: Unit): boolean => isA(unit, Air))
       ),
 
       // This is analogous to the original Civilization unit adjacency rules.
@@ -689,12 +681,11 @@ export const getRules = (
       new Or(
         new Criterion(
           // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-          (unit: Unit, to: Tile, from: Tile): boolean =>
-            !(unit instanceof LandUnit)
+          (unit: Unit, to: Tile, from: Tile): boolean => !isA(unit, LandUnit)
         ),
         new Criterion(
-          // ...it's a `Diplomatic` `Unit`...
-          (unit: Unit, to: Tile): boolean => unit instanceof Diplomatic
+          // ...it ignores zones of control (a Diplomat or a Caravan)...
+          (unit: Unit, to: Tile): boolean => unit.hasTrait(IgnoresZoneOfControl)
         ),
         new Criterion(
           // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
@@ -703,7 +694,7 @@ export const getRules = (
               from.getNeighbours().some((tile: Tile) =>
                 unitRegistry.getByTile(tile).some(
                   (tileUnit: Unit): boolean =>
-                    tileUnit instanceof LandUnit &&
+                    isA(tileUnit, LandUnit) &&
                     // Ignore `LandUnit`s in `Transport` on `Water`
                     tileUnit.tile().terrain() instanceof Land &&
                     tileUnit.player() !== unit.player()
@@ -712,7 +703,7 @@ export const getRules = (
               to.getNeighbours().some((tile: Tile) =>
                 unitRegistry.getByTile(tile).some(
                   (tileUnit: Unit): boolean =>
-                    tileUnit instanceof LandUnit &&
+                    isA(tileUnit, LandUnit) &&
                     // Ignore `LandUnit`s in `Transport` on `Water`
                     tileUnit.tile().terrain() instanceof Land &&
                     tileUnit.player() !== unit.player()
@@ -964,7 +955,7 @@ export const getRules = (
       'civ1-unit:unit/action/bribe-unit',
       isNeighbouringTile,
       hasMovesLeft,
-      new Criterion((unit: Unit): boolean => unit instanceof Diplomat),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(DiplomaticMissions)),
       new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         from.isLand()
       ),
@@ -1370,7 +1361,7 @@ export const getRules = (
       'civ1-unit:unit/action/fortify',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Fortifiable),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(Fortifies)),
       new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         from.isLand()
       ),
@@ -1443,7 +1434,7 @@ export const getRules = (
       'civ1-unit:unit/action/found-city',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Settlers),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(FoundsCities)),
       new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         from.isLand()
       ),
@@ -1470,7 +1461,7 @@ export const getRules = (
       'civ1-unit:unit/action/join-city',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Settlers),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(FoundsCities)),
       new Criterion(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
           joinableCity(unit, from, cityRegistry, ruleRegistry) !== null
@@ -1540,7 +1531,7 @@ export const getRules = (
       ]): Action =>
         new Action(
           `civ1-unit:unit/action/improvement/${Improvement.name}`,
-          new Criterion((unit: Unit): boolean => unit instanceof Worker),
+          new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
           hasMovesLeft,
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
@@ -1588,7 +1579,7 @@ export const getRules = (
           `civ1-unit:unit/action/terrain/${ActionType.name}`,
           hasMovesLeft,
           isCurrentTile,
-          new Criterion((unit: Unit): boolean => unit instanceof Worker),
+          new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
           new Criterion(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
               TerrainTypes.some(
@@ -1615,7 +1606,7 @@ export const getRules = (
       'civ1-unit:unit/action/clean-pollution',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Worker),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
       new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
         tileImprovementRegistry
           .getByTile(from)
@@ -1698,11 +1689,9 @@ export const getRules = (
       // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
       // unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also unloads a unit
       // that walks off a ship in a city with a `Move`.
-      new Criterion((unit: Unit): boolean => !(unit instanceof Air)),
+      new Criterion((unit: Unit): boolean => !isA(unit, Air)),
       new Or(
-        new Criterion(
-          (unit: Unit, to: Tile): boolean => !(unit instanceof LandUnit)
-        ),
+        new Criterion((unit: Unit, to: Tile): boolean => !isA(unit, LandUnit)),
         new Criterion((unit: Unit, to: Tile): boolean => to.isLand())
       ),
       new Criterion(
@@ -1909,11 +1898,10 @@ export const getRules = (
       'civ1-unit:unit/action/explore',
       hasMovesLeft,
       isCurrentTile,
-      // Land units that fight (and Diplomats and Caravans, which are `Fortifiable` too) and ships. Not Settlers, which
+      // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
       //  have work to do, nor aircraft, which have fuel to mind.
       new Criterion(
-        (unit: Unit): boolean =>
-          unit instanceof Fortifiable || unit instanceof Naval
+        (unit: Unit): boolean => unit.hasTrait(Fortifies) || isA(unit, Naval)
       ),
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
@@ -1933,7 +1921,7 @@ export const getRules = (
       'civ1-unit:unit/action/automate',
       hasMovesLeft,
       isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof Worker),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Automate(

@@ -4,7 +4,8 @@ import {
   Railroad,
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
-import { Diplomatic, Land as LandUnit } from '../Types';
+import { Land as LandUnit } from '../Types';
+import NonCombatant from '@civ-clone/base-unit-trait-non-combatant/NonCombatant';
 import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegistry';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
 import Player from '@civ-clone/core-player/Player';
@@ -12,13 +13,14 @@ import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
+import { isA } from '@civ-clone/core-unit/traits';
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 
 /**
  * The player `unit` has a peace treaty with whose land `tile` is, or `null`:
  * an improved tile (irrigation, a mine, a road or a railroad) one of that
- * player's cities is working, and a land unit that isn't a Diplomat or a
- * Caravan. Moving onto or pillaging such a tile breaks the treaty
+ * player's cities is working, and a land unit that isn't a `NonCombatant` (a
+ * Diplomat or a Caravan). Moving onto or pillaging such a tile breaks the treaty
  * (civ-clone/web-renderer#287).
  *
  * v474.05 keeps a map of who owns each tile (a city's radius when it's
@@ -32,7 +34,7 @@ export const treatyPartner = (
   tileImprovementRegistry: TileImprovementRegistry,
   workedTileRegistry: WorkedTileRegistry
 ): Player | null => {
-  if (!(unit instanceof LandUnit) || unit instanceof Diplomatic) {
+  if (!isA(unit, LandUnit) || unit.hasTrait(NonCombatant)) {
     return null;
   }
 

@@ -34,6 +34,7 @@ import tradeRouteEstablished, {
   goodsFor,
 } from '../Rules/Unit/tradeRouteEstablished';
 import unitYield from '../Rules/Unit/yield';
+import traits from '../Rules/Unit/traits';
 
 class TestWonder extends Wonder {}
 
@@ -118,6 +119,8 @@ describe('Trade routes', (): void => {
 
     // Each city's trade comes from the test, so `baseTrade` reads what it sets.
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       new YieldRule(
         new Priority(0),
         new Effect((city: City) => new Trade(trade.get(city) ?? 0))

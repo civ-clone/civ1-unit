@@ -5,17 +5,17 @@ import {
 import { RailroadTo, RoadTo } from '../Actions';
 import PlayerResearch from '@civ-clone/core-science/PlayerResearch';
 import { Railroad as RailroadAdvance } from '@civ-clone/library-science/Advances';
+import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
 import Unit from '@civ-clone/core-unit/Unit';
-import { Worker } from '../Types';
 
 // The route orders `unit` may be given for a distant square it has a route to (civ-clone/web-renderer#195): Road to
-//  for a worker, and Railroad to once its player knows Railroad. The `road-to` and `railroad-to` actions are offered
+//  for a unit that `Terraforms`, and Railroad to once its player knows Railroad. The `road-to` and `railroad-to` actions are offered
 //  by this, and `AdditionalData/routeOrders` tells a renderer which to offer, so neither has the rule twice.
 export const routeOrders = (
   unit: Unit,
   playerResearchRegistry: PlayerResearchRegistry = playerResearchRegistryInstance
 ): (typeof RoadTo | typeof RailroadTo)[] => {
-  if (!(unit instanceof Worker)) {
+  if (!unit.hasTrait(Terraforms)) {
     return [];
   }
 
