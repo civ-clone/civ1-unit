@@ -90,6 +90,7 @@ import available from '@civ-clone/civ1-world/Rules/TileImprovement/available';
 import built from '@civ-clone/civ1-world/Rules/TileImprovement/built';
 import { expect } from 'chai';
 import movementCost from '../Rules/Unit/movementCost';
+import terrainChanged from '@civ-clone/civ1-world/Rules/Tile/terrain-changed';
 import unitCreated from '../Rules/Unit/created';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
@@ -181,6 +182,8 @@ describe('Action', (): void => {
     ...available(playerResearchRegistry, tileImprovementRegistry),
     ...built(tileImprovementRegistry),
     ...movementCost(tileImprovementRegistry),
+    // What a conversion leaves on the square: civ1-world's `TerrainChanged` rules, which `Tile.setTerrain` processes.
+    ...terrainChanged(ruleRegistry, terrainFeatureRegistry),
     ...unitYield(),
     ...unitCreated(unitRegistry),
     ...validateMove()

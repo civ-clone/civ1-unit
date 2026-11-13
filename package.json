@@ -19,7 +19,7 @@
   "devDependencies": {
     "@civ-clone/base-science-advance-bridgebuilding": "^0.1.0",
     "@civ-clone/civ1-city": "github:civ-clone/civ1-city",
-    "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
+    "@civ-clone/civ1-world": "github:civ-clone/civ1-world#feat/terrain-changed",
     "@civ-clone/core-player-world": "^0.1.0",
     "@civ-clone/simple-world-generator": "github:civ-clone/simple-world-generator",
     "@civ-clone/simple-world-path": "github:civ-clone/simple-world-path",
@@ -94,7 +94,7 @@
     "@civ-clone/base-unit-trait-trade-missions": "^0.1.0",
     "@civ-clone/base-zone-of-control": "^0.1.0",
     "@civ-clone/civ1-difficulty": "github:civ-clone/civ1-difficulty",
-    "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
+    "@civ-clone/civ1-world": "github:civ-clone/civ1-world#feat/terrain-changed",
     "@civ-clone/core-city": "^0.1.19",
     "@civ-clone/core-city-build": "^0.1.21",
     "@civ-clone/core-city-growth": "^0.1.6",
