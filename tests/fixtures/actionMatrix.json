@@ -1,0 +1,2361 @@
+{
+  "Artillery": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Battleship": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ]
+  },
+  "Bomber": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [
+      "LandAircraft",
+      "Move"
+    ],
+    "water": [
+      "Move"
+    ],
+    "treaty partner's worked land": [
+      "Move"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Move"
+    ],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own transport with space": [
+      "Move"
+    ],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity"
+    ],
+    "at sea: coastal land neighbour": [
+      "Move"
+    ],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ]
+  },
+  "Cannon": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Caravan": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [],
+    "foreign city": [
+      "EstablishTradeRoute"
+    ],
+    "foreign unit, at peace": [],
+    "foreign city, at peace": [
+      "EstablishTradeRoute"
+    ],
+    "foreign unit, at peace, under a Senate": [],
+    "foreign city, at peace, under a Senate": [
+      "EstablishTradeRoute"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "Move"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Move"
+    ],
+    "own square on a treaty partner's worked land": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Carrier": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ]
+  },
+  "Catapult": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Chariot": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Cruiser": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ]
+  },
+  "Diplomat": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "BribeUnit"
+    ],
+    "foreign city": [
+      "StealTechnology",
+      "EstablishEmbassy",
+      "InvestigateCity",
+      "IndustrialSabotage",
+      "InciteRevolt",
+      "MeetWithLeader"
+    ],
+    "foreign unit, at peace": [
+      "BribeUnit"
+    ],
+    "foreign city, at peace": [
+      "SneakStealTechnology",
+      "EstablishEmbassy",
+      "InvestigateCity",
+      "IndustrialSabotage",
+      "SneakInciteRevolt",
+      "SubvertCity",
+      "MeetWithLeader"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "BribeUnit"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled",
+      "EstablishEmbassy",
+      "InvestigateCity",
+      "IndustrialSabotage",
+      "Overruled",
+      "SubvertCity",
+      "MeetWithLeader"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "Move"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Move"
+    ],
+    "own square on a treaty partner's worked land": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Fighter": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [
+      "LandAircraft",
+      "Move"
+    ],
+    "water": [
+      "Move"
+    ],
+    "treaty partner's worked land": [
+      "Move"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Move"
+    ],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own transport with space": [
+      "Move"
+    ],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity"
+    ],
+    "at sea: coastal land neighbour": [
+      "Move"
+    ],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ]
+  },
+  "Frigate": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ]
+  },
+  "Horseman": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Ironclad": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ]
+  },
+  "Knight": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "MechanizedInfantry": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Musketman": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Nuclear": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "NuclearAttack"
+    ],
+    "foreign city": [
+      "NuclearAttack"
+    ],
+    "foreign unit, at peace": [
+      "SneakNuclearAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakNuclearAttack"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "LandAircraft",
+      "Move"
+    ],
+    "water": [
+      "Move"
+    ],
+    "treaty partner's worked land": [
+      "Move"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Move"
+    ],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own transport with space": [
+      "Move"
+    ],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity"
+    ],
+    "at sea: coastal land neighbour": [
+      "Move"
+    ],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ]
+  },
+  "Rifleman": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Sail": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ]
+  },
+  "Settlers": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "FoundCity",
+      "BuildRoad",
+      "PlantForest",
+      "Automate"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "FoundCity",
+      "BuildRoad",
+      "PlantForest",
+      "Automate"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "FoundCity",
+      "BuildRoad",
+      "PlantForest",
+      "CleanPollution",
+      "Automate"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "FoundCity",
+      "BuildRoad",
+      "ClearForest",
+      "Automate"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "FoundCity",
+      "BuildIrrigation",
+      "BuildRoad",
+      "PlantForest",
+      "Automate"
+    ],
+    "distant square": [
+      "GoTo",
+      "RoadTo"
+    ],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "JoinCity",
+      "BuildIrrigation",
+      "BuildRoad",
+      "PlantForest",
+      "SetHomeCity",
+      "Automate"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Spearman": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Submarine": {
+    "empty land neighbour": [],
+    "foreign unit": [],
+    "foreign city": [],
+    "foreign unit, at peace": [],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ]
+  },
+  "Swordman": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Tank": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  },
+  "Transport": {
+    "empty land neighbour": [],
+    "foreign unit": [],
+    "foreign city": [],
+    "foreign unit, at peace": [],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ]
+  },
+  "Trireme": {
+    "empty land neighbour": [],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [],
+    "own city": [],
+    "water": [],
+    "treaty partner's worked land": [],
+    "treaty partner's worked land, under a Senate": [],
+    "own square on a treaty partner's worked land": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [],
+    "own polluted, irrigated square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [],
+    "own square in own city": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [],
+    "at sea: water neighbour": [
+      "Move"
+    ],
+    "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ]
+  },
+  "Warrior": {
+    "empty land neighbour": [
+      "Move"
+    ],
+    "foreign unit": [
+      "Attack"
+    ],
+    "foreign city": [
+      "CaptureCity"
+    ],
+    "foreign unit, at peace": [
+      "SneakAttack"
+    ],
+    "foreign city, at peace": [
+      "SneakCaptureCity"
+    ],
+    "foreign unit, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "foreign city, at peace, under a Senate": [
+      "Overruled"
+    ],
+    "own city": [
+      "Move"
+    ],
+    "water": [],
+    "treaty partner's worked land": [
+      "SneakMove",
+      "AbortMove"
+    ],
+    "treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "AbortMove"
+    ],
+    "own square on a treaty partner's worked land": [
+      "SneakPillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own square on a treaty partner's worked land, under a Senate": [
+      "Overruled",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own transport with space": [
+      "Embark"
+    ],
+    "own polluted, irrigated square": [
+      "Pillage",
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own forest square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "own grassland square": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "distant square": [
+      "GoTo"
+    ],
+    "own square in own city": [
+      "Fortify",
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "SetHomeCity",
+      "Explore"
+    ],
+    "at sea: coastal land neighbour": [
+      "Disembark"
+    ],
+    "at sea: water neighbour": [],
+    "at sea: own square": [
+      "NoOrders"
+    ]
+  }
+}
