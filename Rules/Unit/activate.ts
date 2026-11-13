@@ -2,10 +2,17 @@ import {
   UnitImprovementRegistry,
   instance as unitImprovementRegistryInstance,
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
+import {
+  clearBusy,
+  hasImprovement,
+  hasMoves,
+  isBusy,
+  removeImprovement,
+  setActive,
+} from '@civ-clone/base-unit-lifecycle/lib/activate';
 import Activate from '@civ-clone/core-unit/Rules/Activate';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import Unit from '@civ-clone/core-unit/Unit';
 import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
 import { Fortified } from '../../UnitImprovements';
 
@@ -16,35 +23,23 @@ export const getRules: (
 ): Activate[] => [
   new Activate(
     'civ1-unit:unit/activate/has-moves',
-    new Criterion((unit: Unit): boolean => unit.moves().value() > 0),
-    new Effect((unit: Unit): void => unit.setActive())
+    new Criterion(hasMoves),
+    new Effect(setActive)
   ),
   new Activate(
     'civ1-unit:unit/activate/clear-busy',
-    new Criterion((unit: Unit): boolean => unit.busy() !== null),
-    new Effect((unit: Unit): void => unit.setBusy())
+    new Criterion(isBusy),
+    new Effect(clearBusy)
   ),
   ...([Fortified] as [typeof UnitImprovement]).map(
     (UnitImprovementType): Activate =>
       new Activate(
         `civ1-unit:unit/activate/remove-improvement/${UnitImprovementType.name}`,
-        new Criterion((unit: Unit): boolean =>
-          unitImprovementRegistry
-            .getByUnit(unit)
-            .some(
-              (unitImprovement: UnitImprovement): boolean =>
-                unitImprovement instanceof UnitImprovementType
-            )
+        new Criterion(
+          hasImprovement(unitImprovementRegistry, UnitImprovementType)
         ),
-        new Effect((unit: Unit): void =>
-          unitImprovementRegistry.unregister(
-            ...unitImprovementRegistry
-              .getByUnit(unit)
-              .filter(
-                (unitImprovement: UnitImprovement): boolean =>
-                  unitImprovement instanceof UnitImprovementType
-              )
-          )
+        new Effect(
+          removeImprovement(unitImprovementRegistry, UnitImprovementType)
         )
       )
   ),

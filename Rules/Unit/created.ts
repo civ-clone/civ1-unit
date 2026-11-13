@@ -6,9 +6,14 @@ import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
+import {
+  applyVisibility,
+  emitCreated,
+  registerUnit,
+  setMoves,
+} from '@civ-clone/base-unit-lifecycle/lib/created';
 import Created from '@civ-clone/core-unit/Rules/Created';
 import Effect from '@civ-clone/core-rule/Effect';
-import Unit from '@civ-clone/core-unit/Unit';
 
 export const getRules: (
   unitRegistry?: UnitRegistry,
@@ -19,22 +24,14 @@ export const getRules: (
 ): Created[] => [
   new Created(
     'civ1-unit:unit/created/register',
-    new Effect((unit: Unit): void => unitRegistry.register(unit))
+    new Effect(registerUnit(unitRegistry))
   ),
   new Created(
     'civ1-unit:unit/created/apply-visibility',
-    new Effect((unit: Unit): void => unit.applyVisibility())
+    new Effect(applyVisibility)
   ),
-  new Created(
-    'civ1-unit:unit/created/set-moves',
-    new Effect((unit: Unit): void => unit.moves().set(unit.movement()))
-  ),
-  new Created(
-    'civ1-unit:unit/created/emit',
-    new Effect((unit: Unit): void => {
-      engine.emit('unit:created', unit);
-    })
-  ),
+  new Created('civ1-unit:unit/created/set-moves', new Effect(setMoves)),
+  new Created('civ1-unit:unit/created/emit', new Effect(emitCreated(engine))),
 ];
 
 export default getRules;

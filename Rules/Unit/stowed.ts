@@ -1,15 +1,9 @@
 import Effect from '@civ-clone/core-rule/Effect';
-import Sleep from '@civ-clone/base-unit-action-sleep/Sleep';
 import Stowed from '@civ-clone/core-unit-transport/Rules/Stowed';
-import Unit from '@civ-clone/core-unit/Unit';
+import { sleepAboard } from '@civ-clone/base-unit-lifecycle/lib/stowed';
 
 export const getRules = (): Stowed[] => [
-  new Stowed(
-    'civ1-unit:unit/stowed/sleep',
-    new Effect((unit: Unit) =>
-      unit.action(new Sleep(unit.tile(), unit.tile(), unit))
-    )
-  ),
+  new Stowed('civ1-unit:unit/stowed/sleep', new Effect(sleepAboard)),
 ];
 
 export default getRules;

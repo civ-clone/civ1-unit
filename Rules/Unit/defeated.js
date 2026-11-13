@@ -6,33 +6,23 @@ const Engine_1 = require("@civ-clone/core-engine/Engine");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/TileImprovementRegistry");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
+const defeated_1 = require("@civ-clone/base-unit-lifecycle/lib/defeated");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Defeated_1 = require("@civ-clone/core-unit/Rules/Defeated");
-const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance) => [
     new Defeated_1.default('civ1-unit:unit/defeated/emit-and-destroy', 
     // The action is the attack, so a listener can tell the attacker from the defender: `action.unit()` attacked.
-    new Effect_1.default((unit, by, action) => {
-        engine.emit('unit:defeated', unit, by, action);
-        ruleRegistry.process(Destroyed_1.default, unit, by.player());
-    })),
+    new Effect_1.default((0, defeated_1.emitAndDestroy)(engine, ruleRegistry))),
     new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', 
     // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
-    new Criterion_1.default((unit, by, action) => !action || action.unit() !== unit), new Criterion_1.default((unit) => cityRegistry.getByTile(unit.tile()) === null), 
+    new Criterion_1.default(defeated_1.defended), new Criterion_1.default((0, defeated_1.notInCity)(cityRegistry)), 
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>
     //   !tileImprovementRegistry.getByTile(unit.tile())
     //     .some((tileImprovement) => tileImprovement instanceof Fortress)
     // ),
-    new Criterion_1.default((unit) => unitRegistry
-        .getByTile(unit.tile())
-        .filter((tileUnit) => tileUnit !== unit && tileUnit.player() === unit.player()).length > 0), new Effect_1.default((unit, by) => unitRegistry
-        .getByTile(unit.tile())
-        .filter((tileUnit) => tileUnit !== unit && tileUnit.player() === unit.player())
-        .forEach((tileUnit) => {
-        ruleRegistry.process(Destroyed_1.default, tileUnit, by.player());
-    }))),
+    new Criterion_1.default((0, defeated_1.hasStack)(unitRegistry)), new Effect_1.default((0, defeated_1.destroyStack)(unitRegistry, ruleRegistry))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

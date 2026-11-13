@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = exports.shortfallFactor = void 0;
+const validateMove_1 = require("@civ-clone/base-unit-lifecycle/lib/validateMove");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const ValidateMove_1 = require("@civ-clone/core-unit/Rules/ValidateMove");
-const moveShortfall_1 = require("@civ-clone/base-unit-action-rules/lib/moveShortfall");
 const core_random_1 = require("@civ-clone/core-random");
 /**
  * A unit short of the moves a step costs gets there when its remaining moves
@@ -14,15 +14,8 @@ const core_random_1 = require("@civ-clone/core-random");
  */
 exports.shortfallFactor = 0.5;
 const getRules = (randomNumberGenerator = core_random_1.instance) => [
-    new ValidateMove_1.default('civ1-unit:unit/validate-move/enough-moves', new Criterion_1.default((unit, movementCost) => unit.moves().value() >= movementCost), new Effect_1.default((unit, movementCost) => {
-        unit.moves().subtract(movementCost);
-        return true;
-    })),
-    new ValidateMove_1.default('civ1-unit:unit/validate-move/not-enough-moves', new Criterion_1.default((unit, movementCost) => unit.moves().value() < movementCost), new Effect_1.default((unit, movementCost) => {
-        const remainingMoves = unit.moves().value();
-        unit.moves().set(0);
-        return (0, moveShortfall_1.succeedsShort)(remainingMoves, movementCost, exports.shortfallFactor, randomNumberGenerator);
-    })),
+    new ValidateMove_1.default('civ1-unit:unit/validate-move/enough-moves', new Criterion_1.default(validateMove_1.hasMovesFor), new Effect_1.default(validateMove_1.spendMoves)),
+    new ValidateMove_1.default('civ1-unit:unit/validate-move/not-enough-moves', new Criterion_1.default(validateMove_1.shortOfMovesFor), new Effect_1.default((0, validateMove_1.spendShort)(exports.shortfallFactor, randomNumberGenerator))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

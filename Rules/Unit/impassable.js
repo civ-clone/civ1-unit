@@ -4,6 +4,7 @@ exports.getRules = void 0;
 const InteractionRegistry_1 = require("@civ-clone/core-diplomacy/InteractionRegistry");
 const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/TileImprovementRegistry");
 const WorkedTileRegistry_1 = require("@civ-clone/core-city/WorkedTileRegistry");
+const impassable_1 = require("@civ-clone/base-unit-lifecycle/lib/impassable");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Impassable_1 = require("@civ-clone/core-world-path/Rules/Impassable");
@@ -15,7 +16,7 @@ const getRules = (interactionRegistry = InteractionRegistry_1.instance, tileImpr
         new Impassable_1.default(
         // Routes go round a treaty partner's land, so following one (a GoTo, a computer player's route) never breaks a
         //  treaty by accident (#287). Only a step from land onto land asks, as `action/sneak-move` does.
-        'civ1-unit:unit/impassable/treaty-partners-land', new Criterion_1.default((unit, to, from) => from.isLand()), new Criterion_1.default((unit, to) => partnerOf(unit, to) !== null), new Effect_1.default(() => true)),
+        'civ1-unit:unit/impassable/treaty-partners-land', new Criterion_1.default(impassable_1.fromLand), new Criterion_1.default((0, impassable_1.toPartnersLand)(partnerOf)), new Effect_1.default(impassable_1.impassable)),
     ];
 };
 exports.getRules = getRules;

@@ -18,12 +18,16 @@ import {
   UnitRegistry,
   instance as unitRegistryInstance,
 } from '@civ-clone/core-unit/UnitRegistry';
-import Action from '@civ-clone/core-unit/Action';
+import {
+  defended,
+  destroyStack,
+  emitAndDestroy,
+  hasStack,
+  notInCity,
+} from '@civ-clone/base-unit-lifecycle/lib/defeated';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
-import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
 import Effect from '@civ-clone/core-rule/Effect';
-import Unit from '@civ-clone/core-unit/Unit';
 
 export const getRules: (
   cityRegistry?: CityRegistry,
@@ -41,45 +45,20 @@ export const getRules: (
   new Defeated(
     'civ1-unit:unit/defeated/emit-and-destroy',
     // The action is the attack, so a listener can tell the attacker from the defender: `action.unit()` attacked.
-    new Effect((unit: Unit, by: Unit, action?: Action): void => {
-      engine.emit('unit:defeated', unit, by, action);
-
-      ruleRegistry.process(Destroyed, unit, by.player());
-    })
+    new Effect(emitAndDestroy(engine, ruleRegistry))
   ),
   new Defeated(
     'civ1-unit:unit/defeated/destroy-stack',
     // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
-    new Criterion(
-      (unit: Unit, by: Unit, action?: Action): boolean =>
-        !action || action.unit() !== unit
-    ),
-    new Criterion((unit: Unit) => cityRegistry.getByTile(unit.tile()) === null),
+    new Criterion(defended),
+    new Criterion(notInCity(cityRegistry)),
     // TODO: Add `Fortress`es
     // new Criterion((unit: Unit) =>
     //   !tileImprovementRegistry.getByTile(unit.tile())
     //     .some((tileImprovement) => tileImprovement instanceof Fortress)
     // ),
-    new Criterion(
-      (unit: Unit) =>
-        unitRegistry
-          .getByTile(unit.tile())
-          .filter(
-            (tileUnit: Unit) =>
-              tileUnit !== unit && tileUnit.player() === unit.player()
-          ).length > 0
-    ),
-    new Effect((unit: Unit, by: Unit): void =>
-      unitRegistry
-        .getByTile(unit.tile())
-        .filter(
-          (tileUnit: Unit): boolean =>
-            tileUnit !== unit && tileUnit.player() === unit.player()
-        )
-        .forEach((tileUnit: Unit): void => {
-          ruleRegistry.process(Destroyed, tileUnit, by.player());
-        })
-    )
+    new Criterion(hasStack(unitRegistry)),
+    new Effect(destroyStack(unitRegistry, ruleRegistry))
   ),
 ];
 
