@@ -37,6 +37,7 @@ import { expect } from 'chai';
 import strength from '@civ-clone/core-unit/strength';
 import strengthRules from '../Rules/Unit/strength';
 import unitYield from '../Rules/Unit/yield';
+import traits from '../Rules/Unit/traits';
 
 describe('unit:strength', (): void => {
   const setUp = async () => {
@@ -50,6 +51,8 @@ describe('unit:strength', (): void => {
       world = new World(new FillGenerator(5, 5, Grassland), ruleRegistry);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...strengthRules(
         cityRegistry,
         cityImprovementRegistry,

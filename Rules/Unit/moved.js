@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = void 0;
-const Units_1 = require("../../Units");
+const AttackEndsTurn_1 = require("@civ-clone/base-unit-trait-attack-ends-turn/AttackEndsTurn");
+const CoastBound_1 = require("@civ-clone/base-unit-trait-coast-bound/CoastBound");
 const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Actions_1 = require("../../Actions");
 const Engine_1 = require("@civ-clone/core-engine/Engine");
@@ -101,12 +102,13 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
                 unit.setBusy();
             }
         })),
-        new Moved_1.default('civ1-unit:unit/moved/trireme-lost-at-sea', new Criterion_1.default((unit) => unit instanceof Units_1.Trireme), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
+        new Moved_1.default('civ1-unit:unit/moved/trireme-lost-at-sea', new Criterion_1.default((unit) => unit.hasTrait(CoastBound_1.default)), new Criterion_1.default((unit) => unit.moves().value() === 0), new Criterion_1.default((unit) => !unit.tile().isCoast()), new Criterion_1.default(() => randomNumberGenerator() <= 0.5), new Effect_1.default((unit) => {
             ruleRegistry.process(LostAtSea_1.default, unit);
         })),
         new Moved_1.default(
-        // A `Bomber` drops its whole payload in one attack, so it can't attack again until next turn.
-        'civ1-unit:unit/moved/bomber/end-turn-after-attack', new High_1.default(), new Criterion_1.default((unit) => unit instanceof Units_1.Bomber), new Criterion_1.default((unit, action) => action instanceof Actions_1.Attack || action instanceof Actions_1.SneakAttack), new Effect_1.default((unit) => {
+        // A unit that `AttackEndsTurn` (a `Bomber`, which drops its whole payload in one attack) can't attack again until
+        //  next turn.
+        'civ1-unit:unit/moved/bomber/end-turn-after-attack', new High_1.default(), new Criterion_1.default((unit) => unit.hasTrait(AttackEndsTurn_1.default)), new Criterion_1.default((unit, action) => action instanceof Actions_1.Attack || action instanceof Actions_1.SneakAttack), new Effect_1.default((unit) => {
             unit.moves().set(0);
             unit.setActive(false);
         })),

@@ -99,7 +99,7 @@ export const register = (game: Game): void => {
       game.unitImprovements,
       game.engine
     ),
-    ...hold(game.cityGrowth, game.difficulty),
+    ...hold(game.cityGrowth, game.difficulty, game.rules),
     ...cityCreated(game.cityBuilds, game.buildPreferences),
     ...canJoinCity(game.cityGrowth),
     ...canStow(),

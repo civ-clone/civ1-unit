@@ -8,7 +8,7 @@ import {
 } from '@civ-clone/core-city/CityRegistry';
 import { joinCitySizeLimit, tooLargeToJoin } from '../Rules/Unit/canJoinCity';
 import AdditionalData from '@civ-clone/core-data-object/AdditionalData';
-import { Settlers } from '../Units';
+import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import Unit from '@civ-clone/core-unit/Unit';
 
 export type JoinCityRefusal = { reason: 'too-large'; size: number };
@@ -26,7 +26,7 @@ export const getAdditionalData = (
     Unit,
     'joinCityRefusal',
     (unit: Unit): JoinCityRefusal | null => {
-      if (!(unit instanceof Settlers)) {
+      if (!unit.hasTrait(FoundsCities)) {
         return null;
       }
 

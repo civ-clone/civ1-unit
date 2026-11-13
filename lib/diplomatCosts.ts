@@ -17,11 +17,11 @@ import {
 import BuildItem from '@civ-clone/core-city-build/BuildItem';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
+import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import { Gold } from '@civ-clone/library-city/Yields';
 import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
-import { Settlers } from '../Units';
 import Tile from '@civ-clone/core-world/Tile';
 import Unit from '@civ-clone/core-unit/Unit';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
@@ -85,7 +85,7 @@ export const inciteCost = (
 
 /**
  * What `unit` costs to bribe (v474.05 `F22_0000_0639`; Rome on 640K a Day, p273):
- * `(owner's gold + 750) / (distance + 2) × build cost / 10`, halved unless it's Settlers.
+ * `(owner's gold + 750) / (distance + 2) × build cost / 10`, halved unless it `FoundsCities` (Settlers).
  */
 export const bribeCost = (
   unit: Unit,
@@ -107,5 +107,5 @@ export const bribeCost = (
           (distanceFromPalace(owner, unit.tile(), cityImprovementRegistry) + 2)
       ) * Math.floor(buildCost / 10);
 
-  return unit instanceof Settlers ? cost : Math.floor(cost / 2);
+  return unit.hasTrait(FoundsCities) ? cost : Math.floor(cost / 2);
 };

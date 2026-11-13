@@ -1,4 +1,5 @@
-import { Bomber, Trireme } from '../../Units';
+import AttackEndsTurn from '@civ-clone/base-unit-trait-attack-ends-turn/AttackEndsTurn';
+import CoastBound from '@civ-clone/base-unit-trait-coast-bound/CoastBound';
 import Player from '@civ-clone/core-player/Player';
 import {
   CityRegistry,
@@ -224,7 +225,7 @@ export const getRules = (
     ),
     new Moved(
       'civ1-unit:unit/moved/trireme-lost-at-sea',
-      new Criterion((unit: Unit): boolean => unit instanceof Trireme),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(CoastBound)),
       new Criterion((unit: Unit): boolean => unit.moves().value() === 0),
       new Criterion((unit: Unit): boolean => !unit.tile().isCoast()),
       new Criterion((): boolean => randomNumberGenerator() <= 0.5),
@@ -234,10 +235,11 @@ export const getRules = (
     ),
 
     new Moved(
-      // A `Bomber` drops its whole payload in one attack, so it can't attack again until next turn.
+      // A unit that `AttackEndsTurn` (a `Bomber`, which drops its whole payload in one attack) can't attack again until
+      //  next turn.
       'civ1-unit:unit/moved/bomber/end-turn-after-attack',
       new High(),
-      new Criterion((unit: Unit): boolean => unit instanceof Bomber),
+      new Criterion((unit: Unit): boolean => unit.hasTrait(AttackEndsTurn)),
       new Criterion(
         (unit: Unit, action: Action): boolean =>
           action instanceof Attack || action instanceof SneakAttack

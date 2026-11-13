@@ -41,6 +41,7 @@ import created from '../Rules/City/created';
 import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import simpleRLELoader from '@civ-clone/simple-world-generator/tests/lib/simpleRLELoader';
+import traits from '../Rules/Unit/traits';
 
 // What a city chooses by itself when its player asks it to (civ-clone/web-renderer#690, #691), and a build it can no
 //  longer make (civ-clone/web-renderer#693).
@@ -88,6 +89,8 @@ describe('build preferences', (): void => {
     advances.forEach((Advance) => playerResearch.addAdvance(Advance));
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...build(playerResearchRegistry),
       ...buildCost(),
       ...buildingComplete(cityGrowthRegistry, buildPreferencesRegistry),

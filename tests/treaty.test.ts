@@ -47,6 +47,7 @@ import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 // A treaty partner's land (civ-clone/web-renderer#287) and the Senate (civ-clone/web-renderer#133).
 describe('treaties', (): void => {
@@ -127,6 +128,8 @@ describe('treaties', (): void => {
     } as unknown as Engine;
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         undefined,
         cityRegistry,

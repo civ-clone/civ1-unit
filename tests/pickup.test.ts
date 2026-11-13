@@ -23,6 +23,7 @@ import { sleeping } from '@civ-clone/base-unit-action-sleep/Sleep';
 import stowed from '../Rules/Unit/stowed';
 import unitYield from '../Rules/Unit/yield';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 // A transport that moves onto its player's units picks some of them up (civ-clone/web-renderer#263).
 describe('pickup', (): void => {
@@ -36,6 +37,8 @@ describe('pickup', (): void => {
       world = new World(new FillGenerator(5, 5, TerrainType), ruleRegistry);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...canStow(),
       ...moved(
         transportRegistry,

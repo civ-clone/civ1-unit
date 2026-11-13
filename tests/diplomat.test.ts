@@ -75,6 +75,7 @@ import Transferred from '@civ-clone/core-unit/Rules/Transferred';
 import TurnEnd from '@civ-clone/core-player/Rules/TurnEnd';
 import lostAtSea from '../Rules/Unit/lostAtSea';
 import unitYield from '../Rules/Unit/yield';
+import traits from '../Rules/Unit/traits';
 
 class Alphabet extends Advance {}
 class Writing extends Advance {}
@@ -182,6 +183,8 @@ describe('Diplomats', (): void => {
       rng = () => (random.length ? random.shift()! : 0);
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...action(
         undefined,
         cityRegistry,

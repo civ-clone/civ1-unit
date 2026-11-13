@@ -5,6 +5,12 @@ import Strength from '@civ-clone/core-unit/Rules/Strength';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Unit from '@civ-clone/core-unit/Unit';
 export declare const terrainDefence: [typeof Terrain, number][];
+/**
+ * The units City Walls don't help against: v474.05 skips the walls for an attacker with an attack of 12.
+ *
+ * @deprecated The rules ask the attacker for `IgnoresFortifications` (`Rules/Unit/traits`), which a ruleset can change.
+ *  This is what civ1-unit's own declarations give, in `Units` order, kept for one release.
+ */
 export declare const ignoreCityWalls: (typeof Unit)[];
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
@@ -15,7 +21,7 @@ export declare const ignoreCityWalls: (typeof Unit)[];
  * Veteran's ×1.5, which v474.05 applies last: the product is the same.
  *
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
- * attacker but those in `ignoreCityWalls`.
+ * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
 export declare const defenceMultipliers: (
   defender: Unit,

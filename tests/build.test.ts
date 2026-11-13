@@ -76,6 +76,7 @@ import buildingComplete from '../Rules/City/buildingComplete';
 import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import simpleRLELoader from '@civ-clone/simple-world-generator/tests/lib/simpleRLELoader';
+import traits from '../Rules/Unit/traits';
 
 describe('CityBuild:build', () => {
   it('should include the expected `Unit`s', async () => {
@@ -335,6 +336,8 @@ describe('CityBuild:build', () => {
       );
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...buildCost(),
       ...buildingComplete(cityGrowthRegistry),
       new Created(new Effect((unit: Unit) => unitRegistry.register(unit))),

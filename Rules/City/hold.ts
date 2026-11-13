@@ -9,15 +9,19 @@ import {
 import { CHIEFTAIN_SETTLERS_RULE } from '../../RuleIds';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Hold from '@civ-clone/core-city-build/Rules/Hold';
+import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import { levelOf } from '@civ-clone/civ1-difficulty/level';
 import settlersInSizeOneCity from '../../lib/settlersInSizeOneCity';
 
 export const getRules: (
   cityGrowthRegistry?: CityGrowthRegistry,
-  gameDifficultyRegistry?: GameDifficultyRegistry
+  gameDifficultyRegistry?: GameDifficultyRegistry,
+  ruleRegistry?: RuleRegistry
 ) => Hold[] = (
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance,
-  gameDifficultyRegistry: GameDifficultyRegistry = gameDifficultyRegistryInstance
+  gameDifficultyRegistry: GameDifficultyRegistry = gameDifficultyRegistryInstance,
+  // The game's rules, for which types `FoundsCities` (`lib/settlersInSizeOneCity`).
+  ruleRegistry?: RuleRegistry
 ): Hold[] => [
   // On Chieftain, a size-1 city doesn't complete Settlers: the build stays, with its shields, which go on adding up,
   //  until the city has grown (civ-clone/web-renderer#959). The level is the game's, so the computer players' cities
@@ -34,7 +38,7 @@ export const getRules: (
   //  ```
   new Hold(
     CHIEFTAIN_SETTLERS_RULE,
-    new Criterion(settlersInSizeOneCity(cityGrowthRegistry)),
+    new Criterion(settlersInSizeOneCity(cityGrowthRegistry, ruleRegistry)),
     new Criterion((): boolean => levelOf(gameDifficultyRegistry) === 0)
   ),
 ];

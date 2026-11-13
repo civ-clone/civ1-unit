@@ -26,6 +26,7 @@ import { expect } from 'chai';
 import setUpCity from '@civ-clone/civ1-city/tests/lib/setUpCity';
 import unitYield from '../Rules/Unit/yield';
 import unitCanStow from '../Rules/Unit/canStow';
+import traits from '../Rules/Unit/traits';
 
 describe('unit:yield', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -35,6 +36,8 @@ describe('unit:yield', (): void => {
     transportRegistry = new TransportRegistry();
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...created(tileImprovementRegistry, cityBuildRegistry),
     ...unitCanStow(),
     ...unitYield(unitImprovementRegistry, ruleRegistry, transportRegistry)
