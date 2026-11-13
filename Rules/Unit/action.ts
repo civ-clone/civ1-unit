@@ -93,7 +93,6 @@ import {
   instance as playerTreasuryRegistryInstance,
 } from '@civ-clone/core-treasury/PlayerTreasuryRegistry';
 import { bribeCost, inciteCost } from '../../lib/diplomatCosts';
-import Embassy from '@civ-clone/base-unit-action-establish-embassy/Embassy';
 import AdvanceStolen from '@civ-clone/base-unit-action-steal-technology/AdvanceStolen';
 import { Palace } from '@civ-clone/library-city/CityImprovements';
 import Player from '@civ-clone/core-player/Player';
@@ -189,12 +188,10 @@ import { Fortified } from '../../UnitImprovements';
 import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
-import DiplomaticMissions from '@civ-clone/base-unit-trait-diplomatic-missions/DiplomaticMissions';
 import Fortifies from '@civ-clone/base-unit-trait-fortifies/Fortifies';
 import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import IgnoresZoneOfControl from '@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl';
 import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
-import TradeMissions from '@civ-clone/base-unit-trait-trade-missions/TradeMissions';
 import { isA } from '@civ-clone/core-unit/traits';
 import zoneOfControl from '@civ-clone/base-zone-of-control/lib/zoneOfControl';
 import {
@@ -210,11 +207,19 @@ import {
   treatyGate,
 } from '@civ-clone/base-unit-action-rules/lib/criteria/treatyGate';
 import { pillageCriteria as buildPillageCriteria } from '@civ-clone/base-unit-action-rules/lib/criteria/pillage';
+import {
+  bribeUnitCriteria as buildBribeUnitCriteria,
+  canIncite as buildCanIncite,
+  canSteal as buildCanSteal,
+  diplomat,
+  hasNoEmbassy as buildHasNoEmbassy,
+} from '@civ-clone/base-unit-action-rules/lib/criteria/diplomat';
 import domainMoveCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/move';
 import landing from '@civ-clone/base-unit-action-rules/lib/criteria/landing';
 import nuclearCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/nuclear';
 import partnerCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/partners';
 import peaceCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/peace';
+import tradeRoute from '@civ-clone/base-unit-action-rules/lib/criteria/tradeRoute';
 
 export const getRules = (
   cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
@@ -287,71 +292,35 @@ export const getRules = (
   // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
   //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
   //  city isn't building a Wonder (civ-clone/web-renderer#57).
-  const canEstablishTradeRoute = (
-    unit: Unit,
-    to: Tile,
-    from: Tile = unit.tile()
-  ): boolean => {
-    const home = unit.city(),
-      city = cityRegistry.getByTile(to);
+  const { tradeRouteCriteria } = tradeRoute(
+    { cityRegistry },
+    {
+      qualifies: (home: City, city: City): boolean => {
+        if (civ1Distance(home.tile(), city.tile()) >= 10) {
+          return true;
+        }
 
-    if (!unit.hasTrait(TradeMissions) || home === null || city === null) {
-      return false;
+        const building = cityBuildRegistry.getByCity(city).building();
+
+        return (
+          landMassRegistry.getByTile(home.tile()) !==
+            landMassRegistry.getByTile(city.tile()) &&
+          !(
+            building !== null &&
+            Object.prototype.isPrototypeOf.call(Wonder, building.item())
+          )
+        );
+      },
     }
-
-    if (city.player() !== unit.player()) {
-      return from.isLand();
-    }
-
-    if (city === home) {
-      return false;
-    }
-
-    if (civ1Distance(home.tile(), city.tile()) >= 10) {
-      return true;
-    }
-
-    const building = cityBuildRegistry.getByCity(city).building();
-
-    return (
-      landMassRegistry.getByTile(home.tile()) !==
-        landMassRegistry.getByTile(city.tile()) &&
-      !(
-        building !== null &&
-        Object.prototype.isPrototypeOf.call(Wonder, building.item())
-      )
-    );
-  };
+  );
 
   // A Diplomat's actions on a rival's city (v474.05 `PlayerTurn.cs` L1802-L1905, civ-clone/web-renderer#58): next to
   //  it, with moves left, and not from a ship. Units in the city don't matter: the Diplomat never enters it.
-  const diplomatCity = (
-      unit: Unit,
-      to: Tile,
-      from: Tile = unit.tile()
-    ): City | null => {
-      const city = cityRegistry.getByTile(to);
-
-      return unit.hasTrait(DiplomaticMissions) &&
-        from.isLand() &&
-        city !== null &&
-        city.player() !== unit.player()
-        ? city
-        : null;
-    },
-    diplomatCriteria = [
-      isNeighbouringTile,
-      hasMovesLeft,
-      new Criterion(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-          diplomatCity(unit, to, from) !== null
-      ),
-    ],
+  const { diplomatCriteria } = diplomat({ cityRegistry }),
     // Once per city, and only with something to take.
-    canSteal = new Criterion((unit: Unit, to: Tile): boolean => {
-      const city = cityRegistry.getByTile(to)!;
-
-      return (
+    canSteal = buildCanSteal(
+      { cityRegistry },
+      (unit: Unit, city: City): boolean =>
         !interactionRegistry
           .entries()
           .some(
@@ -361,29 +330,20 @@ export const getRules = (
           ) &&
         stealableAdvances(unit.player(), city.player(), playerResearchRegistry)
           .length > 0
-      );
-    }),
+    ),
     // One embassy with each civilization.
-    hasNoEmbassy = new Criterion(
-      (unit: Unit, to: Tile): boolean =>
-        !interactionRegistry
-          .getByPlayers(unit.player(), cityRegistry.getByTile(to)!.player())
-          .some(
-            (interaction) =>
-              interaction instanceof Embassy &&
-              (interaction as unknown as Embassy).holder() === unit.player()
-          )
-    ),
+    hasNoEmbassy = buildHasNoEmbassy({ cityRegistry, interactionRegistry }),
     // A capital can't be incited.
-    canIncite = new Criterion(
-      (unit: Unit, to: Tile): boolean =>
-        !cityImprovementRegistry
-          .getByCity(cityRegistry.getByTile(to)!)
-          .some(
-            (improvement) =>
-              improvement instanceof Palace && !improvement.destroyed()
-          )
+    canIncite = buildCanIncite({ cityRegistry }, (city: City): boolean =>
+      cityImprovementRegistry
+        .getByCity(city)
+        .some(
+          (improvement) =>
+            improvement instanceof Palace && !improvement.destroyed()
+        )
     ),
+    // A lone foreign unit, not in a city (v474.05 `F22_0000_0639`).
+    bribeUnitCriteria = buildBribeUnitCriteria({ cityRegistry, unitRegistry }),
     costToIncite = (to: Tile): number =>
       inciteCost(
         cityRegistry.getByTile(to)!,
@@ -683,20 +643,7 @@ export const getRules = (
     //  check, and the Diplomat keeps its moves.
     new Action(
       'civ1-unit:unit/action/bribe-unit',
-      isNeighbouringTile,
-      hasMovesLeft,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(DiplomaticMissions)),
-      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        from.isLand()
-      ),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean => cityRegistry.getByTile(to) === null
-      ),
-      new Criterion((unit: Unit, to: Tile): boolean => {
-        const units = unitRegistry.getByTile(to);
-
-        return units.length === 1 && units[0].player() !== unit.player();
-      }),
+      ...bribeUnitCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
           const [target] = unitRegistry.getByTile(to);
@@ -722,11 +669,7 @@ export const getRules = (
     //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
     new Action(
       'civ1-unit:unit/action/establish-trade-route',
-      isNeighbouringTile,
-      hasMovesLeft,
-      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        canEstablishTradeRoute(unit, to, from)
-      ),
+      ...tradeRouteCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new EstablishTradeRoute(
