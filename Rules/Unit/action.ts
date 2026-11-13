@@ -162,7 +162,6 @@ import {
   WorkedTileRegistry,
   instance as workedTileRegistryInstance,
 } from '@civ-clone/core-city/WorkedTileRegistry';
-import And from '@civ-clone/core-rule/Criteria/And';
 import Available from '@civ-clone/core-tile-improvement/Rules/Available';
 import City from '@civ-clone/core-city/City';
 import Criterion from '@civ-clone/core-rule/Criterion';
@@ -190,27 +189,32 @@ import { Fortified } from '../../UnitImprovements';
 import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
-import Detonates from '@civ-clone/base-unit-trait-detonates/Detonates';
 import DiplomaticMissions from '@civ-clone/base-unit-trait-diplomatic-missions/DiplomaticMissions';
 import Fortifies from '@civ-clone/base-unit-trait-fortifies/Fortifies';
 import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import IgnoresZoneOfControl from '@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl';
-import Interceptor from '@civ-clone/base-unit-trait-interceptor/Interceptor';
-import NonCombatant from '@civ-clone/base-unit-trait-non-combatant/NonCombatant';
-import Submerged from '@civ-clone/base-unit-trait-submerged/Submerged';
 import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
 import TradeMissions from '@civ-clone/base-unit-trait-trade-missions/TradeMissions';
 import { isA } from '@civ-clone/core-unit/traits';
 import zoneOfControl from '@civ-clone/base-zone-of-control/lib/zoneOfControl';
-
-const isLandUnit = new Criterion(
-    (unit: Unit, to: Tile, from: Tile = unit.tile()) => isA(unit, LandUnit)
-  ),
-  isNavalUnit = new Criterion(
-    (unit: Unit, to: Tile, from: Tile = unit.tile()) => isA(unit, Naval)
-  ),
-  tileHasCity = (tile: Tile, cityRegistry: CityRegistry): boolean =>
-    cityRegistry.getByTile(tile) !== null;
+import {
+  attackCriteria as buildAttackCriteria,
+  captureCityCriteria as buildCaptureCityCriteria,
+} from '@civ-clone/base-unit-action-rules/lib/criteria/attack';
+import {
+  isLandUnit,
+  tileHasCity,
+} from '@civ-clone/base-unit-action-rules/lib/criteria/domain';
+import {
+  overruled as buildOverruled,
+  treatyGate,
+} from '@civ-clone/base-unit-action-rules/lib/criteria/treatyGate';
+import { pillageCriteria as buildPillageCriteria } from '@civ-clone/base-unit-action-rules/lib/criteria/pillage';
+import domainMoveCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/move';
+import landing from '@civ-clone/base-unit-action-rules/lib/criteria/landing';
+import nuclearCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/nuclear';
+import partnerCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/partners';
+import peaceCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/peace';
 
 export const getRules = (
   cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
@@ -237,24 +241,10 @@ export const getRules = (
   playerGovernmentRegistry: PlayerGovernmentRegistry = playerGovernmentRegistryInstance
 ): Action[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
-  const landsInCity = (unit: Unit, to: Tile): boolean =>
-      cityRegistry.getByTile(to)?.player() === unit.player(),
-    landingTransport = (unit: Unit, to: Tile): ITransport | null => {
-      const [transport] = unitRegistry
-        .getByTile(to)
-        .filter(
-          (tileUnit: Unit): boolean =>
-            tileUnit instanceof NavalTransport &&
-            tileUnit.player() === unit.player() &&
-            tileUnit.hasCapacity() &&
-            tileUnit.canStow(unit)
-        );
-
-      return (transport as unknown as ITransport) ?? null;
-    },
-    canLandAircraft = (unit: Unit, to: Tile): boolean =>
-      isA(unit, Air) &&
-      (landsInCity(unit, to) || landingTransport(unit, to) !== null);
+  const { landsInCity, landingTransport, canLandAircraft } = landing({
+    cityRegistry,
+    unitRegistry,
+  });
 
   // The routes the `goto`, `road-to` and `railroad-to` criteria find, kept for the actions their effects build
   //  (civ-clone/web-renderer#307). Every action's criteria are validated before any effect runs, so `goto` comes before
@@ -266,115 +256,33 @@ export const getRules = (
     strategyNoteRegistry,
   });
 
-  const attackCriteria = [
-      isNeighbouringTile,
-      hasMovesLeft,
-      // Diplomats and Caravans never attack: v474.05 stops them before any combat.
-      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
-      // A Nuclear unit never fights: it detonates (`nuclear-attack`, below).
-      new Criterion((unit: Unit): boolean => !unit.hasTrait(Detonates)),
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        unitRegistry
-          .getByTile(to)
-          .some(
-            (tileUnit: Unit): boolean => tileUnit.player() !== unit.player()
-          )
-      ),
-      // A unit with no attack (Settlers, a Transport) can't attack. v474.05 lets it, and it always loses (#642). After
-      //  the check for a foreign unit: working out a unit's attack runs its yield rules.
-      new Criterion((unit: Unit): boolean => unit.attack().value() > 0),
-      // Where the Unit is either...
-      new Or(
-        new And(
-          // ...an Air Unit...
-          new Criterion((unit: Unit): boolean => isA(unit, Air)),
-          // ...and either...
-          new Or(
-            // ...not every Unit on the Tile is another Air Unit...
-            new Criterion(
-              (unit: Unit, to: Tile): boolean =>
-                !unitRegistry
-                  .getByTile(to)
-                  .every((tileUnit: Unit): boolean => isA(tileUnit, Air))
-            ),
-            // ...or the Unit is an `Interceptor` (a Fighter).
-            new Criterion((unit: Unit, to: Tile): boolean =>
-              unit.hasTrait(Interceptor)
-            )
-          )
-        ),
-        new And(
-          // ...or a Land Unit...
-          isLandUnit,
-          // ...and either...
-          new Or(
-            // ...the Tile has a City....
-            new Criterion((unit: Unit, to: Tile): boolean =>
-              tileHasCity(to, cityRegistry)
-            ),
-            // ...or it's attacking another Land Unit.
-            new Criterion((unit: Unit, to: Tile): boolean =>
-              unitRegistry
-                .getByTile(to)
-                .some((tileUnit: Unit): boolean => isA(tileUnit, LandUnit))
-            )
-          )
-        ),
-        new And(
-          // ...or a Naval Unit...
-          isNavalUnit,
-          new Or(
-            // ...that is either, not `Submerged` (a Submarine: they can only attack other `Naval` `Unit`s...
-            new Criterion((unit: Unit, to: Tile) => !unit.hasTrait(Submerged)),
-            // ...or the `Tile` is `Water`.
-            new Criterion((unit: Unit, to: Tile) => to.isWater())
-          )
-        )
-      ),
-    ],
-    captureCityCriteria = [
-      isNeighbouringTile,
-      hasMovesLeft,
-      isLandUnit,
-      // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
-      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        tileHasCity(to, cityRegistry)
-      ),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean =>
-          unitRegistry.getByTile(to).length === 0
-      ),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean =>
-          cityRegistry.getByTile(to)!.player() !== unit.player()
-      ),
-    ];
+  // An attack or a capture only once any peace has expired; the sneak forms of each (and every covert action) break an
+  //  active one.
+  const {
+      atPeace,
+      allPeaceExpired,
+      allAtPeace,
+      ownerPeaceExpired,
+      peaceWithOwner,
+    } = peaceCriteria({ cityRegistry, interactionRegistry, unitRegistry }),
+    // Diplomats and Caravans (`NonCombatant`) never attack: v474.05 stops them before any combat. A Nuclear unit
+    //  (`Detonates`) never fights: it detonates (`nuclear-attack`, below). A unit with no attack (Settlers, a Transport)
+    //  can't attack: v474.05 lets it, and it always loses (#642).
+    attackCriteria = buildAttackCriteria({ cityRegistry, unitRegistry }),
+    // Diplomats and Caravans never take a city: their own actions are what they can do to a foreign city.
+    captureCityCriteria = buildCaptureCityCriteria({
+      cityRegistry,
+      unitRegistry,
+    });
 
   // The players a Nuclear unit would attack on `to`: those with a unit there, and the owner of a city there. In
   //  v474.05 it detonates when it attacks any unit, or moves into a rival's city, and never over empty land.
-  const nuclearTargets = (unit: Unit, to: Tile): Player[] => {
-      const city = cityRegistry.getByTile(to);
-
-      return Array.from(
-        new Set(
-          [
-            ...unitRegistry
-              .getByTile(to)
-              .map((tileUnit: Unit): Player => tileUnit.player()),
-            ...(city === null ? [] : [city.player()]),
-          ].filter((player: Player): boolean => player !== unit.player())
-        )
-      );
-    },
-    nuclearAttackCriteria = [
-      isNeighbouringTile,
-      hasMovesLeft,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(Detonates)),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean => nuclearTargets(unit, to).length > 0
-      ),
-    ];
+  const {
+    nuclearTargets,
+    nuclearAttackCriteria,
+    noNuclearTargetAtPeace,
+    anyNuclearTargetAtPeace,
+  } = nuclearCriteria({ cityRegistry, unitRegistry }, atPeace);
 
   // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
   //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
@@ -431,13 +339,6 @@ export const getRules = (
         ? city
         : null;
     },
-    atPeace = (player: Player, other: Player): boolean =>
-      interactionRegistry
-        .getByPlayers(player, other)
-        .some(
-          (interaction): interaction is Peace =>
-            interaction instanceof Peace && interaction.active()
-        ),
     diplomatCriteria = [
       isNeighbouringTile,
       hasMovesLeft,
@@ -483,9 +384,6 @@ export const getRules = (
               improvement instanceof Palace && !improvement.destroyed()
           )
     ),
-    peaceWithOwner = new Criterion((unit: Unit, to: Tile): boolean =>
-      atPeace(unit.player(), cityRegistry.getByTile(to)!.player())
-    ),
     costToIncite = (to: Tile): number =>
       inciteCost(
         cityRegistry.getByTile(to)!,
@@ -505,153 +403,45 @@ export const getRules = (
         tileImprovementRegistry,
         workedTileRegistry
       ),
-    movePartner = (
-      unit: Unit,
-      to: Tile,
-      from: Tile = unit.tile()
-    ): Player | null => {
-      if (!from.isLand() || !to.isLand()) {
-        return null;
-      }
+    // `onPartnersLand` is the first of their actions' criteria: it's the cheap one that rules most tiles out (most
+    //  tiles aren't worked).
+    {
+      movePartner,
+      onPartnersLand,
+      offPartnersLand,
+      pillagingPartnersLand,
+      notPillagingPartnersLand,
+    } = partnerCriteria({ unitRegistry }, partnerOf);
 
-      const partner = partnerOf(unit, to);
-
-      return partner !== null &&
-        !unitRegistry
-          .getByTile(to)
-          .some(
-            (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
-          )
-        ? partner
-        : null;
-    },
-    // First of their actions' criteria: it's the cheap one that rules most tiles out (most tiles aren't worked).
-    onPartnersLand = new Criterion(
-      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        movePartner(unit, to, from) !== null
+  // A Republic or Democracy can't break a treaty (#133): whatever would is offered as `Overruled` instead, which
+  //  v474.05 answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a
+  //  blocked attack keeps its moves (#133).
+  const { isFree, isOverruled } = treatyGate((player: Player): boolean =>
+      hasSenate(player, playerGovernmentRegistry)
     ),
-    pillagingPartnersLand = new Criterion(
-      (unit: Unit, to: Tile): boolean => partnerOf(unit, to) !== null
-    ),
-    // A Republic or Democracy can't break a treaty (#133): whatever would is offered as `Overruled` instead, which
-    //  v474.05 answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a
-    //  blocked attack keeps its moves (#133).
-    isFree = new Criterion(
-      (unit: Unit): boolean =>
-        !hasSenate(unit.player(), playerGovernmentRegistry)
-    ),
-    isOverruled = new Criterion((unit: Unit): boolean =>
-      hasSenate(unit.player(), playerGovernmentRegistry)
-    ),
-    overruled = (
-      id: string,
-      blocked: (unit: Unit, to: Tile, from: Tile) => UnitAction,
-      ...criteria: Criterion[]
-    ): Action =>
-      new Action(
-        `civ1-unit:unit/action/overruled/${id}`,
-        ...criteria,
-        isOverruled,
-        new Effect(
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-            new Overruled(
-              from,
-              to,
-              unit,
-              blocked(unit, to, from),
-              0,
-              ruleRegistry
-            ) as UnitAction
-        )
-      ),
+    overruled = buildOverruled({
+      id: (name: string): string => `civ1-unit:unit/action/overruled/${name}`,
+      isOverruled,
+      ruleRegistry,
+    }),
     cityOwner = (unit: Unit, to: Tile): Player =>
-      cityRegistry.getByTile(to)!.player(),
-    allAtPeace = new Criterion((unit: Unit, to: Tile): boolean =>
-      unitRegistry
-        .getByTile(to)
-        .every((tileUnit: Unit): boolean =>
-          atPeace(unit.player(), tileUnit.player())
+      cityRegistry.getByTile(to)!.player();
+
+  // Every land unit but Diplomats and Caravans can pillage in Civ1, so Settlers (`Terraforms`) can as well as the
+  //  military units (`Fortifies`). Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit
+  //  but the `NonCombatant`s.
+  const pillageCriteria = buildPillageCriteria(
+      { tileImprovementRegistry },
+      (improvement: TileImprovement): boolean =>
+        [Irrigation, Mine, Railroad, Road].some(
+          (Improvement: typeof TileImprovement): boolean =>
+            improvement instanceof Improvement
         )
     ),
-    anyNuclearTargetAtPeace = new Criterion((unit: Unit, to: Tile): boolean =>
-      nuclearTargets(unit, to).some((player: Player): boolean =>
-        atPeace(unit.player(), player)
-      )
-    ),
-    pillageCriteria = [
-      hasMovesLeft,
-      isCurrentTile,
-      // Every land unit but Diplomats and Caravans can pillage in Civ1, so
-      // Settlers (`Terraforms`) can as well as the military units (`Fortifies`).
-      //  Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit but the `NonCombatant`s.
-      new Criterion(
-        (unit: Unit): boolean =>
-          unit.hasTrait(Fortifies) || unit.hasTrait(Terraforms)
-      ),
-      new Criterion((unit: Unit): boolean => !unit.hasTrait(NonCombatant)),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean =>
-          tileImprovementRegistry
-            .getByTile(to)
-            // TODO: Pillagable(sp?)Improvement subclass? or `CanBePillaged` `Rule`...
-            .filter((improvement: TileImprovement): boolean =>
-              [Irrigation, Mine, Railroad, Road].some(
-                (Improvement: typeof TileImprovement): boolean =>
-                  improvement instanceof Improvement
-              )
-            ).length > 0
-      ),
-    ],
-    moveCriteria = [
-      isNeighbouringTile,
-      hasMovesLeft,
-      new Or(
-        // `LandUnit`s can move to other `Land` `Tile`s.
-        new And(
-          isLandUnit,
-          new Criterion(
-            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              from.isLand()
-          ),
-          new Criterion((unit: Unit, to: Tile): boolean => to.isLand()),
-          // Either there are no units, or they're the same `Player`.
-          new Criterion((unit: Unit, to: Tile): boolean =>
-            unitRegistry
-              .getByTile(to)
-              .every(
-                (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
-              )
-          )
-        ),
-        new And(
-          isNavalUnit,
-          // `Naval` `Unit`s can either move from `Water` or a friendly `City`...
-          new Or(
-            new Criterion(
-              (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-                from.isWater()
-            ),
-            new Criterion(
-              (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-                cityRegistry.getByTile(from)?.player() === unit.player()
-            )
-          ),
-          // ...to `Water` or a friendly `City`.
-          new Or(
-            new Criterion((unit: Unit, to: Tile): boolean => to.isWater()),
-            new Criterion(
-              (unit: Unit, to: Tile): boolean =>
-                cityRegistry.getByTile(to)?.player() === unit.player()
-            )
-          )
-        ),
-        // `Air` `Unit`s can move anywhere. Where they could land, `LandAircraft` is offered first, and this lets them fly
-        // over instead.
-        new Criterion((unit: Unit): boolean => isA(unit, Air))
-      ),
-
-      // This is analogous to the original Civilization unit adjacency rules.
-      // You may only move your `Unit` to the `Tile` if...
+    // This is analogous to the original Civilization unit adjacency rules.
+    // You may only move your `Unit` to the `Tile` if...
+    moveCriteria = domainMoveCriteria(
+      { cityRegistry, unitRegistry },
       zoneOfControl(unitRegistry, {
         exemptMovers: [
           // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
@@ -683,23 +473,8 @@ export const getRules = (
                   city instanceof City && city.player() === unit.player()
               ),
         ],
-      }),
-      new Criterion((unit: Unit, to: Tile): boolean => {
-        const city = cityRegistry.getByTile(to);
-
-        if (city === null) {
-          return true;
-        }
-
-        return city.player() === unit.player();
-      }),
-      new Criterion(
-        (unit: Unit, to: Tile): boolean =>
-          !unitRegistry
-            .getByTile(to)
-            .some((tileUnit) => tileUnit.player() !== unit.player())
-      ),
-    ];
+      })
+    );
 
   return [
     // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
@@ -996,10 +771,7 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/move',
       ...moveCriteria,
-      new Criterion(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-          movePartner(unit, to, from) === null
-      ),
+      offPartnersLand,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Move(from, to, unit, ruleRegistry) as UnitAction
@@ -1068,17 +840,7 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/attack',
       ...attackCriteria,
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        unitRegistry.getByTile(to).every((tileUnit) =>
-          interactionRegistry
-            .getByPlayers(unit.player(), tileUnit.player())
-            .filter(
-              (interaction): interaction is Peace =>
-                interaction instanceof Peace
-            )
-            .every((interaction) => interaction.expired())
-        )
-      ),
+      allPeaceExpired,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Attack(from, to, unit, ruleRegistry, unitRegistry)
@@ -1144,11 +906,7 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/nuclear-attack',
       ...nuclearAttackCriteria,
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        nuclearTargets(unit, to).every(
-          (player: Player): boolean => !atPeace(unit.player(), player)
-        )
-      ),
+      noNuclearTargetAtPeace,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new NuclearAttack(from, to, unit, ruleRegistry) as UnitAction
@@ -1196,16 +954,7 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/capture-city',
       ...captureCityCriteria,
-      new Criterion((unit: Unit, to: Tile): boolean => {
-        const city = cityRegistry.getByTile(to)!;
-
-        return interactionRegistry
-          .getByPlayers(unit.player(), city.player())
-          .filter(
-            (interaction): interaction is Peace => interaction instanceof Peace
-          )
-          .every((interaction) => interaction.expired());
-      }),
+      ownerPeaceExpired,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
           const city = cityRegistry.getByTile(to)!;
@@ -1260,9 +1009,7 @@ export const getRules = (
     new Action(
       'civ1-unit:unit/action/pillage',
       ...pillageCriteria,
-      new Criterion(
-        (unit: Unit, to: Tile): boolean => partnerOf(unit, to) === null
-      ),
+      notPillagingPartnersLand,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Pillage(
