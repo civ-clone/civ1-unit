@@ -34,7 +34,6 @@ const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/Unit
 const WorkedTileRegistry_1 = require("@civ-clone/core-city/WorkedTileRegistry");
 const City_1 = require("@civ-clone/core-city/City");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
-const Effect_1 = require("@civ-clone/core-rule/Effect");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const RoutePlanner_1 = require("@civ-clone/base-unit-action-rules/lib/RoutePlanner");
 const PlayerGovernmentRegistry_1 = require("@civ-clone/core-government/PlayerGovernmentRegistry");
@@ -50,7 +49,6 @@ const traits_1 = require("@civ-clone/core-unit/traits");
 const zoneOfControl_1 = require("@civ-clone/base-zone-of-control/lib/zoneOfControl");
 const attack_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/attack");
 const domain_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/domain");
-const treatyGate_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/treatyGate");
 const pillage_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/pillage");
 const diplomat_2 = require("@civ-clone/base-unit-action-rules/lib/criteria/diplomat");
 const move_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/move");
@@ -62,6 +60,7 @@ const tradeRoute_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/tra
 const worker_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/worker");
 const orders_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/orders");
 const transport_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/transport");
+const actionRules_1 = require("@civ-clone/base-unit-action-rules/lib/actionRules");
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance, playerGovernmentRegistry = PlayerGovernmentRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const { landsInCity, landingTransport, canLandAircraft } = (0, landing_1.default)({
@@ -131,14 +130,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     // `onPartnersLand` is the first of their actions' criteria: it's the cheap one that rules most tiles out (most
     //  tiles aren't worked).
     { movePartner, onPartnersLand, offPartnersLand, pillagingPartnersLand, notPillagingPartnersLand, } = (0, partners_1.default)({ unitRegistry }, partnerOf);
-    // A Republic or Democracy can't break a treaty (#133): whatever would is offered as `Overruled` instead, which
-    //  v474.05 answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a
-    //  blocked attack keeps its moves (#133).
-    const { isFree, isOverruled } = (0, treatyGate_1.treatyGate)((player) => (0, senate_1.default)(player, playerGovernmentRegistry)), overruled = (0, treatyGate_1.overruled)({
-        id: (name) => `civ1-unit:unit/action/overruled/${name}`,
-        isOverruled,
-        ruleRegistry,
-    }), cityOwner = (unit, to) => cityRegistry.getByTile(to).player();
+    // The owner of the city on `to`, for the overruled forms of the actions on a city.
+    const cityOwner = (unit, to) => cityRegistry.getByTile(to).player();
     // Every land unit but Diplomats and Caravans can pillage in Civ1, so Settlers (`Terraforms`) can as well as the
     //  military units (`Fortifies`). Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit
     //  but the `NonCombatant`s.
@@ -173,104 +166,259 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         transportRegistry,
         unitRegistry,
     });
-    return [
+    // The table, in the order the actions are offered: the AI takes the first action it's offered, and the UI lists them
+    //  in this order. A Republic or Democracy can't break a treaty (#133): a row that would (`breaksTreaty`) is offered
+    //  only without a Senate, and with one its `overruled/` form is offered instead, straight after it, which v474.05
+    //  answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a blocked
+    //  attack keeps its moves (#133).
+    return (0, actionRules_1.default)('civ1-unit', [
         // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
-        new Action_1.Action('civ1-unit:unit/action/steal-technology', ...diplomatCriteria, canSteal, new Criterion_1.default((unit, to) => !peaceWithOwner.validate(unit, to)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.StealTechnology(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/sneak-steal-technology', ...diplomatCriteria, canSteal, peaceWithOwner, isFree, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const city = cityRegistry.getByTile(to);
-            return new Actions_1.SneakStealTechnology(from, to, unit, city, city.player(), ruleRegistry);
-        })),
-        overruled('sneak-steal-technology', (unit, to, from) => new Actions_1.SneakStealTechnology(from, to, unit, cityRegistry.getByTile(to), cityOwner(unit, to), ruleRegistry), ...diplomatCriteria, canSteal, peaceWithOwner),
+        {
+            name: 'steal-technology',
+            criteria: [
+                ...diplomatCriteria,
+                canSteal,
+                new Criterion_1.default((unit, to) => !peaceWithOwner.validate(unit, to)),
+            ],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.StealTechnology(from, to, unit, cityRegistry.getByTile(to), ruleRegistry),
+        },
+        {
+            name: 'sneak-steal-technology',
+            criteria: [...diplomatCriteria, canSteal, peaceWithOwner],
+            effect: (unit, to, from = unit.tile()) => {
+                const city = cityRegistry.getByTile(to);
+                return new Actions_1.SneakStealTechnology(from, to, unit, city, city.player(), ruleRegistry);
+            },
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakStealTechnology(from, to, unit, cityRegistry.getByTile(to), cityOwner(unit, to), ruleRegistry),
+            },
+        },
         // v474.05 has no peace check on an embassy or an investigation, and neither breaks a treaty.
-        new Action_1.Action('civ1-unit:unit/action/establish-embassy', ...diplomatCriteria, hasNoEmbassy, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishEmbassy(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/investigate-city', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.InvestigateCity(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/industrial-sabotage', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.IndustrialSabotage(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
-        // Offered whether or not the Diplomat's owner can afford it, so the price can be shown; the action refuses if not.
-        new Action_1.Action('civ1-unit:unit/action/incite-revolt', ...diplomatCriteria, canIncite, new Criterion_1.default((unit, to) => !peaceWithOwner.validate(unit, to)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.InciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), ruleRegistry))),
+        {
+            name: 'establish-embassy',
+            criteria: [...diplomatCriteria, hasNoEmbassy],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.EstablishEmbassy(from, to, unit, cityRegistry.getByTile(to), ruleRegistry),
+        },
+        {
+            name: 'investigate-city',
+            criteria: [...diplomatCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.InvestigateCity(from, to, unit, cityRegistry.getByTile(to), ruleRegistry),
+        },
+        {
+            name: 'industrial-sabotage',
+            criteria: [...diplomatCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.IndustrialSabotage(from, to, unit, cityRegistry.getByTile(to), ruleRegistry),
+        },
+        // Offered whether or not the Diplomat's owner can afford it, so the price can be shown; the action refuses if
+        //  not.
+        {
+            name: 'incite-revolt',
+            criteria: [
+                ...diplomatCriteria,
+                canIncite,
+                new Criterion_1.default((unit, to) => !peaceWithOwner.validate(unit, to)),
+            ],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.InciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), ruleRegistry),
+        },
         // At peace, inciting ends the peace; subverting costs double and keeps it. v474.05 has no Senate check on either;
         //  inciting gets one here (#133).
-        new Action_1.Action('civ1-unit:unit/action/sneak-incite-revolt', ...diplomatCriteria, canIncite, peaceWithOwner, isFree, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const city = cityRegistry.getByTile(to);
-            return new Actions_1.SneakInciteRevolt(from, to, unit, city, costToIncite(to), city.player(), ruleRegistry);
-        })),
-        overruled('sneak-incite-revolt', (unit, to, from) => new Actions_1.SneakInciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), cityOwner(unit, to), ruleRegistry), ...diplomatCriteria, canIncite, peaceWithOwner),
-        new Action_1.Action('civ1-unit:unit/action/subvert-city', ...diplomatCriteria, canIncite, peaceWithOwner, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SubvertCity(from, to, unit, cityRegistry.getByTile(to), costToIncite(to) * 2, ruleRegistry))),
+        {
+            name: 'sneak-incite-revolt',
+            criteria: [...diplomatCriteria, canIncite, peaceWithOwner],
+            effect: (unit, to, from = unit.tile()) => {
+                const city = cityRegistry.getByTile(to);
+                return new Actions_1.SneakInciteRevolt(from, to, unit, city, costToIncite(to), city.player(), ruleRegistry);
+            },
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakInciteRevolt(from, to, unit, cityRegistry.getByTile(to), costToIncite(to), cityOwner(unit, to), ruleRegistry),
+            },
+        },
+        {
+            name: 'subvert-city',
+            criteria: [...diplomatCriteria, canIncite, peaceWithOwner],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.SubvertCity(from, to, unit, cityRegistry.getByTile(to), costToIncite(to) * 2, ruleRegistry),
+        },
         // The Diplomat stays, with no moves left (v474.05 `F22_0000_0000`).
-        new Action_1.Action('civ1-unit:unit/action/meet-with-leader', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithLeader(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
+        {
+            name: 'meet-with-leader',
+            criteria: [...diplomatCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.MeetWithLeader(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry),
+        },
         // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
         //  check, and the Diplomat keeps its moves.
-        new Action_1.Action('civ1-unit:unit/action/bribe-unit', ...bribeUnitCriteria, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const [target] = unitRegistry.getByTile(to);
-            return new Actions_1.BribeUnit(from, to, unit, target, (0, diplomatCosts_1.bribeCost)(target, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry), ruleRegistry);
-        })),
+        {
+            name: 'bribe-unit',
+            criteria: [...bribeUnitCriteria],
+            effect: (unit, to, from = unit.tile()) => {
+                const [target] = unitRegistry.getByTile(to);
+                return new Actions_1.BribeUnit(from, to, unit, target, (0, diplomatCosts_1.bribeCost)(target, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry), ruleRegistry);
+            },
+        },
         // Before `move`, so the arrow keys and the AI take it first, as Civ1's AI does: it always sets up the route.
         //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
-        new Action_1.Action('civ1-unit:unit/action/establish-trade-route', ...tradeRouteCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishTradeRoute(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
+        {
+            name: 'establish-trade-route',
+            criteria: [...tradeRouteCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.EstablishTradeRoute(from, to, unit, cityRegistry.getByTile(to), ruleRegistry),
+        },
         // Before `move`, so it's the first action for a tile an aircraft can land on: the arrow keys and the AI take the
         // first action. `move` is still offered there, so a GoTo (and the action menu) can fly over instead.
-        new Action_1.Action('civ1-unit:unit/action/land-aircraft', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => canLandAircraft(unit, to)), new Criterion_1.default((unit, to) => unitRegistry
-            .getByTile(to)
-            .every((tileUnit) => tileUnit.player() === unit.player())), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.LandAircraft(from, to, unit, 
-        // A city with a Carrier in it: land in the city.
-        landsInCity(unit, to) ? null : landingTransport(unit, to), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/move', ...moveCriteria, offPartnersLand, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry))),
+        {
+            name: 'land-aircraft',
+            criteria: [
+                Action_1.isNeighbouringTile,
+                Action_1.hasMovesLeft,
+                new Criterion_1.default((unit, to) => canLandAircraft(unit, to)),
+                new Criterion_1.default((unit, to) => unitRegistry
+                    .getByTile(to)
+                    .every((tileUnit) => tileUnit.player() === unit.player())),
+            ],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.LandAircraft(from, to, unit, 
+            // A city with a Carrier in it: land in the city.
+            landsInCity(unit, to) ? null : landingTransport(unit, to), ruleRegistry),
+        },
+        {
+            name: 'move',
+            criteria: [...moveCriteria, offPartnersLand],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Move(from, to, unit, ruleRegistry),
+        },
         // Onto a treaty partner's land (#287): Break treaty or, with a Senate, `Overruled`, then Cancel, which spends the
         //  move's cost (v474.05 takes it before asking).
-        new Action_1.Action('civ1-unit:unit/action/sneak-move', onPartnersLand, ...moveCriteria, isFree, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SneakMove(from, to, unit, movePartner(unit, to, from), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/overruled/sneak-move', onPartnersLand, ...moveCriteria, isOverruled, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Overruled(from, to, unit, new Actions_1.SneakMove(from, to, unit, movePartner(unit, to, from), ruleRegistry), new Actions_1.Move(from, to, unit, ruleRegistry).movementCost(), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/abort-move', onPartnersLand, ...moveCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.AbortMove(from, to, unit, movePartner(unit, to, from), ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/attack', ...attackCriteria, allPeaceExpired, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/sneak-attack', ...attackCriteria, allAtPeace, isFree, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const enemies = Array.from(new Set(unitRegistry
-                .getByTile(to)
-                .filter((tileUnit) => interactionRegistry
-                .getByPlayers(unit.player(), tileUnit.player())
-                .some((interaction) => interaction instanceof Declarations_1.Peace && interaction.active()))
-                .map((unit) => unit.player())));
-            if (enemies.length > 1) {
-                console.warn('Multiple targets for declaring war:');
-                console.warn(enemies);
-                console.warn('core-unit/Rules/Unit/action.ts');
-            }
-            return new Actions_1.SneakAttack(from, to, unit, enemies[0], ruleRegistry, unitRegistry);
-        })),
-        overruled('sneak-attack', (unit, to, from) => new Actions_1.SneakAttack(from, to, unit, unitRegistry.getByTile(to)[0].player(), ruleRegistry, unitRegistry), ...attackCriteria, allAtPeace),
-        new Action_1.Action('civ1-unit:unit/action/nuclear-attack', ...nuclearAttackCriteria, noNuclearTargetAtPeace, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NuclearAttack(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/sneak-nuclear-attack', ...nuclearAttackCriteria, anyNuclearTargetAtPeace, isFree, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const [enemy] = nuclearTargets(unit, to).filter((player) => atPeace(unit.player(), player));
-            return new Actions_1.SneakNuclearAttack(from, to, unit, enemy, ruleRegistry);
-        })),
-        overruled('sneak-nuclear-attack', (unit, to, from) => new Actions_1.SneakNuclearAttack(from, to, unit, nuclearTargets(unit, to).filter((player) => atPeace(unit.player(), player))[0], ruleRegistry), ...nuclearAttackCriteria, anyNuclearTargetAtPeace),
-        new Action_1.Action('civ1-unit:unit/action/capture-city', ...captureCityCriteria, ownerPeaceExpired, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const city = cityRegistry.getByTile(to);
-            return new Actions_1.CaptureCity(from, to, unit, city, ruleRegistry);
-        })),
-        new Action_1.Action('civ1-unit:unit/action/sneak-capture-city', ...captureCityCriteria, peaceWithOwner, isFree, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const city = cityRegistry.getByTile(to);
-            return new Actions_1.SneakCaptureCity(from, to, unit, city, city.player(), ruleRegistry);
-        })),
-        overruled('sneak-capture-city', (unit, to, from) => new Actions_1.SneakCaptureCity(from, to, unit, cityRegistry.getByTile(to), cityOwner(unit, to), ruleRegistry), ...captureCityCriteria, peaceWithOwner),
-        new Action_1.Action('civ1-unit:unit/action/pillage', ...pillageCriteria, notPillagingPartnersLand, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
+        {
+            name: 'sneak-move',
+            criteria: [onPartnersLand, ...moveCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.SneakMove(from, to, unit, movePartner(unit, to, from), ruleRegistry),
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakMove(from, to, unit, movePartner(unit, to, from), ruleRegistry),
+                cost: (unit, to, from) => new Actions_1.Move(from, to, unit, ruleRegistry).movementCost(),
+            },
+        },
+        {
+            name: 'abort-move',
+            criteria: [onPartnersLand, ...moveCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.AbortMove(from, to, unit, movePartner(unit, to, from), ruleRegistry),
+        },
+        {
+            name: 'attack',
+            criteria: [...attackCriteria, allPeaceExpired],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Attack(from, to, unit, ruleRegistry, unitRegistry),
+        },
+        {
+            name: 'sneak-attack',
+            criteria: [...attackCriteria, allAtPeace],
+            effect: (unit, to, from = unit.tile()) => {
+                const enemies = Array.from(new Set(unitRegistry
+                    .getByTile(to)
+                    .filter((tileUnit) => interactionRegistry
+                    .getByPlayers(unit.player(), tileUnit.player())
+                    .some((interaction) => interaction instanceof Declarations_1.Peace && interaction.active()))
+                    .map((unit) => unit.player())));
+                if (enemies.length > 1) {
+                    console.warn('Multiple targets for declaring war:');
+                    console.warn(enemies);
+                    console.warn('core-unit/Rules/Unit/action.ts');
+                }
+                return new Actions_1.SneakAttack(from, to, unit, enemies[0], ruleRegistry, unitRegistry);
+            },
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakAttack(from, to, unit, unitRegistry.getByTile(to)[0].player(), ruleRegistry, unitRegistry),
+            },
+        },
+        {
+            name: 'nuclear-attack',
+            criteria: [...nuclearAttackCriteria, noNuclearTargetAtPeace],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.NuclearAttack(from, to, unit, ruleRegistry),
+        },
+        {
+            name: 'sneak-nuclear-attack',
+            criteria: [...nuclearAttackCriteria, anyNuclearTargetAtPeace],
+            effect: (unit, to, from = unit.tile()) => {
+                const [enemy] = nuclearTargets(unit, to).filter((player) => atPeace(unit.player(), player));
+                return new Actions_1.SneakNuclearAttack(from, to, unit, enemy, ruleRegistry);
+            },
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakNuclearAttack(from, to, unit, nuclearTargets(unit, to).filter((player) => atPeace(unit.player(), player))[0], ruleRegistry),
+            },
+        },
+        {
+            name: 'capture-city',
+            criteria: [...captureCityCriteria, ownerPeaceExpired],
+            effect: (unit, to, from = unit.tile()) => {
+                const city = cityRegistry.getByTile(to);
+                return new Actions_1.CaptureCity(from, to, unit, city, ruleRegistry);
+            },
+        },
+        {
+            name: 'sneak-capture-city',
+            criteria: [...captureCityCriteria, peaceWithOwner],
+            effect: (unit, to, from = unit.tile()) => {
+                const city = cityRegistry.getByTile(to);
+                return new Actions_1.SneakCaptureCity(from, to, unit, city, city.player(), ruleRegistry);
+            },
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakCaptureCity(from, to, unit, cityRegistry.getByTile(to), cityOwner(unit, to), ruleRegistry),
+            },
+        },
+        {
+            name: 'pillage',
+            criteria: [...pillageCriteria, notPillagingPartnersLand],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Pillage(from, to, unit, ruleRegistry, tileImprovementRegistry, turn),
+        },
         // Pillaging a treaty partner's land breaks the treaty (v474.05 `CheckPlayerTurn.cs` ~L642-686).
-        new Action_1.Action('civ1-unit:unit/action/sneak-pillage', ...pillageCriteria, pillagingPartnersLand, isFree, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn))),
-        overruled('sneak-pillage', (unit, to, from) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn), ...pillageCriteria, pillagingPartnersLand),
-        new Action_1.Action('civ1-unit:unit/action/fortify', ...fortifyCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/sleep', ...sleepCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn))),
-        new Action_1.Action(
+        {
+            name: 'sneak-pillage',
+            criteria: [...pillageCriteria, pillagingPartnersLand],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn),
+            breaksTreaty: {
+                blocked: (unit, to, from) => new Actions_1.SneakPillage(from, to, unit, partnerOf(unit, to), ruleRegistry, tileImprovementRegistry, turn),
+            },
+        },
+        {
+            name: 'fortify',
+            criteria: [...fortifyCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry),
+        },
+        {
+            name: 'sleep',
+            criteria: [...sleepCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn),
+        },
         // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
         //  (`activate.ts`) decide what that does. Not cargo: a unit `Stowed` aboard a transport is woken by unloading, and
         //  an aircraft collected by a Carrier stays active while stowed, so it would be offered this beside its own orders.
-        'civ1-unit:unit/action/activate', ...activateCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Activate(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/disband', ...disbandCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/no-orders', ...noOrdersCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/found-city', ...foundCityCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry))),
-        // On one of its player's cities, where `found-city` is not offered, so the two can share a key. The size limit is a
-        // `CanJoinCity` rule (`canJoinCity.ts`).
-        new Action_1.Action('civ1-unit:unit/action/join-city', ...joinCityCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.JoinCity(from, to, unit, (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry), ruleRegistry, cityGrowthRegistry))),
+        {
+            name: 'activate',
+            criteria: [...activateCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Activate(from, to, unit, ruleRegistry),
+        },
+        {
+            name: 'disband',
+            criteria: [...disbandCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Disband(from, to, unit, ruleRegistry),
+        },
+        {
+            name: 'no-orders',
+            criteria: [...noOrdersCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.NoOrders(from, to, unit, ruleRegistry),
+        },
+        {
+            name: 'found-city',
+            criteria: [...foundCityCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.FoundCity(from, to, unit, cityNameRegistry, ruleRegistry, workedTileRegistry),
+        },
+        // On one of its player's cities, where `found-city` is not offered, so the two can share a key. The size limit is
+        // a `CanJoinCity` rule (`canJoinCity.ts`).
+        {
+            name: 'join-city',
+            criteria: [...joinCityCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.JoinCity(from, to, unit, (0, joinableCity_1.joinableCity)(unit, from, cityRegistry, ruleRegistry), ruleRegistry, cityGrowthRegistry),
+        },
+        // The improvements a unit builds, each with the action that builds it and what else it needs.
         ...[
             [
                 TileImprovements_1.Irrigation,
                 Actions_1.BuildIrrigation,
+                // Water nearby: Civ1's River is a terrain, so it counts on the unit's own square as well as beside it.
                 new Or_1.default(new Criterion_1.default((unit, to, from = unit.tile()) => from.terrain() instanceof Terrains_1.River), new Criterion_1.default((unit, to, from = unit.tile()) => from
                     .getAdjacent()
                     .some((tile) => tile.terrain() instanceof Terrains_1.River ||
@@ -287,53 +435,107 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 Actions_1.BuildRailroad,
                 (0, worker_1.requiresImprovement)({ tileImprovementRegistry }, TileImprovements_1.Road),
             ],
-        ].map(([Improvement, ActionType, ...additionalCriteria]) => new Action_1.Action(`civ1-unit:unit/action/improvement/${Improvement.name}`, ...(0, worker_1.terrainJob)({ ruleRegistry }, Improvement, ...additionalCriteria), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn)))),
+        ].map(([Improvement, ActionType, ...extra]) => ({
+            improvement: Improvement,
+            extra,
+            effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn),
+        })),
+        // The terrain each conversion changes.
         ...[
             [Actions_1.ClearJungle, Terrains_1.Jungle],
             [Actions_1.ClearForest, Terrains_1.Forest],
             // The mine command: Civ1 turns each of these into Forest.
             [Actions_1.PlantForest, Terrains_1.Plains, Terrains_1.Grassland, Terrains_1.Jungle, Terrains_1.Swamp],
             [Actions_1.ClearSwamp, Terrains_1.Swamp],
-        ].map(([ActionType, ...TerrainTypes]) => new Action_1.Action(`civ1-unit:unit/action/terrain/${ActionType.name}`, ...(0, worker_1.terrainConversion)(TerrainTypes), new Effect_1.default((unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn)))),
-        // Only on a polluted tile, as v474.05's menu offers it (`GameMenus.cs` L308, civ-clone/web-renderer#32).
-        new Action_1.Action('civ1-unit:unit/action/clean-pollution', ...(0, worker_1.cleanPollution)({ tileImprovementRegistry }, TileImprovements_1.Pollution), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.CleanPollution(from, to, unit, ruleRegistry, tileImprovementRegistry, turn))),
-        new Action_1.Action('civ1-unit:unit/action/embark', ...embarkCriteria, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const [transport] = unitRegistry
-                .getByTile(to)
-                .filter((tileUnit) => tileUnit instanceof Types_1.NavalTransport)
-                .filter((tileUnit) => tileUnit.hasCapacity() &&
-                tileUnit.canStow(unit));
-            return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
+        ].map(([ActionType, ...terrains]) => ({
+            conversion: ActionType,
+            terrains,
+            effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn),
         })),
-        new Action_1.Action('civ1-unit:unit/action/disembark', 
+        // Only on a polluted tile, as v474.05's menu offers it (`GameMenus.cs` L308, civ-clone/web-renderer#32).
+        {
+            name: 'clean-pollution',
+            criteria: (0, worker_1.cleanPollution)({ tileImprovementRegistry }, TileImprovements_1.Pollution),
+            effect: (unit, to, from = unit.tile()) => new Actions_1.CleanPollution(from, to, unit, ruleRegistry, tileImprovementRegistry, turn),
+        },
+        {
+            name: 'embark',
+            criteria: [...embarkCriteria],
+            effect: (unit, to, from = unit.tile()) => {
+                const [transport] = unitRegistry
+                    .getByTile(to)
+                    .filter((tileUnit) => tileUnit instanceof Types_1.NavalTransport)
+                    .filter((tileUnit) => tileUnit.hasCapacity() &&
+                    tileUnit.canStow(unit));
+                return new Actions_1.Embark(from, to, unit, transport, ruleRegistry);
+            },
+        },
         // `transportRegistry.hasUnit` first, as in `movementCost.ts`: it's asked of every tile beside every unit the AI
         //  considers moving. An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because
-        //  `Disembark` ends the unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also
-        //  unloads a unit that walks off a ship in a city with a `Move`.
-        ...disembarkCriteria, new Effect_1.default((unit, to, from = unit.tile()) => {
-            const transport = transportRegistry.getByUnit(unit).transport();
-            return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
-        })),
-        new Action_1.Action('civ1-unit:unit/action/unload', ...unloadCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry))),
-        new Action_1.Action('civ1-unit:unit/action/goto', Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), routePlanner.goTo(), 
-        // The `GoTo` follows the route that was found to offer it, rather than searching for it again when it's
-        //  performed (civ-clone/web-renderer#307).
-        routePlanner.goToEffect(Actions_1.GoTo)),
-        // Road to and Railroad to (civ-clone/web-renderer#195): a worker goes to a distant square, building on each square
-        //  of the way where it's offered the build. Which of them a unit may be given is `routeOrders`'s.
+        //  `Disembark` ends the unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off`
+        //  also unloads a unit that walks off a ship in a city with a `Move`.
+        {
+            name: 'disembark',
+            criteria: [...disembarkCriteria],
+            effect: (unit, to, from = unit.tile()) => {
+                const transport = transportRegistry.getByUnit(unit).transport();
+                return new Actions_1.Disembark(from, to, unit, transport, ruleRegistry);
+            },
+        },
+        {
+            name: 'unload',
+            criteria: [...unloadCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Unload(from, to, unit, ruleRegistry),
+        },
+        // Before `road-to` and `railroad-to`, which reuse the route it finds. The `GoTo` follows the route that was found
+        //  to offer it, rather than searching for it again when it's performed (civ-clone/web-renderer#307).
+        {
+            name: 'goto',
+            criteria: [
+                Action_1.hasMovesLeft,
+                new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)),
+                routePlanner.goTo(),
+            ],
+            effect: routePlanner.goToEffect(Actions_1.GoTo),
+        },
+        // Road to and Railroad to (civ-clone/web-renderer#195): a worker goes to a distant square, building on each
+        //  square of the way where it's offered the build. Which of them a unit may be given is `routeOrders`'s.
         ...[
             [Actions_1.RoadTo, 'road-to'],
             [Actions_1.RailroadTo, 'railroad-to'],
-        ].map(([RouteAction, name]) => new Action_1.Action(`civ1-unit:unit/action/${name}`, Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)), new Criterion_1.default((unit) => (0, routeOrders_1.default)(unit, playerResearchRegistry).includes(RouteAction)), routePlanner.route(), routePlanner.routeEffect(RouteAction))),
-        new Action_1.Action('civ1-unit:unit/action/set-home-city', ...setHomeCityCriteria, new Effect_1.default((unit, to, from) => new Actions_1.SetHomeCity(from, to, unit, ruleRegistry, cityRegistry))),
+        ].map(([RouteAction, name]) => ({
+            name,
+            criteria: [
+                Action_1.hasMovesLeft,
+                new Criterion_1.default((unit, to, from) => to !== from && !to.isNeighbourOf(from)),
+                new Criterion_1.default((unit) => (0, routeOrders_1.default)(unit, playerResearchRegistry).includes(RouteAction)),
+                routePlanner.route(),
+            ],
+            effect: routePlanner.routeEffect(RouteAction),
+        })),
+        {
+            name: 'set-home-city',
+            criteria: [...setHomeCityCriteria],
+            effect: (unit, to, from) => new Actions_1.SetHomeCity(from, to, unit, ruleRegistry, cityRegistry),
+        },
         // Standing orders, run by the game's strategies (`base-strategy-explore`, `base-strategy-terrain-work`). Offered
         //  whether or not the game has the strategy: without it, the order hands the unit straight back.
-        new Action_1.Action('civ1-unit:unit/action/explore', 
-        // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
-        //  have work to do, nor aircraft, which have fuel to mind.
-        ...exploreCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Explore(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
-        new Action_1.Action('civ1-unit:unit/action/automate', ...automateCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.Automate(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }))),
-    ];
+        {
+            name: 'explore',
+            // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
+            //  have work to do, nor aircraft, which have fuel to mind.
+            criteria: [...exploreCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Explore(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }),
+        },
+        {
+            name: 'automate',
+            criteria: [...automateCriteria],
+            effect: (unit, to, from = unit.tile()) => new Actions_1.Automate(from, to, unit, ruleRegistry, strategyRegistry, strategyNoteRegistry, { pathFinderRegistry, unitRegistry }),
+        },
+    ], {
+        ruleRegistry,
+        hasSenate: (player) => (0, senate_1.default)(player, playerGovernmentRegistry),
+    });
 };
 exports.getRules = getRules;
 exports.default = exports.getRules;
