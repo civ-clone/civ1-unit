@@ -6,15 +6,18 @@ import CanJoinCity from '@civ-clone/base-unit-action-join-city/Rules/CanJoinCity
 import City from '@civ-clone/core-city/City';
 import Effect from '@civ-clone/core-rule/Effect';
 import Unit from '@civ-clone/core-unit/Unit';
+import { tooLargeToJoin as sizeLimit } from '@civ-clone/base-unit-action-join-city/lib/sizeLimit';
 
 // Settlers can join a city only while it is under size 10. In v474.05 a larger city shows the `*ADDCITY` warning
 // instead (OpenCivOne `PlayerTurn.cs`, `ActualSize < 10`).
 export const joinCitySizeLimit = 10;
 
+const tooLargeAtLimit = sizeLimit(joinCitySizeLimit);
+
 export const tooLargeToJoin = (
   city: City,
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance
-): boolean => cityGrowthRegistry.getByCity(city).size() >= joinCitySizeLimit;
+): boolean => tooLargeAtLimit(city, cityGrowthRegistry);
 
 export const getRules = (
   cityGrowthRegistry: CityGrowthRegistry = cityGrowthRegistryInstance

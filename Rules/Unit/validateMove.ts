@@ -2,6 +2,7 @@ import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import Unit from '@civ-clone/core-unit/Unit';
 import ValidateMove from '@civ-clone/core-unit/Rules/ValidateMove';
+import { succeedsShort } from '@civ-clone/base-unit-action-rules/lib/moveShortfall';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
 /**
@@ -39,9 +40,11 @@ export const getRules: (
 
       unit.moves().set(0);
 
-      return (
-        remainingMoves >=
-        movementCost * shortfallFactor * randomNumberGenerator()
+      return succeedsShort(
+        remainingMoves,
+        movementCost,
+        shortfallFactor,
+        randomNumberGenerator
       );
     })
   ),
