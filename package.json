@@ -78,6 +78,7 @@
     "@civ-clone/base-unit-action-nuclear-attack": "^0.1.0",
     "@civ-clone/base-unit-action-sleep": "^0.1.0",
     "@civ-clone/base-unit-action-steal-technology": "^0.1.0",
+    "@civ-clone/base-unit-lifecycle": "github:civ-clone/base-unit-lifecycle#feat/unit-lifecycle",
     "@civ-clone/base-unit-trait-attack-ends-turn": "^0.1.0",
     "@civ-clone/base-unit-trait-carries": "^0.1.0",
     "@civ-clone/base-unit-trait-coast-bound": "^0.1.0",

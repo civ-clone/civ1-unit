@@ -1,9 +1,11 @@
+import {
+  carriesDomain,
+  carriesUnit,
+} from '@civ-clone/base-unit-lifecycle/lib/canStow';
 import { Air } from '../../Types';
 import CanStow from '@civ-clone/core-unit-transport/Rules/CanStow';
-import Carries from '@civ-clone/base-unit-trait-carries/Carries';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import { Land } from '@civ-clone/library-unit/Types';
 import Unit from '@civ-clone/core-unit/Unit';
 
@@ -14,21 +16,8 @@ export const getRules = (): CanStow[] =>
     (StowableUnitType: typeof Unit): CanStow =>
       new CanStow(
         `civ1-unit:unit/can-stow/${StowableUnitType.name}`,
-        new Criterion((transport: ITransport): boolean =>
-          (transport as unknown as Unit)
-            .traits(Carries)
-            .some(
-              (carries: Carries): boolean => carries.what === StowableUnitType
-            )
-        ),
-        new Effect((transport: ITransport, unit: Unit): boolean =>
-          (transport as unknown as Unit)
-            .traits(Carries)
-            .some(
-              (carries: Carries): boolean =>
-                carries.what === StowableUnitType && carries.carries(unit)
-            )
-        )
+        new Criterion(carriesDomain(StowableUnitType)),
+        new Effect(carriesUnit(StowableUnitType))
       )
   );
 

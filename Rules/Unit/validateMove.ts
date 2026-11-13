@@ -1,8 +1,12 @@
+import {
+  hasMovesFor,
+  shortOfMovesFor,
+  spendMoves,
+  spendShort,
+} from '@civ-clone/base-unit-lifecycle/lib/validateMove';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
-import Unit from '@civ-clone/core-unit/Unit';
 import ValidateMove from '@civ-clone/core-unit/Rules/ValidateMove';
-import { succeedsShort } from '@civ-clone/base-unit-action-rules/lib/moveShortfall';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
 /**
@@ -18,35 +22,14 @@ export const getRules: (
 ) => ValidateMove[] = (randomNumberGenerator: () => number = rngInstance) => [
   new ValidateMove(
     'civ1-unit:unit/validate-move/enough-moves',
-    new Criterion(
-      (unit: Unit, movementCost: number): boolean =>
-        unit.moves().value() >= movementCost
-    ),
-    new Effect((unit: Unit, movementCost: number): boolean => {
-      unit.moves().subtract(movementCost);
-
-      return true;
-    })
+    new Criterion(hasMovesFor),
+    new Effect(spendMoves)
   ),
 
   new ValidateMove(
     'civ1-unit:unit/validate-move/not-enough-moves',
-    new Criterion(
-      (unit: Unit, movementCost: number): boolean =>
-        unit.moves().value() < movementCost
-    ),
-    new Effect((unit: Unit, movementCost: number): boolean => {
-      const remainingMoves = unit.moves().value();
-
-      unit.moves().set(0);
-
-      return succeedsShort(
-        remainingMoves,
-        movementCost,
-        shortfallFactor,
-        randomNumberGenerator
-      );
-    })
+    new Criterion(shortOfMovesFor),
+    new Effect(spendShort(shortfallFactor, randomNumberGenerator))
   ),
 ];
 

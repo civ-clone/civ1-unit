@@ -3,25 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRules = void 0;
 const PlayerActions_1 = require("../../PlayerActions");
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
+const playerAction_1 = require("@civ-clone/base-unit-lifecycle/lib/playerAction");
 const Action_1 = require("@civ-clone/core-player/Rules/Action");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const getRules = (unitRegistry = UnitRegistry_1.instance) => {
     return [
-        new Action_1.default('civ1-unit:player/action/active-units', new Criterion_1.default((player) => unitRegistry
-            .getByPlayer(player)
-            .some((unit) => unit.active() && unit.moves().value())), new Effect_1.default((player) => unitRegistry
-            .getByPlayer(player)
-            .filter((unit) => unit.active() && unit.moves().value() > 0)
-            .sort((a, b) => (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0))
-            .map((unit) => new PlayerActions_1.ActiveUnit(player, unit)))),
-        new Action_1.default('civ1-unit:player/action/inactive-units', new Criterion_1.default((player) => unitRegistry
-            .getByPlayer(player)
-            .some((unit) => !unit.active() || !unit.moves().value())), new Effect_1.default((player) => unitRegistry
-            .getByPlayer(player)
-            .filter((unit) => !unit.active() || unit.moves().value() === 0)
-            .sort((a, b) => (a.waiting() ? 1 : 0) - (b.waiting() ? 1 : 0))
-            .map((unit) => new PlayerActions_1.InactiveUnit(player, unit)))),
+        new Action_1.default('civ1-unit:player/action/active-units', new Criterion_1.default((0, playerAction_1.hasActiveUnits)(unitRegistry)), new Effect_1.default((0, playerAction_1.activeUnits)(unitRegistry, PlayerActions_1.ActiveUnit))),
+        new Action_1.default('civ1-unit:player/action/inactive-units', new Criterion_1.default((0, playerAction_1.hasInactiveUnits)(unitRegistry)), new Effect_1.default((0, playerAction_1.inactiveUnits)(unitRegistry, PlayerActions_1.InactiveUnit))),
     ];
 };
 exports.getRules = getRules;
