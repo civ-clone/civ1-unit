@@ -1,10 +1,9 @@
 import {
   Action,
   hasMovesLeft,
-  isCurrentTile,
   isNeighbouringTile,
 } from '@civ-clone/core-unit/Rules/Action';
-import { Air, Land as LandUnit, Naval, NavalTransport } from '../../Types';
+import { Land as LandUnit, NavalTransport } from '../../Types';
 import {
   AbortMove,
   Activate,
@@ -161,7 +160,6 @@ import {
   WorkedTileRegistry,
   instance as workedTileRegistryInstance,
 } from '@civ-clone/core-city/WorkedTileRegistry';
-import Available from '@civ-clone/core-tile-improvement/Rules/Available';
 import City from '@civ-clone/core-city/City';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
@@ -183,25 +181,16 @@ import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
-import UnitImprovement from '@civ-clone/core-unit-improvement/UnitImprovement';
-import { Fortified } from '../../UnitImprovements';
-import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
-import Fortifies from '@civ-clone/base-unit-trait-fortifies/Fortifies';
-import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import IgnoresZoneOfControl from '@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl';
-import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
 import { isA } from '@civ-clone/core-unit/traits';
 import zoneOfControl from '@civ-clone/base-zone-of-control/lib/zoneOfControl';
 import {
   attackCriteria as buildAttackCriteria,
   captureCityCriteria as buildCaptureCityCriteria,
 } from '@civ-clone/base-unit-action-rules/lib/criteria/attack';
-import {
-  isLandUnit,
-  tileHasCity,
-} from '@civ-clone/base-unit-action-rules/lib/criteria/domain';
+import { tileHasCity } from '@civ-clone/base-unit-action-rules/lib/criteria/domain';
 import {
   overruled as buildOverruled,
   treatyGate,
@@ -220,6 +209,14 @@ import nuclearCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/nucl
 import partnerCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/partners';
 import peaceCriteria from '@civ-clone/base-unit-action-rules/lib/criteria/peace';
 import tradeRoute from '@civ-clone/base-unit-action-rules/lib/criteria/tradeRoute';
+import {
+  cleanPollution,
+  requiresImprovement,
+  terrainConversion,
+  terrainJob,
+} from '@civ-clone/base-unit-action-rules/lib/criteria/worker';
+import orders from '@civ-clone/base-unit-action-rules/lib/criteria/orders';
+import transport from '@civ-clone/base-unit-action-rules/lib/criteria/transport';
 
 export const getRules = (
   cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
@@ -435,6 +432,24 @@ export const getRules = (
         ],
       })
     );
+
+  // Terrain work, boarding and leaving transports, and the orders a unit is given on its own tile.
+  const {
+      fortifyCriteria,
+      sleepCriteria,
+      activateCriteria,
+      disbandCriteria,
+      noOrdersCriteria,
+      foundCityCriteria,
+      joinCityCriteria,
+      setHomeCityCriteria,
+      exploreCriteria,
+      automateCriteria,
+    } = orders({ cityRegistry, ruleRegistry, unitImprovementRegistry }),
+    { embarkCriteria, disembarkCriteria, unloadCriteria } = transport({
+      transportRegistry,
+      unitRegistry,
+    });
 
   return [
     // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
@@ -1004,12 +1019,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/fortify',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(Fortifies)),
-      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        from.isLand()
-      ),
+      ...fortifyCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Fortify(
@@ -1025,8 +1035,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/sleep',
-      hasMovesLeft,
-      isCurrentTile,
+      ...sleepCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Sleep(from, to, unit, ruleRegistry, turn)
@@ -1038,18 +1047,7 @@ export const getRules = (
       //  (`activate.ts`) decide what that does. Not cargo: a unit `Stowed` aboard a transport is woken by unloading, and
       //  an aircraft collected by a Carrier stays active while stowed, so it would be offered this beside its own orders.
       'civ1-unit:unit/action/activate',
-      isCurrentTile,
-      new Criterion(
-        (unit: Unit): boolean =>
-          !(unit.busy() instanceof Stowed) &&
-          (unit.busy() !== null ||
-            unitImprovementRegistry
-              .getByUnit(unit)
-              .some(
-                (unitImprovement: UnitImprovement): boolean =>
-                  unitImprovement instanceof Fortified
-              ))
-      ),
+      ...activateCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Activate(from, to, unit, ruleRegistry)
@@ -1058,8 +1056,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/disband',
-      hasMovesLeft,
-      isCurrentTile,
+      ...disbandCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Disband(from, to, unit, ruleRegistry)
@@ -1068,7 +1065,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/no-orders',
-      isCurrentTile,
+      ...noOrdersCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new NoOrders(from, to, unit, ruleRegistry)
@@ -1077,16 +1074,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/found-city',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(FoundsCities)),
-      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        from.isLand()
-      ),
-      new Criterion(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-          !tileHasCity(from, cityRegistry)
-      ),
+      ...foundCityCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new FoundCity(
@@ -1104,13 +1092,7 @@ export const getRules = (
     // `CanJoinCity` rule (`canJoinCity.ts`).
     new Action(
       'civ1-unit:unit/action/join-city',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(FoundsCities)),
-      new Criterion(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-          joinableCity(unit, from, cityRegistry, ruleRegistry) !== null
-      ),
+      ...joinCityCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new JoinCity(
@@ -1158,14 +1140,7 @@ export const getRules = (
         [
           Railroad,
           BuildRailroad,
-          new Criterion((unit: Unit, to: Tile) =>
-            tileImprovementRegistry
-              .getByTile(to)
-              .some(
-                (tileImprovement: TileImprovement) =>
-                  tileImprovement instanceof Road
-              )
-          ),
+          requiresImprovement({ tileImprovementRegistry }, Road),
         ],
       ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]
     ).map(
@@ -1176,18 +1151,7 @@ export const getRules = (
       ]): Action =>
         new Action(
           `civ1-unit:unit/action/improvement/${Improvement.name}`,
-          new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
-          hasMovesLeft,
-          new Criterion(
-            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              ruleRegistry
-                .get(Available)
-                .some((rule: Available): boolean =>
-                  rule.validate(from, Improvement, unit.player())
-                )
-          ),
-          isCurrentTile,
-          ...additionalCriteria,
+          ...terrainJob({ ruleRegistry }, Improvement, ...additionalCriteria),
           new Effect(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
               new ActionType(from, to, unit, ruleRegistry, turn)
@@ -1222,16 +1186,7 @@ export const getRules = (
       ]): Action =>
         new Action(
           `civ1-unit:unit/action/terrain/${ActionType.name}`,
-          hasMovesLeft,
-          isCurrentTile,
-          new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
-          new Criterion(
-            (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-              TerrainTypes.some(
-                (TerrainType: typeof Terrain): boolean =>
-                  from.terrain() instanceof TerrainType
-              )
-          ),
+          ...terrainConversion(TerrainTypes),
           new Effect(
             (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
               new ActionType(
@@ -1249,17 +1204,7 @@ export const getRules = (
     // Only on a polluted tile, as v474.05's menu offers it (`GameMenus.cs` L308, civ-clone/web-renderer#32).
     new Action(
       'civ1-unit:unit/action/clean-pollution',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
-      new Criterion((unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-        tileImprovementRegistry
-          .getByTile(from)
-          .some(
-            (improvement: TileImprovement): boolean =>
-              improvement instanceof Pollution
-          )
-      ),
+      ...cleanPollution({ tileImprovementRegistry }, Pollution),
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new CleanPollution(
@@ -1275,31 +1220,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/embark',
-      isNeighbouringTile,
-      hasMovesLeft,
-      isLandUnit,
-      new Criterion(
-        (unit: Unit, to: Tile): boolean => to.terrain() instanceof Water
-      ),
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        unitRegistry
-          .getByTile(to)
-          .every(
-            (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
-          )
-      ),
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        unitRegistry
-          .getByTile(to)
-          .filter(
-            (tileUnit: Unit): boolean => tileUnit instanceof NavalTransport
-          )
-          .some(
-            (tileUnit: Unit): boolean =>
-              (tileUnit as NavalTransport).hasCapacity() &&
-              (tileUnit as NavalTransport).canStow(unit)
-          )
-      ),
+      ...embarkCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
           const [transport] = unitRegistry
@@ -1326,23 +1247,11 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/disembark',
-      isNeighbouringTile,
-      // `hasUnit`, not `getByUnit` in a `try`, as in `movementCost.ts`: the
-      // answer is nearly always "no", and `getByUnit` gives it by throwing.
-      // It is asked of every tile beside every unit the AI considers moving.
-      new Criterion((unit: Unit): boolean => transportRegistry.hasUnit(unit)),
-      // An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because `Disembark` ends the
-      // unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also unloads a unit
-      // that walks off a ship in a city with a `Move`.
-      new Criterion((unit: Unit): boolean => !isA(unit, Air)),
-      new Or(
-        new Criterion((unit: Unit, to: Tile): boolean => !isA(unit, LandUnit)),
-        new Criterion((unit: Unit, to: Tile): boolean => to.isLand())
-      ),
-      new Criterion(
-        (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-          transportRegistry.getByUnit(unit).transport().tile() === from
-      ),
+      // `transportRegistry.hasUnit` first, as in `movementCost.ts`: it's asked of every tile beside every unit the AI
+      //  considers moving. An aircraft takes off with a plain `Move` instead (`moved/take-off` unloads it), because
+      //  `Disembark` ends the unit's turn, and an aircraft that has just taken off needs its moves. `moved/take-off` also
+      //  unloads a unit that walks off a ship in a city with a `Move`.
+      ...disembarkCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction => {
           const transport = transportRegistry.getByUnit(unit).transport();
@@ -1360,15 +1269,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/unload',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit instanceof NavalTransport),
-      new Criterion((unit: Unit): boolean =>
-        (unit as NavalTransport).hasCargo()
-      ),
-      new Criterion((unit: Unit, to: Tile): boolean =>
-        to.getNeighbours().some((tile: Tile): boolean => tile.isLand())
-      ),
+      ...unloadCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Unload(from, to, unit, ruleRegistry)
@@ -1414,17 +1315,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/set-home-city',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit, to: Tile, from: Tile): boolean => {
-        const city = cityRegistry.getByTile(from);
-
-        if (!(city instanceof City)) {
-          return false;
-        }
-
-        return city.player() === unit.player();
-      }),
+      ...setHomeCityCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile): UnitAction =>
           new SetHomeCity(from, to, unit, ruleRegistry, cityRegistry)
@@ -1435,13 +1326,9 @@ export const getRules = (
     //  whether or not the game has the strategy: without it, the order hands the unit straight back.
     new Action(
       'civ1-unit:unit/action/explore',
-      hasMovesLeft,
-      isCurrentTile,
       // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
       //  have work to do, nor aircraft, which have fuel to mind.
-      new Criterion(
-        (unit: Unit): boolean => unit.hasTrait(Fortifies) || isA(unit, Naval)
-      ),
+      ...exploreCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Explore(
@@ -1458,9 +1345,7 @@ export const getRules = (
 
     new Action(
       'civ1-unit:unit/action/automate',
-      hasMovesLeft,
-      isCurrentTile,
-      new Criterion((unit: Unit): boolean => unit.hasTrait(Terraforms)),
+      ...automateCriteria,
       new Effect(
         (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Automate(
