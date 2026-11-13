@@ -27,6 +27,7 @@ import destroyed from '../Rules/Unit/destroyed';
 import { expect } from 'chai';
 import lostAtSea from '../Rules/Unit/lostAtSea';
 import unitYield from '../Rules/Unit/yield';
+import traits from '../Rules/Unit/traits';
 
 describe('cargo', (): void => {
   const setUp = async (TerrainType: typeof Terrain = Ocean) => {
@@ -43,6 +44,8 @@ describe('cargo', (): void => {
       destroyedCount = new Map<Unit, number>();
 
     ruleRegistry.register(
+      // The Civ1 unit traits, which the rules below ask units about.
+      ...traits(),
       ...canStow(),
       ...defeated(
         cityRegistry,

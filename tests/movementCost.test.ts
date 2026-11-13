@@ -12,6 +12,7 @@ import { expect } from 'chai';
 import moved from '../Rules/Unit/moved';
 import movementCost from '../Rules/Unit/movementCost';
 import validateMove from '../Rules/Unit/validateMove';
+import traits from '../Rules/Unit/traits';
 
 describe('unit:movementCost', (): void => {
   const ruleRegistry = new RuleRegistry(),
@@ -19,6 +20,8 @@ describe('unit:movementCost', (): void => {
     player = new Player(ruleRegistry);
 
   ruleRegistry.register(
+    // The Civ1 unit traits, which the rules below ask units about.
+    ...traits(),
     ...movementCost(tileImprovementRegistry),
     ...moved(),
     ...validateMove()
