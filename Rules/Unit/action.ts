@@ -201,6 +201,7 @@ import Submerged from '@civ-clone/base-unit-trait-submerged/Submerged';
 import Terraforms from '@civ-clone/base-unit-trait-terraforms/Terraforms';
 import TradeMissions from '@civ-clone/base-unit-trait-trade-missions/TradeMissions';
 import { isA } from '@civ-clone/core-unit/traits';
+import zoneOfControl from '@civ-clone/base-zone-of-control/lib/zoneOfControl';
 
 const isLandUnit = new Criterion(
     (unit: Unit, to: Tile, from: Tile = unit.tile()) => isA(unit, LandUnit)
@@ -651,57 +652,38 @@ export const getRules = (
 
       // This is analogous to the original Civilization unit adjacency rules.
       // You may only move your `Unit` to the `Tile` if...
-      new Or(
-        new Criterion(
+      zoneOfControl(unitRegistry, {
+        exemptMovers: [
           // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-          (unit: Unit, to: Tile, from: Tile): boolean => !isA(unit, LandUnit)
-        ),
-        new Criterion(
+          (unit: Unit, to: Tile, from: Tile): boolean => !isA(unit, LandUnit),
           // ...it ignores zones of control (a Diplomat or a Caravan)...
-          (unit: Unit, to: Tile): boolean => unit.hasTrait(IgnoresZoneOfControl)
-        ),
-        new Criterion(
-          // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
-          (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
-            !(
-              from.getNeighbours().some((tile: Tile) =>
-                unitRegistry.getByTile(tile).some(
-                  (tileUnit: Unit): boolean =>
-                    isA(tileUnit, LandUnit) &&
-                    // Ignore `LandUnit`s in `Transport` on `Water`
-                    tileUnit.tile().terrain() instanceof Land &&
-                    tileUnit.player() !== unit.player()
-                )
-              ) &&
-              to.getNeighbours().some((tile: Tile) =>
-                unitRegistry.getByTile(tile).some(
-                  (tileUnit: Unit): boolean =>
-                    isA(tileUnit, LandUnit) &&
-                    // Ignore `LandUnit`s in `Transport` on `Water`
-                    tileUnit.tile().terrain() instanceof Land &&
-                    tileUnit.player() !== unit.player()
-                )
-              )
-            )
-        ),
-        new Criterion(
+          (unit: Unit, to: Tile): boolean =>
+            unit.hasTrait(IgnoresZoneOfControl),
+        ],
+        // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
+        exerts: (tileUnit: Unit, unit: Unit): boolean =>
+          isA(tileUnit, LandUnit) &&
+          // Ignore `LandUnit`s in `Transport` on `Water`
+          tileUnit.tile().terrain() instanceof Land &&
+          tileUnit.player() !== unit.player(),
+        exemptMoves: [
           // ...unless you're moving to a `Tile` that already has one of your `Unit`s on...
           (unit: Unit, to: Tile, from: Tile): boolean =>
             unitRegistry
               .getByTile(to)
               .filter(
                 (tileUnit: Unit): boolean => tileUnit.player() === unit.player()
-              ).length > 0
-        ),
-        new Criterion((unit: Unit, to: Tile, from: Tile): boolean =>
+              ).length > 0,
           // ...or to, or from, one of your `City`s.
-          [from, to]
-            .map((tile) => cityRegistry.getByTile(tile))
-            .some(
-              (city) => city instanceof City && city.player() === unit.player()
-            )
-        )
-      ),
+          (unit: Unit, to: Tile, from: Tile): boolean =>
+            [from, to]
+              .map((tile) => cityRegistry.getByTile(tile))
+              .some(
+                (city) =>
+                  city instanceof City && city.player() === unit.player()
+              ),
+        ],
+      }),
       new Criterion((unit: Unit, to: Tile): boolean => {
         const city = cityRegistry.getByTile(to);
 
