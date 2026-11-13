@@ -183,7 +183,7 @@ describe('Action', (): void => {
     ...built(tileImprovementRegistry),
     ...movementCost(tileImprovementRegistry),
     // What a conversion leaves on the square: civ1-world's `TerrainChanged` rules, which `Tile.setTerrain` processes.
-    ...terrainChanged(ruleRegistry, terrainFeatureRegistry),
+    ...terrainChanged(terrainFeatureRegistry),
     ...unitYield(),
     ...unitCreated(unitRegistry),
     ...validateMove()
