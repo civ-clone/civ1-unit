@@ -2,6 +2,7 @@ import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import ExpectedMovementCost from '@civ-clone/core-world-path/Rules/ExpectedMovementCost';
 import Unit from '@civ-clone/core-unit/Unit';
+import { expectedCost } from '@civ-clone/base-unit-action-rules/lib/moveShortfall';
 import { shortfallFactor } from './validateMove';
 
 export const getRules: () => ExpectedMovementCost[] = () => [
@@ -17,7 +18,7 @@ export const getRules: () => ExpectedMovementCost[] = () => [
         movement > 0
     ),
     new Effect((unit: Unit, movementCost: number, movement: number): number =>
-      Math.max(movement, movementCost * shortfallFactor)
+      expectedCost(movement, movementCost, shortfallFactor)
     )
   ),
 ];
