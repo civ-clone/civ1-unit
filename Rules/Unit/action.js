@@ -14,7 +14,6 @@ const LandMassRegistry_1 = require("@civ-clone/core-world/LandMassRegistry");
 const PlayerResearchRegistry_1 = require("@civ-clone/core-science/PlayerResearchRegistry");
 const PlayerTreasuryRegistry_1 = require("@civ-clone/core-treasury/PlayerTreasuryRegistry");
 const diplomatCosts_1 = require("../../lib/diplomatCosts");
-const Embassy_1 = require("@civ-clone/base-unit-action-establish-embassy/Embassy");
 const AdvanceStolen_1 = require("@civ-clone/base-unit-action-steal-technology/AdvanceStolen");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const diplomat_1 = require("./diplomat");
@@ -49,23 +48,23 @@ const UnitImprovements_1 = require("../../UnitImprovements");
 const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
-const DiplomaticMissions_1 = require("@civ-clone/base-unit-trait-diplomatic-missions/DiplomaticMissions");
 const Fortifies_1 = require("@civ-clone/base-unit-trait-fortifies/Fortifies");
 const FoundsCities_1 = require("@civ-clone/base-unit-trait-founds-cities/FoundsCities");
 const IgnoresZoneOfControl_1 = require("@civ-clone/base-unit-trait-ignores-zone-of-control/IgnoresZoneOfControl");
 const Terraforms_1 = require("@civ-clone/base-unit-trait-terraforms/Terraforms");
-const TradeMissions_1 = require("@civ-clone/base-unit-trait-trade-missions/TradeMissions");
 const traits_1 = require("@civ-clone/core-unit/traits");
 const zoneOfControl_1 = require("@civ-clone/base-zone-of-control/lib/zoneOfControl");
 const attack_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/attack");
 const domain_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/domain");
 const treatyGate_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/treatyGate");
 const pillage_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/pillage");
+const diplomat_2 = require("@civ-clone/base-unit-action-rules/lib/criteria/diplomat");
 const move_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/move");
 const landing_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/landing");
 const nuclear_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/nuclear");
 const partners_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/partners");
 const peace_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/peace");
+const tradeRoute_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/tradeRoute");
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance, playerGovernmentRegistry = PlayerGovernmentRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const { landsInCity, landingTransport, canLandAircraft } = (0, landing_1.default)({
@@ -99,60 +98,36 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     // Where a Caravan can set up a trade route (v474.05 `PlayerTurn.cs` L1802-L1890): any foreign city, but not from a
     //  ship; or one of its owner's own cities other than its home, 10 or more away, or on another continent while that
     //  city isn't building a Wonder (civ-clone/web-renderer#57).
-    const canEstablishTradeRoute = (unit, to, from = unit.tile()) => {
-        const home = unit.city(), city = cityRegistry.getByTile(to);
-        if (!unit.hasTrait(TradeMissions_1.default) || home === null || city === null) {
-            return false;
-        }
-        if (city.player() !== unit.player()) {
-            return from.isLand();
-        }
-        if (city === home) {
-            return false;
-        }
-        if ((0, civ1Distance_1.default)(home.tile(), city.tile()) >= 10) {
-            return true;
-        }
-        const building = cityBuildRegistry.getByCity(city).building();
-        return (landMassRegistry.getByTile(home.tile()) !==
-            landMassRegistry.getByTile(city.tile()) &&
-            !(building !== null &&
-                Object.prototype.isPrototypeOf.call(Wonder_1.default, building.item())));
-    };
+    const { tradeRouteCriteria } = (0, tradeRoute_1.default)({ cityRegistry }, {
+        qualifies: (home, city) => {
+            if ((0, civ1Distance_1.default)(home.tile(), city.tile()) >= 10) {
+                return true;
+            }
+            const building = cityBuildRegistry.getByCity(city).building();
+            return (landMassRegistry.getByTile(home.tile()) !==
+                landMassRegistry.getByTile(city.tile()) &&
+                !(building !== null &&
+                    Object.prototype.isPrototypeOf.call(Wonder_1.default, building.item())));
+        },
+    });
     // A Diplomat's actions on a rival's city (v474.05 `PlayerTurn.cs` L1802-L1905, civ-clone/web-renderer#58): next to
     //  it, with moves left, and not from a ship. Units in the city don't matter: the Diplomat never enters it.
-    const diplomatCity = (unit, to, from = unit.tile()) => {
-        const city = cityRegistry.getByTile(to);
-        return unit.hasTrait(DiplomaticMissions_1.default) &&
-            from.isLand() &&
-            city !== null &&
-            city.player() !== unit.player()
-            ? city
-            : null;
-    }, diplomatCriteria = [
-        Action_1.isNeighbouringTile,
-        Action_1.hasMovesLeft,
-        new Criterion_1.default((unit, to, from = unit.tile()) => diplomatCity(unit, to, from) !== null),
-    ], 
+    const { diplomatCriteria } = (0, diplomat_2.diplomat)({ cityRegistry }), 
     // Once per city, and only with something to take.
-    canSteal = new Criterion_1.default((unit, to) => {
-        const city = cityRegistry.getByTile(to);
-        return (!interactionRegistry
-            .entries()
-            .some((interaction) => interaction instanceof AdvanceStolen_1.default &&
-            interaction.city() === city) &&
-            (0, diplomat_1.stealableAdvances)(unit.player(), city.player(), playerResearchRegistry)
-                .length > 0);
-    }), 
+    canSteal = (0, diplomat_2.canSteal)({ cityRegistry }, (unit, city) => !interactionRegistry
+        .entries()
+        .some((interaction) => interaction instanceof AdvanceStolen_1.default &&
+        interaction.city() === city) &&
+        (0, diplomat_1.stealableAdvances)(unit.player(), city.player(), playerResearchRegistry)
+            .length > 0), 
     // One embassy with each civilization.
-    hasNoEmbassy = new Criterion_1.default((unit, to) => !interactionRegistry
-        .getByPlayers(unit.player(), cityRegistry.getByTile(to).player())
-        .some((interaction) => interaction instanceof Embassy_1.default &&
-        interaction.holder() === unit.player())), 
+    hasNoEmbassy = (0, diplomat_2.hasNoEmbassy)({ cityRegistry, interactionRegistry }), 
     // A capital can't be incited.
-    canIncite = new Criterion_1.default((unit, to) => !cityImprovementRegistry
-        .getByCity(cityRegistry.getByTile(to))
-        .some((improvement) => improvement instanceof CityImprovements_1.Palace && !improvement.destroyed())), costToIncite = (to) => (0, diplomatCosts_1.inciteCost)(cityRegistry.getByTile(to), cityGrowthRegistry, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry);
+    canIncite = (0, diplomat_2.canIncite)({ cityRegistry }, (city) => cityImprovementRegistry
+        .getByCity(city)
+        .some((improvement) => improvement instanceof CityImprovements_1.Palace && !improvement.destroyed())), 
+    // A lone foreign unit, not in a city (v474.05 `F22_0000_0639`).
+    bribeUnitCriteria = (0, diplomat_2.bribeUnitCriteria)({ cityRegistry, unitRegistry }), costToIncite = (to) => (0, diplomatCosts_1.inciteCost)(cityRegistry.getByTile(to), cityGrowthRegistry, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry);
     // A treaty partner's land (#287, `treatyPartner`): v474.05 asks about a move onto it from land, unless the unit's
     //  own units are there already (`CheckPlayerTurn.cs` ~L1662-1705), and about pillaging it.
     const partnerOf = (unit, tile) => (0, treatyPartner_1.default)(unit, tile, interactionRegistry, tileImprovementRegistry, workedTileRegistry), 
@@ -222,16 +197,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Action_1.Action('civ1-unit:unit/action/meet-with-leader', ...diplomatCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.MeetWithLeader(from, to, unit, cityRegistry.getByTile(to).player(), ruleRegistry))),
         // A lone foreign unit, not in a city, ships and aircraft included (v474.05 `F22_0000_0639`). There's no peace
         //  check, and the Diplomat keeps its moves.
-        new Action_1.Action('civ1-unit:unit/action/bribe-unit', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit) => unit.hasTrait(DiplomaticMissions_1.default)), new Criterion_1.default((unit, to, from = unit.tile()) => from.isLand()), new Criterion_1.default((unit, to) => cityRegistry.getByTile(to) === null), new Criterion_1.default((unit, to) => {
-            const units = unitRegistry.getByTile(to);
-            return units.length === 1 && units[0].player() !== unit.player();
-        }), new Effect_1.default((unit, to, from = unit.tile()) => {
+        new Action_1.Action('civ1-unit:unit/action/bribe-unit', ...bribeUnitCriteria, new Effect_1.default((unit, to, from = unit.tile()) => {
             const [target] = unitRegistry.getByTile(to);
             return new Actions_1.BribeUnit(from, to, unit, target, (0, diplomatCosts_1.bribeCost)(target, cityImprovementRegistry, playerTreasuryRegistry, ruleRegistry), ruleRegistry);
         })),
         // Before `move`, so the arrow keys and the AI take it first, as Civ1's AI does: it always sets up the route.
         //  `move` is still offered into one of the player's own cities, so the player can choose to keep moving.
-        new Action_1.Action('civ1-unit:unit/action/establish-trade-route', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to, from = unit.tile()) => canEstablishTradeRoute(unit, to, from)), new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishTradeRoute(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
+        new Action_1.Action('civ1-unit:unit/action/establish-trade-route', ...tradeRouteCriteria, new Effect_1.default((unit, to, from = unit.tile()) => new Actions_1.EstablishTradeRoute(from, to, unit, cityRegistry.getByTile(to), ruleRegistry))),
         // Before `move`, so it's the first action for a tile an aircraft can land on: the arrow keys and the AI take the
         // first action. `move` is still offered there, so a GoTo (and the action menu) can fly over instead.
         new Action_1.Action('civ1-unit:unit/action/land-aircraft', Action_1.isNeighbouringTile, Action_1.hasMovesLeft, new Criterion_1.default((unit, to) => canLandAircraft(unit, to)), new Criterion_1.default((unit, to) => unitRegistry
