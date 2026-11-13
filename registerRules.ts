@@ -31,6 +31,7 @@ import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
 import strength from './Rules/Unit/strength';
 import tradeRouteEstablished from './Rules/Unit/tradeRouteEstablished';
+import traits from './Rules/Unit/traits';
 import transferred from './Rules/Unit/transferred';
 import turnEnd from './Rules/Player/turnEnd';
 import unitYield from './Rules/Unit/yield';
@@ -39,6 +40,10 @@ import validateMove from './Rules/Unit/validateMove';
 import { Game, defaultGame } from '@civ-clone/core-game';
 
 export const register = (game: Game): void => {
+  // What each unit type can do (fortify, found cities, ignore zones of control...), first, so that no rule registered
+  //  below can be asked about a unit before its traits are declared.
+  game.rules.register(...traits());
+
   game.rules.register(
     ...action(
       game.cityNames,
