@@ -92,6 +92,7 @@
     "@civ-clone/base-unit-trait-submerged": "^0.1.0",
     "@civ-clone/base-unit-trait-terraforms": "^0.1.0",
     "@civ-clone/base-unit-trait-trade-missions": "^0.1.0",
+    "@civ-clone/base-zone-of-control": "^0.1.0",
     "@civ-clone/civ1-difficulty": "github:civ-clone/civ1-difficulty",
     "@civ-clone/civ1-world": "github:civ-clone/civ1-world",
     "@civ-clone/core-city": "^0.1.19",

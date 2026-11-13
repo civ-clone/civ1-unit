@@ -61,6 +61,7 @@ const Submerged_1 = require("@civ-clone/base-unit-trait-submerged/Submerged");
 const Terraforms_1 = require("@civ-clone/base-unit-trait-terraforms/Terraforms");
 const TradeMissions_1 = require("@civ-clone/base-unit-trait-trade-missions/TradeMissions");
 const traits_1 = require("@civ-clone/core-unit/traits");
+const zoneOfControl_1 = require("@civ-clone/base-zone-of-control/lib/zoneOfControl");
 const isLandUnit = new Criterion_1.default((unit, to, from = unit.tile()) => (0, traits_1.isA)(unit, Types_1.Land)), isNavalUnit = new Criterion_1.default((unit, to, from = unit.tile()) => (0, traits_1.isA)(unit, Types_1.Naval)), tileHasCity = (tile, cityRegistry) => cityRegistry.getByTile(tile) !== null;
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance, playerGovernmentRegistry = PlayerGovernmentRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
@@ -262,28 +263,29 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         new Criterion_1.default((unit) => (0, traits_1.isA)(unit, Types_1.Air))),
         // This is analogous to the original Civilization unit adjacency rules.
         // You may only move your `Unit` to the `Tile` if...
-        new Or_1.default(new Criterion_1.default(
-        // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
-        (unit, to, from) => !(0, traits_1.isA)(unit, Types_1.Land)), new Criterion_1.default(
-        // ...it ignores zones of control (a Diplomat or a Caravan)...
-        (unit, to) => unit.hasTrait(IgnoresZoneOfControl_1.default)), new Criterion_1.default(
-        // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
-        (unit, to, from = unit.tile()) => !(from.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Land) &&
-            // Ignore `LandUnit`s in `Transport` on `Water`
-            tileUnit.tile().terrain() instanceof Types_2.Land &&
-            tileUnit.player() !== unit.player())) &&
-            to.getNeighbours().some((tile) => unitRegistry.getByTile(tile).some((tileUnit) => (0, traits_1.isA)(tileUnit, Types_1.Land) &&
+        (0, zoneOfControl_1.default)(unitRegistry, {
+            exemptMovers: [
+                // ...it's not a `LandUnit` (`Air`, and `Naval` `Unit`s can ignore adjacency `Rule`s)...
+                (unit, to, from) => !(0, traits_1.isA)(unit, Types_1.Land),
+                // ...it ignores zones of control (a Diplomat or a Caravan)...
+                (unit, to) => unit.hasTrait(IgnoresZoneOfControl_1.default),
+            ],
+            // ...there's not an enemy `Unit` adjacent to the current `Tile` and also the target `Tile`...
+            exerts: (tileUnit, unit) => (0, traits_1.isA)(tileUnit, Types_1.Land) &&
                 // Ignore `LandUnit`s in `Transport` on `Water`
                 tileUnit.tile().terrain() instanceof Types_2.Land &&
-                tileUnit.player() !== unit.player())))), new Criterion_1.default(
-        // ...unless you're moving to a `Tile` that already has one of your `Unit`s on...
-        (unit, to, from) => unitRegistry
-            .getByTile(to)
-            .filter((tileUnit) => tileUnit.player() === unit.player()).length > 0), new Criterion_1.default((unit, to, from) => 
-        // ...or to, or from, one of your `City`s.
-        [from, to]
-            .map((tile) => cityRegistry.getByTile(tile))
-            .some((city) => city instanceof City_1.default && city.player() === unit.player()))),
+                tileUnit.player() !== unit.player(),
+            exemptMoves: [
+                // ...unless you're moving to a `Tile` that already has one of your `Unit`s on...
+                (unit, to, from) => unitRegistry
+                    .getByTile(to)
+                    .filter((tileUnit) => tileUnit.player() === unit.player()).length > 0,
+                // ...or to, or from, one of your `City`s.
+                (unit, to, from) => [from, to]
+                    .map((tile) => cityRegistry.getByTile(tile))
+                    .some((city) => city instanceof City_1.default && city.player() === unit.player()),
+            ],
+        }),
         new Criterion_1.default((unit, to) => {
             const city = cityRegistry.getByTile(to);
             if (city === null) {
