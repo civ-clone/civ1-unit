@@ -282,9 +282,10 @@ describe('unit traits', (): void => {
     );
     expect(UnitTypes.filter((UnitType) => isA(UnitType, Worker))).length(1);
     expect(UnitTypes.filter((UnitType) => isA(UnitType, Naval))).length(9);
+    // The five that carry units, and the Submarine, a `NavalTransport` with no hold (base-unit-submarine 0.1.2).
     expect(
       UnitTypes.filter((UnitType) => isA(UnitType, NavalTransport))
-    ).length(5);
+    ).length(6);
     expect(UnitTypes.filter((UnitType) => isA(UnitType, Air))).length(3);
   });
 

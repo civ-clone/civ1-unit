@@ -586,6 +586,8 @@ describe('unit actions', function (): void {
     }
 
     expect(cells).length(28 * 21);
-    expect(count).to.equal(135036);
+    // 135008 since the Submarine became a `NavalTransport` (base-unit-submarine 0.1.2): its cells ask the transport
+    //  criteria further, and offer the same actions (the matrix fixture).
+    expect(count).to.equal(135008);
   });
 });
