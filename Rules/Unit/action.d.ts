@@ -21,6 +21,7 @@ import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
+import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
 export declare const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,
@@ -44,5 +45,5 @@ export declare const getRules: (
   strategyRegistry?: StrategyRegistry,
   engine?: Engine,
   playerGovernmentRegistry?: PlayerGovernmentRegistry
-) => Action[];
+) => (Action | SenateIntervenes)[];
 export default getRules;
