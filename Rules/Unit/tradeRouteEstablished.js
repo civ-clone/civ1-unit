@@ -11,8 +11,9 @@ const Flight_1 = require("@civ-clone/base-science-advance-flight/Flight");
 const Yields_1 = require("@civ-clone/library-city/Yields");
 const Railroad_1 = require("@civ-clone/base-science-advance-railroad/Railroad");
 const Research_1 = require("@civ-clone/core-science/Yields/Research");
-const TradeRoute_1 = require("@civ-clone/core-city/TradeRoute");
 const TradeRouteEstablished_1 = require("@civ-clone/base-unit-action-establish-trade-route/Rules/TradeRouteEstablished");
+const addTradeRoute_1 = require("@civ-clone/base-city-trade-route/lib/addTradeRoute");
+const goods_1 = require("@civ-clone/base-city-trade-route/lib/goods");
 const baseTrade_1 = require("../../lib/baseTrade");
 const civ1Distance_1 = require("@civ-clone/civ1-world/lib/civ1Distance");
 // What the goods are said to be, picked by the unit: v474.05 takes the unit's slot & 7, and the nearest thing here is
@@ -27,11 +28,7 @@ exports.goods = [
     'Salt',
     'Spice',
 ];
-const goodsFor = (unit) => {
-    var _a;
-    const counter = parseInt((_a = unit.id().split('-').pop()) !== null && _a !== void 0 ? _a : '', 36);
-    return exports.goods[Number.isNaN(counter) ? 0 : counter % exports.goods.length];
-};
+const goodsFor = (unit) => (0, goods_1.goodsFor)(unit, exports.goods);
 exports.goodsFor = goodsFor;
 // The number of routes a city holds (v474.05 `City.TradeCityIDs[3]`).
 exports.routesPerCity = 3;
@@ -71,24 +68,12 @@ const getRules = (tradeRouteRegistry = TradeRouteRegistry_1.instance, playerTrea
         //  before any slot is filled (`if (k == c) return 1;`), and `rpath()` is all that fills one
         //  (civ-clone/web-renderer#960).
         new TradeRouteEstablished_1.default('civ1-unit:unit/trade-route-established/route', new Effect_1.default((unit, city) => {
-            const home = unit.city(), player = unit.player(), routes = tradeRouteRegistry.getByCity(home);
-            if (routes.some((route) => route.to() === city)) {
-                return;
-            }
-            if (routes.length < exports.routesPerCity) {
-                tradeRouteRegistry.register(new TradeRoute_1.default(home, city));
-                return;
-            }
-            const newWorth = worth(player, city), [lowest, lowestWorth] = routes
-                .map((route) => [
-                route,
-                worth(player, route.to()),
-            ])
-                .reduce((lowest, candidate) => candidate[1] < lowest[1] ? candidate : lowest);
-            if (lowestWorth < newWorth) {
-                lowest.setTo(city);
-                tradeRouteRegistry.reindex(lowest);
-            }
+            const player = unit.player();
+            (0, addTradeRoute_1.addTradeRoute)(unit.city(), city, {
+                limit: () => exports.routesPerCity,
+                replace: (0, addTradeRoute_1.replaceWeakest)((holder, partner) => worth(player, partner)),
+                tradeRouteRegistry,
+            });
         })),
     ];
 };
