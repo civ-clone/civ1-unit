@@ -538,7 +538,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         },
     ], {
         ruleRegistry,
-        hasSenate: (player) => (0, senate_2.default)(player, null, { reason: 'break-treaty' }, ruleRegistry),
+        // The treaty partner is the owner of the city or units on the target square, or else the player whose worked
+        //  land it is (`treatyPartner`). Civ1's Senate rule doesn't read it.
+        hasSenate: (player, other, unit, to) => (0, senate_2.default)(player, other !== null && other !== void 0 ? other : (0, treatyPartner_1.default)(unit, to, interactionRegistry, tileImprovementRegistry, workedTileRegistry), { reason: 'break-treaty' }, ruleRegistry),
+        cityRegistry,
+        unitRegistry,
     });
     return [
         ...actions,

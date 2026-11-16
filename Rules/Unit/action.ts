@@ -1276,13 +1276,29 @@ export const getRules = (
     ],
     {
       ruleRegistry,
-      hasSenate: (player: Player): boolean =>
+      // The treaty partner is the owner of the city or units on the target square, or else the player whose worked
+      //  land it is (`treatyPartner`). Civ1's Senate rule doesn't read it.
+      hasSenate: (
+        player: Player,
+        other: Player | null,
+        unit: Unit,
+        to: Tile
+      ): boolean =>
         senateIntervenes(
           player,
-          null,
+          other ??
+            treatyPartner(
+              unit,
+              to,
+              interactionRegistry,
+              tileImprovementRegistry,
+              workedTileRegistry
+            ),
           { reason: 'break-treaty' },
           ruleRegistry
         ),
+      cityRegistry,
+      unitRegistry,
     }
   );
 

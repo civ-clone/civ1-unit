@@ -535,6 +535,31 @@ describe('treaties', (): void => {
       expect(find(unit, land, Overruled).action()).instanceOf(SneakMove);
     });
 
+    it('should be told the treaty partner, on its worked land or where its units stand', (): void => {
+      governed(Monarchy);
+
+      const asked: (Player | null)[] = [],
+        unit = addUnit(Warrior),
+        target = world.get(8, 5);
+
+      addUnit(Warrior, partner, target);
+      ruleRegistry.register(
+        new SenateIntervenes(
+          new Effect((asker: Player, other: Player | null): boolean => {
+            asked.push(other);
+
+            return false;
+          })
+        )
+      );
+
+      actionsOf(unit);
+      actionsOf(unit, target);
+
+      expect(asked.length).to.be.greaterThan(0);
+      expect(asked.every((other) => other === partner)).true;
+    });
+
     it("should leave a Republic free when civ1-unit's rule is replaced", (): void => {
       governed(Republic);
 

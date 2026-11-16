@@ -7,7 +7,10 @@ import {
 import { Land as LandUnit } from '../Types';
 import NonCombatant from '@civ-clone/base-unit-trait-non-combatant/NonCombatant';
 import { InteractionRegistry } from '@civ-clone/core-diplomacy/InteractionRegistry';
-import { Peace } from '@civ-clone/library-diplomacy/Declarations';
+import {
+  TreatyLevel,
+  hasTreatyLevel,
+} from '@civ-clone/base-diplomacy/lib/treatyLevel';
 import Player from '@civ-clone/core-player/Player';
 import Tile from '@civ-clone/core-world/Tile';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
@@ -48,12 +51,12 @@ export const treatyPartner = (
 
   if (
     partner === unit.player() ||
-    !interactionRegistry
-      .getByPlayers(unit.player(), partner)
-      .some(
-        (interaction): interaction is Peace =>
-          interaction instanceof Peace && interaction.active()
-      ) ||
+    !hasTreatyLevel(
+      { interactionRegistry },
+      unit.player(),
+      partner,
+      TreatyLevel.Peace
+    ) ||
     !tileImprovementRegistry
       .getByTile(tile)
       .some((improvement: TileImprovement): boolean =>
