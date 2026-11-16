@@ -38,7 +38,11 @@ const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
 const RoutePlanner_1 = require("@civ-clone/base-unit-action-rules/lib/RoutePlanner");
 const PlayerGovernmentRegistry_1 = require("@civ-clone/core-government/PlayerGovernmentRegistry");
 const routeOrders_1 = require("../../lib/routeOrders");
+const RuleIds_1 = require("../../RuleIds");
+const Effect_1 = require("@civ-clone/core-rule/Effect");
+const SenateIntervenes_1 = require("@civ-clone/base-government-senate/Rules/SenateIntervenes");
 const senate_1 = require("../../lib/senate");
+const senate_2 = require("@civ-clone/base-government-senate/lib/senate");
 const treatyPartner_1 = require("../../lib/treatyPartner");
 const joinableCity_1 = require("@civ-clone/base-unit-action-join-city/joinableCity");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
@@ -171,7 +175,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     //  only without a Senate, and with one its `overruled/` form is offered instead, straight after it, which v474.05
     //  answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a blocked
     //  attack keeps its moves (#133).
-    return (0, actionRules_1.default)('civ1-unit', [
+    const actions = (0, actionRules_1.default)('civ1-unit', [
         // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
         {
             name: 'steal-technology',
@@ -534,8 +538,18 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         },
     ], {
         ruleRegistry,
-        hasSenate: (player) => (0, senate_1.default)(player, playerGovernmentRegistry),
+        // The treaty partner is the owner of the city or units on the target square, or else the player whose worked
+        //  land it is (`treatyPartner`). Civ1's Senate rule doesn't read it.
+        hasSenate: (player, other, unit, to) => (0, senate_2.default)(player, other !== null && other !== void 0 ? other : (0, treatyPartner_1.default)(unit, to, interactionRegistry, tileImprovementRegistry, workedTileRegistry), { reason: 'break-treaty' }, ruleRegistry),
+        cityRegistry,
+        unitRegistry,
     });
+    return [
+        ...actions,
+        // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
+        //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
+        new SenateIntervenes_1.default(RuleIds_1.SENATE_RULE, new Effect_1.default((player) => (0, senate_1.default)(player, playerGovernmentRegistry))),
+    ];
 };
 exports.getRules = getRules;
 exports.default = exports.getRules;

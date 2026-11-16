@@ -15,3 +15,8 @@ export declare const CHIEFTAIN_SETTLERS_RULE =
  */
 export declare const SETTLERS_SHRINK_CITY_RULE =
   'civ1-unit:city/building-complete/settlers-shrink-city';
+/**
+ * A Republic's or Democracy's Senate won't let its player break a treaty (v474.05 `F0_29f3_0c9e`,
+ * civ-clone/web-renderer#133).
+ */
+export declare const SENATE_RULE = 'civ1-unit:player/senate-intervenes';

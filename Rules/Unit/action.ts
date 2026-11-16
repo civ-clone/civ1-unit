@@ -170,7 +170,11 @@ import {
   instance as playerGovernmentRegistryInstance,
 } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import routeOrders from '../../lib/routeOrders';
+import { SENATE_RULE } from '../../RuleIds';
+import Effect from '@civ-clone/core-rule/Effect';
+import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
 import hasSenate from '../../lib/senate';
+import senateIntervenes from '@civ-clone/base-government-senate/lib/senate';
 import treatyPartner from '../../lib/treatyPartner';
 import { joinableCity } from '@civ-clone/base-unit-action-join-city/joinableCity';
 import { Peace } from '@civ-clone/library-diplomacy/Declarations';
@@ -238,7 +242,7 @@ export const getRules = (
   strategyRegistry: StrategyRegistry = strategyRegistryInstance,
   engine: Engine = engineInstance,
   playerGovernmentRegistry: PlayerGovernmentRegistry = playerGovernmentRegistryInstance
-): Action[] => {
+): (Action | SenateIntervenes)[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const { landsInCity, landingTransport, canLandAircraft } = landing({
     cityRegistry,
@@ -443,7 +447,7 @@ export const getRules = (
   //  only without a Senate, and with one its `overruled/` form is offered instead, straight after it, which v474.05
   //  answers with "Overruled by the Senate. Action canceled." A blocked move has spent its cost already; a blocked
   //  attack keeps its moves (#133).
-  return actionRules(
+  const actions: Action[] = actionRules(
     'civ1-unit',
     [
       // First of the Diplomat's: v474.05's computer players only ever steal, and the AI takes the first action offered.
@@ -1272,10 +1276,43 @@ export const getRules = (
     ],
     {
       ruleRegistry,
-      hasSenate: (player: Player): boolean =>
-        hasSenate(player, playerGovernmentRegistry),
+      // The treaty partner is the owner of the city or units on the target square, or else the player whose worked
+      //  land it is (`treatyPartner`). Civ1's Senate rule doesn't read it.
+      hasSenate: (
+        player: Player,
+        other: Player | null,
+        unit: Unit,
+        to: Tile
+      ): boolean =>
+        senateIntervenes(
+          player,
+          other ??
+            treatyPartner(
+              unit,
+              to,
+              interactionRegistry,
+              tileImprovementRegistry,
+              workedTileRegistry
+            ),
+          { reason: 'break-treaty' },
+          ruleRegistry
+        ),
+      cityRegistry,
+      unitRegistry,
     }
   );
+
+  return [
+    ...actions,
+    // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
+    //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
+    new SenateIntervenes(
+      SENATE_RULE,
+      new Effect((player: Player): boolean =>
+        hasSenate(player, playerGovernmentRegistry)
+      )
+    ),
+  ];
 };
 
 export default getRules;

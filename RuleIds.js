@@ -2,7 +2,7 @@
 // The ids of this package's rules that another package is expected to name (civ-clone/web-renderer#954): a set that
 //  supersedes one, or a host that switches or describes it. Imported, a rename breaks the other package's build.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SETTLERS_SHRINK_CITY_RULE = exports.CHIEFTAIN_SETTLERS_RULE = exports.START_AFRESH_RULE = exports.HALVE_CITIES_RULE = exports.STEAL_RULE = void 0;
+exports.SENATE_RULE = exports.SETTLERS_SHRINK_CITY_RULE = exports.CHIEFTAIN_SETTLERS_RULE = exports.START_AFRESH_RULE = exports.HALVE_CITIES_RULE = exports.STEAL_RULE = void 0;
 /** A Diplomat steals the first advance it can, walking v474.05's list of advances from a random one. */
 exports.STEAL_RULE = 'civ1-unit:unit/technology-stolen/steal';
 /** Every city near a nuclear detonation loses half its size, SDI Defense or not. */
@@ -16,4 +16,9 @@ exports.CHIEFTAIN_SETTLERS_RULE = 'civ1-unit:city/hold/chieftain-settlers';
  * player's only city, which keeps its citizen (civ-clone/web-renderer#959).
  */
 exports.SETTLERS_SHRINK_CITY_RULE = 'civ1-unit:city/building-complete/settlers-shrink-city';
+/**
+ * A Republic's or Democracy's Senate won't let its player break a treaty (v474.05 `F0_29f3_0c9e`,
+ * civ-clone/web-renderer#133).
+ */
+exports.SENATE_RULE = 'civ1-unit:player/senate-intervenes';
 //# sourceMappingURL=RuleIds.js.map

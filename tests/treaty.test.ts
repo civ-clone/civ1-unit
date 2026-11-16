@@ -12,7 +12,13 @@ import { Bomber, Caravan, Diplomat, Settlers, Warrior } from '../Units';
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Effect from '@civ-clone/core-rule/Effect';
 import Expired from '@civ-clone/core-diplomacy/Rules/Declaration/Expired';
-import { Democracy, Monarchy } from '@civ-clone/library-government/Governments';
+import {
+  Democracy,
+  Monarchy,
+  Republic,
+} from '@civ-clone/library-government/Governments';
+import { SENATE_RULE } from '../RuleIds';
+import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
 import { Irrigation, Road } from '@civ-clone/civ1-world/TileImprovements';
 import AvailableGovernmentRegistry from '@civ-clone/core-government/AvailableGovernmentRegistry';
 import City from '@civ-clone/core-city/City';
@@ -501,5 +507,73 @@ describe('treaties', (): void => {
     const unit = addUnit(Warrior);
 
     expect(find(unit, world.get(8, 5), Move)).instanceOf(Move);
+  });
+
+  // The Senate is a `SenateIntervenes` rule (base-government-senate), asked through the registry `action()`'s rules
+  //  are registered in, so a rule set can add to it or replace civ1-unit's.
+  describe('the Senate as a rule', (): void => {
+    const governed = (GovernmentType: new () => Government): void => {
+      playerGovernmentRegistry.unregister(
+        ...playerGovernmentRegistry.entries()
+      );
+      setGovernment(GovernmentType);
+    };
+
+    it('should overrule a Monarchy when another rule says its Senate steps in', (): void => {
+      governed(Monarchy);
+      ruleRegistry.register(
+        new SenateIntervenes(
+          new Effect((asker: Player): boolean =>
+            playerGovernmentRegistry.getByPlayer(asker).is(Monarchy)
+          )
+        )
+      );
+
+      const unit = addUnit(Warrior);
+
+      expect(actionsOf(unit)).to.deep.equal(['Overruled', 'AbortMove']);
+      expect(find(unit, land, Overruled).action()).instanceOf(SneakMove);
+    });
+
+    it('should be told the treaty partner, on its worked land or where its units stand', (): void => {
+      governed(Monarchy);
+
+      const asked: (Player | null)[] = [],
+        unit = addUnit(Warrior),
+        target = world.get(8, 5);
+
+      addUnit(Warrior, partner, target);
+      ruleRegistry.register(
+        new SenateIntervenes(
+          new Effect((asker: Player, other: Player | null): boolean => {
+            asked.push(other);
+
+            return false;
+          })
+        )
+      );
+
+      actionsOf(unit);
+      actionsOf(unit, target);
+
+      expect(asked.length).to.be.greaterThan(0);
+      expect(asked.every((other) => other === partner)).true;
+    });
+
+    it("should leave a Republic free when civ1-unit's rule is replaced", (): void => {
+      governed(Republic);
+
+      const unit = addUnit(Warrior);
+
+      expect(actionsOf(unit)).to.deep.equal(['Overruled', 'AbortMove']);
+      expect(ruleRegistry.getById(SENATE_RULE)).instanceOf(SenateIntervenes);
+
+      ruleRegistry.replace(
+        SENATE_RULE,
+        new SenateIntervenes(SENATE_RULE, new Effect((): boolean => false))
+      );
+
+      expect(actionsOf(unit)).to.deep.equal(['SneakMove', 'AbortMove']);
+    });
   });
 });
