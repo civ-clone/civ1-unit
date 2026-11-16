@@ -25,9 +25,13 @@ import { Gold } from '@civ-clone/library-city/Yields';
 import Player from '@civ-clone/core-player/Player';
 import Railroad from '@civ-clone/base-science-advance-railroad/Railroad';
 import Research from '@civ-clone/core-science/Yields/Research';
-import TradeRoute from '@civ-clone/core-city/TradeRoute';
 import TradeRouteEstablished from '@civ-clone/base-unit-action-establish-trade-route/Rules/TradeRouteEstablished';
 import Unit from '@civ-clone/core-unit/Unit';
+import {
+  addTradeRoute,
+  replaceWeakest,
+} from '@civ-clone/base-city-trade-route/lib/addTradeRoute';
+import { goodsFor as baseGoodsFor } from '@civ-clone/base-city-trade-route/lib/goods';
 import baseTrade from '../../lib/baseTrade';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 
@@ -44,11 +48,7 @@ export const goods = [
   'Spice',
 ];
 
-export const goodsFor = (unit: Unit): string => {
-  const counter = parseInt(unit.id().split('-').pop() ?? '', 36);
-
-  return goods[Number.isNaN(counter) ? 0 : counter % goods.length];
-};
+export const goodsFor = (unit: Unit): string => baseGoodsFor(unit, goods);
 
 // The number of routes a city holds (v474.05 `City.TradeCityIDs[3]`).
 export const routesPerCity = 3;
@@ -130,34 +130,15 @@ export const getRules: (
     new TradeRouteEstablished(
       'civ1-unit:unit/trade-route-established/route',
       new Effect((unit: Unit, city: City): void => {
-        const home = unit.city()!,
-          player = unit.player(),
-          routes = tradeRouteRegistry.getByCity(home);
+        const player = unit.player();
 
-        if (routes.some((route: TradeRoute): boolean => route.to() === city)) {
-          return;
-        }
-
-        if (routes.length < routesPerCity) {
-          tradeRouteRegistry.register(new TradeRoute(home, city));
-
-          return;
-        }
-
-        const newWorth = worth(player, city),
-          [lowest, lowestWorth] = routes
-            .map((route: TradeRoute): [TradeRoute, number] => [
-              route,
-              worth(player, route.to()),
-            ])
-            .reduce((lowest, candidate) =>
-              candidate[1] < lowest[1] ? candidate : lowest
-            );
-
-        if (lowestWorth < newWorth) {
-          lowest.setTo(city);
-          tradeRouteRegistry.reindex(lowest);
-        }
+        addTradeRoute(unit.city()!, city, {
+          limit: (): number => routesPerCity,
+          replace: replaceWeakest((holder: City, partner: City): number =>
+            worth(player, partner)
+          ),
+          tradeRouteRegistry,
+        });
       })
     ),
   ];

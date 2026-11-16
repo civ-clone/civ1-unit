@@ -2,9 +2,9 @@ import City from '@civ-clone/core-city/City';
 /**
  * Whether a `baseTrade` is being worked out. A city's trade-route yield reads its partners' `baseTrade`, which works out
  * their yields, so the route rule checks this and leaves its own routes out. Two cities routed to each other would
- * otherwise recurse.
+ * otherwise recurse. This is base-city-trade-route's own flag, re-exported so every caller shares one.
  */
-export declare const computingBaseTrade: () => boolean;
+export { computingBaseTrade } from '@civ-clone/base-city-trade-route/lib/baseTrade';
 /**
  * Civ1's `City.BaseTrade` (v474.05 `CityWorker.cs` L1270): the city's trade after corruption, leaving out what its
  * trade routes add. Civ1 reads the value stored at the city's last update; this works it out now.
