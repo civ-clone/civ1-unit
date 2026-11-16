@@ -14,9 +14,13 @@ import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
+import baseDistanceFromPalace, {
+  palaceTiles,
+} from '@civ-clone/base-unit-agent/lib/distanceFromPalace';
 import BuildItem from '@civ-clone/core-city-build/BuildItem';
 import Buildable from '@civ-clone/core-city-build/Buildable';
 import City from '@civ-clone/core-city/City';
+import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import FoundsCities from '@civ-clone/base-unit-trait-founds-cities/FoundsCities';
 import CivilDisorder from '@civ-clone/core-city-happiness/Rules/CivilDisorder';
 import { Gold } from '@civ-clone/library-city/Yields';
@@ -27,22 +31,23 @@ import Unit from '@civ-clone/core-unit/Unit';
 import civ1Distance from '@civ-clone/civ1-world/lib/civ1Distance';
 
 // The distance v474.05 prices a Diplomat's work by: to the nearest city of `player`'s with a Palace, capped at 16, and
-//  16 when it has none (`DiplomatActions`; Rome on 640K a Day says 32 for no Palace, the code says 16).
+//  16 when it has none (`DiplomatActions`; Rome on 640K a Day says 32 for no Palace, the code says 16). Measured from
+//  the Palace's city, by `civ1Distance` (base-unit-agent's `distanceFromPalace`, with Civ1's measure and cap).
 export const distanceFromPalace = (
   player: Player,
   tile: Tile,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance
 ): number =>
-  Math.min(
-    16,
-    ...cityImprovementRegistry
-      .filter(
-        (cityImprovement) =>
-          cityImprovement instanceof Palace &&
-          !cityImprovement.destroyed() &&
-          cityImprovement.city().player() === player
-      )
-      .map((palace) => civ1Distance(palace.city().tile(), tile))
+  baseDistanceFromPalace(
+    palaceTiles(
+      player,
+      (cityImprovement: CityImprovement): boolean =>
+        cityImprovement instanceof Palace,
+      cityImprovementRegistry
+    ),
+    tile,
+    civ1Distance,
+    16
   );
 
 // A player with no gold treasury (one a test made, say) has no gold, rather than making listing the actions throw.
