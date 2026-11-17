@@ -79,6 +79,7 @@
     "@civ-clone/base-unit-action-land-aircraft": "^0.1.0",
     "@civ-clone/base-unit-action-meet-with-leader": "^0.1.0",
     "@civ-clone/base-unit-action-nuclear-attack": "^0.1.0",
+    "@civ-clone/base-unit-action-pillage": "^0.1.7",
     "@civ-clone/base-unit-action-sleep": "^0.1.0",
     "@civ-clone/base-unit-action-steal-technology": "^0.1.1",
     "@civ-clone/base-unit-agent": "^0.1.0",

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = void 0;
+exports.getRules = exports.pillageable = exports.pillageOrder = void 0;
 const Action_1 = require("@civ-clone/core-unit/Rules/Action");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
@@ -65,6 +65,19 @@ const worker_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/worker"
 const orders_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/orders");
 const transport_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/transport");
 const actionRules_1 = require("@civ-clone/base-unit-action-rules/lib/actionRules");
+/**
+ * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
+ *  Irrigation or a Mine, else the Railroad, else the Road. Nothing else on a square, such as Pollution, is pillaged.
+ */
+exports.pillageOrder = [
+    TileImprovements_1.Irrigation,
+    TileImprovements_1.Mine,
+    TileImprovements_1.Railroad,
+    TileImprovements_1.Road,
+];
+/** Whether `improvement` can be pillaged: pillage is offered for it, and takes it. */
+const pillageable = (improvement) => exports.pillageOrder.some((Improvement) => improvement instanceof Improvement);
+exports.pillageable = pillageable;
 const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, terrainFeatureRegistry = TerrainFeatureRegistry_1.instance, transportRegistry = TransportRegistry_1.instance, turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, workedTileRegistry = WorkedTileRegistry_1.instance, pathFinderRegistry = PathFinderRegistry_1.instance, strategyNoteRegistry = StrategyNoteRegistry_1.instance, cityGrowthRegistry = CityGrowthRegistry_1.instance, landMassRegistry = LandMassRegistry_1.instance, cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, strategyRegistry = StrategyRegistry_1.instance, engine = Engine_1.instance, playerGovernmentRegistry = PlayerGovernmentRegistry_1.instance) => {
     // Where an aircraft moving onto `to` would land, for `land-aircraft`.
     const { landsInCity, landingTransport, canLandAircraft } = (0, landing_1.default)({
@@ -139,7 +152,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     // Every land unit but Diplomats and Caravans can pillage in Civ1, so Settlers (`Terraforms`) can as well as the
     //  military units (`Fortifies`). Kept in this shape, which the equivalence test checks: in Civ1 it is every land unit
     //  but the `NonCombatant`s.
-    const pillageCriteria = (0, pillage_1.pillageCriteria)({ tileImprovementRegistry }, (improvement) => [TileImprovements_1.Irrigation, TileImprovements_1.Mine, TileImprovements_1.Railroad, TileImprovements_1.Road].some((Improvement) => improvement instanceof Improvement)), 
+    const pillageCriteria = (0, pillage_1.pillageCriteria)({ tileImprovementRegistry }, exports.pillageable), 
     // This is analogous to the original Civilization unit adjacency rules.
     // You may only move your `Unit` to the `Tile` if...
     moveCriteria = (0, move_1.default)({ cityRegistry, unitRegistry }, (0, zoneOfControl_1.default)(unitRegistry, {
