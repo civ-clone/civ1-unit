@@ -49,7 +49,7 @@ import Tile from '@civ-clone/core-world/Tile';
 import { Air, Land, NavalTransport } from '../../Types';
 import { isA } from '@civ-clone/core-unit/traits';
 import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
-import { restow } from '../../lib/sleepAboard';
+import { isLandUnitAtSea, restow } from '../../lib/sleepAboard';
 import Unit from '@civ-clone/core-unit/Unit';
 import { Peace, Vendetta } from '@civ-clone/library-diplomacy/Declarations';
 import Never from '@civ-clone/core-diplomacy/Expiries/Never';
@@ -153,11 +153,12 @@ export const getRules = (
 
           cargo.action(action.forUnit(cargo));
 
-          // A ship that sails on puts every land unit it carries back to sleep, into port as well as at sea, as in
-          //  v474.05 (CONTROL.C, `status |= 1`), so one woken aboard doesn't ask for orders until it's picked out
-          //  again (civ-clone/web-renderer#1031).
+          // A ship that sails on at sea puts every land unit it carries back to sleep, as in v474.05 (CONTROL.C,
+          //  `status |= 1`), so one woken aboard doesn't ask for orders until it's picked out again. Not into port:
+          //  there v474.05 wakes a sleeping unit an enemy comes beside, which `Stowed` never does, so cargo is left as
+          //  it was (civ-clone/web-renderer#1031).
           if (
-            isA(cargo, Land) &&
+            isLandUnitAtSea(cargo) &&
             transportRegistry.hasUnit(cargo) &&
             !(cargo.busy() instanceof Stowed)
           ) {

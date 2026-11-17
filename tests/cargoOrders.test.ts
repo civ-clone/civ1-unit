@@ -1,3 +1,4 @@
+import City from '@civ-clone/core-city/City';
 import { Grassland, Ocean } from '@civ-clone/civ1-world/Terrains';
 import { Carrier, Fighter, Sail, Warrior } from '../Units';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
@@ -15,8 +16,9 @@ import register from '../registerRules';
 // A land unit aboard a ship at sea (civ-clone/web-renderer#1031). In v474.05 it boards asleep, with no moves left, and
 //  nothing near it wakes it while it's at sea. On a later turn it can be picked out of the ship's stack (which wakes it)
 //  and disbanded ('D'), or put back to sleep ('s'), which leaves it asleep as it boarded: `Stowed` here, not `Sleeping`,
-//  which wakes when a foreign unit comes into sight. A ship that sails on puts every land unit it carries back to sleep.
-//  All of this is at sea only: in port v474.05 wakes a sleeping unit when an enemy comes near, as `Sleeping` does.
+//  which wakes when a foreign unit comes into sight. A ship that sails on at sea puts every land unit it carries back to
+//  sleep. All of this is at sea only: in port v474.05 wakes a sleeping unit when an enemy comes near, as `Sleeping`
+//  does, so a ship sailing into port leaves its cargo as it was.
 describe('cargo at sea', (): void => {
   // Grassland in the two westernmost columns, the sea east of them.
   class MapGenerator extends FillGenerator {
@@ -193,6 +195,22 @@ describe('cargo at sea', (): void => {
     expect(game.transports.hasUnit(warrior)).true;
     expect(warrior.busy()).instanceof(Stowed);
     expect(warrior.active()).false;
+  });
+
+  it('should leave awake cargo awake when its ship sails into port, where v474.05 would wake it anyway', async (): Promise<void> => {
+    const { game, nextTurn, player, sail, warrior, world } = await setUp();
+
+    game.cities.register(new City(player, world.get(1, 2), 'Port', game.rules));
+
+    nextTurn();
+
+    warrior.activate();
+
+    sail.action(named(sail, 'Move', world.get(1, 2))!);
+
+    expect(sail.tile()).equal(world.get(1, 2));
+    expect(warrior.tile()).equal(world.get(1, 2));
+    expect(warrior.busy()).null;
   });
 
   it('should put cargo woken by Unload back to sleep if its ship sails on instead', async (): Promise<void> => {
