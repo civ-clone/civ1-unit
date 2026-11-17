@@ -27,17 +27,11 @@ const TechnologyStolen_1 = require("@civ-clone/base-unit-action-steal-technology
 const UnitBribed_1 = require("@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed");
 const Wonder_1 = require("@civ-clone/core-wonder/Wonder");
 const homeCity_1 = require("../../lib/homeCity");
+const pay_1 = require("@civ-clone/base-unit-agent/lib/pay");
 const core_random_1 = require("@civ-clone/core-random");
 const getRules = (cityBuildRegistry = CityBuildRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, cityRegistry = CityRegistry_1.instance, interactionRegistry = InteractionRegistry_1.instance, playerResearchRegistry = PlayerResearchRegistry_1.instance, playerTreasuryRegistry = PlayerTreasuryRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, turn = Turn_1.instance, engine = Engine_1.instance, randomNumberGenerator = core_random_1.instance) => {
-    // Pays `cost` from `unit`'s owner's gold, if it has that much.
-    const pay = (unit, cost) => {
-        const treasury = playerTreasuryRegistry.getByPlayerAndType(unit.player(), Yields_1.Gold);
-        if (treasury.value() < cost) {
-            return false;
-        }
-        treasury.subtract(cost);
-        return true;
-    };
+    // Pays `cost` from `unit`'s owner's gold, if it has that much (base-unit-agent's `pay`).
+    const pay = (unit, cost) => (0, pay_1.default)(unit.player(), cost, Yields_1.Gold, playerTreasuryRegistry);
     return [
         // A one-way record: the host has no embassy with the Diplomat's civilization unless it sends a Diplomat of its own.
         new EmbassyEstablished_1.default('civ1-unit:unit/embassy-established/register', new Effect_1.default((unit, city) => {

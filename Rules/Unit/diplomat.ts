@@ -59,6 +59,7 @@ import Unit from '@civ-clone/core-unit/Unit';
 import UnitBribed from '@civ-clone/base-unit-action-bribe-unit/Rules/UnitBribed';
 import Wonder from '@civ-clone/core-wonder/Wonder';
 import homeCity from '../../lib/homeCity';
+import payFrom from '@civ-clone/base-unit-agent/lib/pay';
 import { instance as rngInstance } from '@civ-clone/core-random';
 
 // Moved to `lib/stealAdvance`, shared with `civ1-enhanced`; still exported here for what imports it from here.
@@ -84,21 +85,9 @@ export const getRules = (
   | UnitBribed
   | LeaderMet
 )[] => {
-  // Pays `cost` from `unit`'s owner's gold, if it has that much.
-  const pay = (unit: Unit, cost: number): boolean => {
-    const treasury = playerTreasuryRegistry.getByPlayerAndType(
-      unit.player(),
-      Gold
-    );
-
-    if (treasury.value() < cost) {
-      return false;
-    }
-
-    treasury.subtract(cost);
-
-    return true;
-  };
+  // Pays `cost` from `unit`'s owner's gold, if it has that much (base-unit-agent's `pay`).
+  const pay = (unit: Unit, cost: number): boolean =>
+    payFrom(unit.player(), cost, Gold, playerTreasuryRegistry);
 
   return [
     // A one-way record: the host has no embassy with the Diplomat's civilization unless it sends a Diplomat of its own.
