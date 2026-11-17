@@ -94,8 +94,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Battleship": {
@@ -350,8 +349,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Caravan": {
@@ -438,8 +436,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Carrier": {
@@ -611,8 +608,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Chariot": {
@@ -710,8 +706,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Cruiser": {
@@ -895,8 +890,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Fighter": {
@@ -1153,8 +1147,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Ironclad": {
@@ -1326,8 +1319,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "MechanizedInfantry": {
@@ -1425,8 +1417,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Musketman": {
@@ -1524,8 +1515,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Nuclear": {
@@ -1712,8 +1702,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Sail": {
@@ -1897,8 +1886,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Automate"
+      "NoOrders"
     ]
   },
   "Spearman": {
@@ -1996,8 +1984,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Submarine": {
@@ -2163,8 +2150,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Tank": {
@@ -2262,8 +2248,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   },
   "Transport": {
@@ -2507,8 +2492,7 @@
     ],
     "at sea: own square, on a later turn": [
       "Disband",
-      "NoOrders",
-      "Explore"
+      "NoOrders"
     ]
   }
 }

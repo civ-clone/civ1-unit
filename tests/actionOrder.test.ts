@@ -608,8 +608,9 @@ describe('unit actions', function (): void {
 
     expect(cells).length(28 * 22);
     // 135008 since the Submarine became a `NavalTransport` (base-unit-submarine 0.1.2): its cells ask the transport
-    //  criteria further, and offer the same actions (the matrix fixture). 138689 since cargo at sea is asked about on a
-    //  later turn too (138481), and `sleep` asks whether a unit is `Stowed` cargo (civ-clone/web-renderer#1031).
-    expect(count).to.equal(138689);
+    //  criteria further, and offer the same actions (the matrix fixture). 138873 since cargo at sea is asked about on a
+    //  later turn too (138481), `sleep` asks whether a unit is `Stowed` cargo, and `explore` and `automate` whether it's
+    //  a land unit at sea (civ-clone/web-renderer#1031).
+    expect(count).to.equal(138873);
   });
 });

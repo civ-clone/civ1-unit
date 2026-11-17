@@ -12,9 +12,11 @@ import { createRng } from '@civ-clone/core-random/Rng';
 import { expect } from 'chai';
 import register from '../registerRules';
 
-// The orders a land unit aboard a ship at sea is given on its own square (civ-clone/web-renderer#1031). In v474.05 it
-//  boards asleep, with no moves left, and on a later turn it can be picked out of the ship's stack and disbanded ('D')
-//  or put back to sleep ('s'), which leaves it as it boarded.
+// A land unit aboard a ship at sea (civ-clone/web-renderer#1031). In v474.05 it boards asleep, with no moves left, and
+//  nothing near it wakes it while it's at sea. On a later turn it can be picked out of the ship's stack (which wakes it)
+//  and disbanded ('D'), or put back to sleep ('s'), which leaves it asleep as it boarded: `Stowed` here, not `Sleeping`,
+//  which wakes when a foreign unit comes into sight. A ship that sails on puts every land unit it carries back to sleep.
+//  All of this is at sea only: in port v474.05 wakes a sleeping unit when an enemy comes near, as `Sleeping` does.
 describe('cargo at sea', (): void => {
   // Grassland in the two westernmost columns, the sea east of them.
   class MapGenerator extends FillGenerator {
@@ -97,13 +99,12 @@ describe('cargo at sea', (): void => {
     expect(offered(warrior)).to.deep.equal(['NoOrders']);
   });
 
-  it('should offer cargo with moves Disband, but not Sleep: it is asleep aboard already', async (): Promise<void> => {
+  it('should offer cargo asleep aboard Disband, but not Sleep, which it is already, nor Explore', async (): Promise<void> => {
     const { nextTurn, warrior } = await setUp();
 
     nextTurn();
 
-    expect(offered(warrior)).to.include('Disband');
-    expect(offered(warrior)).not.to.include('Sleep');
+    expect(offered(warrior)).to.deep.equal(['Disband', 'NoOrders']);
   });
 
   it('should take disbanded cargo off its transport', async (): Promise<void> => {
@@ -138,6 +139,77 @@ describe('cargo at sea', (): void => {
     expect(sail.tile()).equal(world.get(3, 2));
     expect(warrior.tile()).equal(sail.tile());
     expect(game.transports.hasUnit(warrior)).true;
+    expect(sail.cargo()).to.deep.equal([warrior]);
+    expect(warrior.busy()).instanceof(Stowed);
+    expect(warrior.active()).false;
+  });
+
+  it('should put cargo picked out of the stack back to sleep as it boarded, so nothing near wakes it', async (): Promise<void> => {
+    const { game, nextTurn, sail, warrior, world } = await setUp(),
+      enemy = new Player(game.rules);
+
+    nextTurn();
+
+    // Picked out of the stack.
+    warrior.activate();
+
+    expect(warrior.busy()).null;
+    expect(warrior.active()).true;
+    expect(offered(warrior)).to.deep.equal(['Sleep', 'Disband', 'NoOrders']);
+
+    warrior.action(named(warrior, 'Sleep')!);
+
+    expect(warrior.busy()).instanceof(Stowed);
+    expect(warrior.active()).false;
+    expect(warrior.moves().value()).equal(0);
+    expect(game.transports.hasUnit(warrior)).true;
+
+    // A foreign ship comes into sight: a `Sleeping` unit would wake at the start of the turn.
+    game.units.register(
+      new Sail(null, enemy, world.get(3, 2), game.rules, game.transports)
+    );
+
+    expect(warrior.busy()!.validate()).false;
+
+    sail.action(named(sail, 'Move', world.get(2, 3))!);
+
+    expect(warrior.tile()).equal(world.get(2, 3));
+    expect(sail.cargo()).to.deep.equal([warrior]);
+    expect(warrior.busy()).instanceof(Stowed);
+  });
+
+  it('should put awake cargo back to sleep when its ship sails on', async (): Promise<void> => {
+    const { game, nextTurn, sail, warrior, world } = await setUp();
+
+    nextTurn();
+
+    warrior.activate();
+
+    expect(warrior.busy()).null;
+
+    sail.action(named(sail, 'Move', world.get(3, 2))!);
+
+    expect(warrior.tile()).equal(world.get(3, 2));
+    expect(game.transports.hasUnit(warrior)).true;
+    expect(warrior.busy()).instanceof(Stowed);
+    expect(warrior.active()).false;
+  });
+
+  it('should put cargo woken by Unload back to sleep if its ship sails on instead', async (): Promise<void> => {
+    const { nextTurn, sail, warrior, world } = await setUp();
+
+    nextTurn();
+
+    sail.action(named(sail, 'Unload')!);
+
+    expect(warrior.busy()).null;
+    expect(warrior.active()).true;
+
+    nextTurn();
+
+    sail.action(named(sail, 'Move', world.get(3, 2))!);
+
+    expect(warrior.tile()).equal(world.get(3, 2));
     expect(sail.cargo()).to.deep.equal([warrior]);
     expect(warrior.busy()).instanceof(Stowed);
     expect(warrior.active()).false;

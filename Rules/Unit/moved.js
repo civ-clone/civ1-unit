@@ -18,7 +18,9 @@ const LostAtSea_1 = require("@civ-clone/core-unit-transport/Rules/LostAtSea");
 const Moved_1 = require("@civ-clone/core-unit/Rules/Moved");
 const Sleeping_1 = require("@civ-clone/base-unit-action-sleep/Rules/Sleeping");
 const Types_1 = require("../../Types");
+const traits_1 = require("@civ-clone/core-unit/traits");
 const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
+const sleepAboard_1 = require("../../lib/sleepAboard");
 const Declarations_1 = require("@civ-clone/library-diplomacy/Declarations");
 const Never_1 = require("@civ-clone/core-diplomacy/Expiries/Never");
 const holds_1 = require("@civ-clone/library-diplomacy/lib/holds");
@@ -73,6 +75,14 @@ turn = Turn_1.instance, interactionRegistry = InteractionRegistry_1.instance, un
                     return;
                 }
                 cargo.action(action.forUnit(cargo));
+                // A ship that sails on puts every land unit it carries back to sleep, into port as well as at sea, as in
+                //  v474.05 (CONTROL.C, `status |= 1`), so one woken aboard doesn't ask for orders until it's picked out
+                //  again (civ-clone/web-renderer#1031).
+                if ((0, traits_1.isA)(cargo, Types_1.Land) &&
+                    transportRegistry.hasUnit(cargo) &&
+                    !(cargo.busy() instanceof Stowed_1.default)) {
+                    (0, sleepAboard_1.restow)(cargo);
+                }
             });
         })),
         // These two come after `move-cargo`, so a unit collected here isn't also sent along the move just made.
