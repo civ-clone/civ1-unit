@@ -219,6 +219,24 @@ import actionRules, {
   ActionRow,
 } from '@civ-clone/base-unit-action-rules/lib/actionRules';
 
+/**
+ * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
+ *  Irrigation or a Mine, else the Railroad, else the Road. Nothing else on a square, such as Pollution, is pillaged.
+ */
+export const pillageOrder: (typeof TileImprovement)[] = [
+  Irrigation,
+  Mine,
+  Railroad,
+  Road,
+];
+
+/** Whether `improvement` can be pillaged: pillage is offered for it, and takes it. */
+export const pillageable = (improvement: TileImprovement): boolean =>
+  pillageOrder.some(
+    (Improvement: typeof TileImprovement): boolean =>
+      improvement instanceof Improvement
+  );
+
 export const getRules = (
   cityNameRegistry: CityNameRegistry = cityNameRegistryInstance,
   cityRegistry: CityRegistry = cityRegistryInstance,
@@ -380,11 +398,7 @@ export const getRules = (
   //  but the `NonCombatant`s.
   const pillageCriteria = buildPillageCriteria(
       { tileImprovementRegistry },
-      (improvement: TileImprovement): boolean =>
-        [Irrigation, Mine, Railroad, Road].some(
-          (Improvement: typeof TileImprovement): boolean =>
-            improvement instanceof Improvement
-        )
+      pillageable
     ),
     // This is analogous to the original Civilization unit adjacency rules.
     // You may only move your `Unit` to the `Tile` if...

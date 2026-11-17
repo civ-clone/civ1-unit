@@ -22,6 +22,14 @@ import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitIm
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
+import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
+/**
+ * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
+ *  Irrigation or a Mine, else the Railroad, else the Road. Nothing else on a square, such as Pollution, is pillaged.
+ */
+export declare const pillageOrder: (typeof TileImprovement)[];
+/** Whether `improvement` can be pillaged: pillage is offered for it, and takes it. */
+export declare const pillageable: (improvement: TileImprovement) => boolean;
 export declare const getRules: (
   cityNameRegistry?: CityNameRegistry,
   cityRegistry?: CityRegistry,

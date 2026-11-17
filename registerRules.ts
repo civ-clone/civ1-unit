@@ -1,4 +1,4 @@
-import action from './Rules/Unit/action';
+import action, { pillageOrder, pillageable } from './Rules/Unit/action';
 import activate from './Rules/Unit/activate';
 import {
   buildRequirements,
@@ -26,6 +26,7 @@ import hold from './Rules/City/hold';
 import impassable from './Rules/Unit/impassable';
 import lostAtSea from './Rules/Unit/lostAtSea';
 import moved from './Rules/Unit/moved';
+import pillageTarget from '@civ-clone/base-unit-action-pillage/lib/pillageTarget';
 import movementCost from './Rules/Unit/movementCost';
 import playerAction from './Rules/Player/action';
 import stowed from './Rules/Unit/stowed';
@@ -145,6 +146,8 @@ export const register = (game: Game): void => {
     ),
     ...movementCost(game.tileImprovements, game.transports),
     ...playerAction(game.units),
+    // What a pillage takes, in v474.05's order, and never what can't be pillaged (civ-clone/web-renderer#1061).
+    pillageTarget('civ1-unit', pillageable, pillageOrder),
     ...stowed(),
     ...diplomat(
       game.cityBuilds,
