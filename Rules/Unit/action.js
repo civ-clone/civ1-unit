@@ -465,6 +465,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 TileImprovements_1.Railroad,
                 Actions_1.BuildRailroad,
                 (0, worker_1.requiresImprovement)({ tileImprovementRegistry }, TileImprovements_1.Road),
+                // Not on a city's square: v474.05 refuses a Railroad there (`CONTROL.C`, the 'r' command, `fz & 1`,
+                //  civ-clone/web-renderer#1029).
+                new Criterion_1.default((unit, to) => !(0, domain_1.tileHasCity)(to, cityRegistry)),
             ],
         ].map(([Improvement, ActionType, ...extra]) => ({
             improvement: Improvement,

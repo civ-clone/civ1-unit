@@ -1089,6 +1089,11 @@ export const getRules = (
             Railroad,
             BuildRailroad,
             requiresImprovement({ tileImprovementRegistry }, Road),
+            // Not on a city's square: v474.05 refuses a Railroad there (`CONTROL.C`, the 'r' command, `fz & 1`,
+            //  civ-clone/web-renderer#1029).
+            new Criterion(
+              (unit: Unit, to: Tile): boolean => !tileHasCity(to, cityRegistry)
+            ),
           ],
         ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]
       ).map(
