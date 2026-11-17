@@ -164,6 +164,7 @@ import Criterion from '@civ-clone/core-rule/Criterion';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
 import RoutePlanner from '@civ-clone/base-unit-action-rules/lib/RoutePlanner';
 import {
   PlayerGovernmentRegistry,
@@ -971,9 +972,20 @@ export const getRules = (
           ),
       },
 
+      // Not a land unit `Stowed` aboard a transport: it's asleep aboard already, as v474.05 leaves a unit that boards
+      //  one (`U.status |= 1`, CONTROL.C), and it goes wherever the transport goes. `Sleep` would swap that for
+      //  `Sleeping`, which wakes when a foreign unit comes into sight, where v474.05 never wakes a land unit at sea
+      //  (`validate_record`, UNITS.C). It can still be disbanded (civ-clone/web-renderer#1031). An aircraft aboard a
+      //  Carrier can sleep: v474.05 wakes it as `Sleeping` does.
       {
         name: 'sleep',
-        criteria: [...sleepCriteria],
+        criteria: [
+          ...sleepCriteria,
+          new Criterion(
+            (unit: Unit): boolean =>
+              !(isA(unit, LandUnit) && unit.busy() instanceof Stowed)
+          ),
+        ],
         effect: (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Sleep(from, to, unit, ruleRegistry, turn),
       },

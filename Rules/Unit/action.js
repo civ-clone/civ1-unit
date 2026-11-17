@@ -35,6 +35,7 @@ const WorkedTileRegistry_1 = require("@civ-clone/core-city/WorkedTileRegistry");
 const City_1 = require("@civ-clone/core-city/City");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
 const Or_1 = require("@civ-clone/core-rule/Criteria/Or");
+const Stowed_1 = require("@civ-clone/base-unit-action-embark/Busy/Stowed");
 const RoutePlanner_1 = require("@civ-clone/base-unit-action-rules/lib/RoutePlanner");
 const PlayerGovernmentRegistry_1 = require("@civ-clone/core-government/PlayerGovernmentRegistry");
 const routeOrders_1 = require("../../lib/routeOrders");
@@ -395,9 +396,17 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             criteria: [...fortifyCriteria],
             effect: (unit, to, from = unit.tile()) => new Actions_1.Fortify(from, to, unit, ruleRegistry, turn, unitImprovementRegistry),
         },
+        // Not a land unit `Stowed` aboard a transport: it's asleep aboard already, as v474.05 leaves a unit that boards
+        //  one (`U.status |= 1`, CONTROL.C), and it goes wherever the transport goes. `Sleep` would swap that for
+        //  `Sleeping`, which wakes when a foreign unit comes into sight, where v474.05 never wakes a land unit at sea
+        //  (`validate_record`, UNITS.C). It can still be disbanded (civ-clone/web-renderer#1031). An aircraft aboard a
+        //  Carrier can sleep: v474.05 wakes it as `Sleeping` does.
         {
             name: 'sleep',
-            criteria: [...sleepCriteria],
+            criteria: [
+                ...sleepCriteria,
+                new Criterion_1.default((unit) => !((0, traits_1.isA)(unit, Types_1.Land) && unit.busy() instanceof Stowed_1.default)),
+            ],
             effect: (unit, to, from = unit.tile()) => new Actions_1.Sleep(from, to, unit, ruleRegistry, turn),
         },
         // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
