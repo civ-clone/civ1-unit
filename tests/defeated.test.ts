@@ -3,13 +3,17 @@ import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
+import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
+import Effect from '@civ-clone/core-rule/Effect';
 import Engine from '@civ-clone/core-engine/Engine';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Grassland } from '@civ-clone/civ1-world/Terrains';
 import Player from '@civ-clone/core-player/Player';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
+import TransportRegistry from '@civ-clone/core-unit-transport/TransportRegistry';
 import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import Unit from '@civ-clone/core-unit/Unit';
+import UnitLossRegistry from '@civ-clone/core-unit/UnitLossRegistry';
 import UnitImprovementRegistry from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import UnitRegistry from '@civ-clone/core-unit/UnitRegistry';
 import World from '@civ-clone/core-world/World';
@@ -201,5 +205,76 @@ describe('defeated', (): void => {
     expect(heard[0][1]).equal(defender);
     expect(heard[0][2]).equal(action);
     expect(heard[0][2]!.unit()).equal(attacker);
+  });
+
+  it('should announce a unit destroyed again only once (civ-clone/web-renderer#1000)', async (): Promise<void> => {
+    const {
+        engine,
+        enemy,
+        stack: [unit],
+      } = await setUp(),
+      announced: (Player | null)[] = [];
+
+    engine.on('unit:destroyed', (destroyed: Unit, by: Player | null) =>
+      announced.push(by)
+    );
+
+    unit.destroy();
+    unit.destroy(enemy);
+
+    expect(unit.destroyed()).true;
+    expect(announced).length(1);
+    expect(announced[0]).null;
+  });
+
+  it('should announce and count a unit destroyed again from inside its own destruction only once (civ-clone/web-renderer#1000)', async (): Promise<void> => {
+    const ruleRegistry = new RuleRegistry(),
+      unitRegistry = new UnitRegistry(),
+      unitLossRegistry = new UnitLossRegistry(),
+      engine = new Engine(),
+      player = new Player(ruleRegistry),
+      enemy = new Player(ruleRegistry),
+      world = new World(new FillGenerator(5, 5, Grassland), ruleRegistry),
+      announced: (Player | null)[] = [];
+    let defeated = false;
+
+    await world.build();
+
+    const unit = new Settlers(null, player, world.get(2, 2), ruleRegistry);
+
+    unitRegistry.register(unit);
+
+    ruleRegistry.register(
+      // As `civ1-player`'s `unit/destroyed/defeat-when-no-cities`, which loads first: the loss defeats the player,
+      //  and the defeat destroys its units, this one among them, again, once (the player is out of the game then).
+      new Destroyed(
+        new Effect((destroyed: Unit, by: Player | null): void => {
+          if (!defeated) {
+            defeated = true;
+            destroyed.destroy(by);
+          }
+        })
+      ),
+      ...destroyed(
+        unitRegistry,
+        new UnitImprovementRegistry(),
+        engine,
+        new TransportRegistry(),
+        unitLossRegistry
+      )
+    );
+
+    engine.on('unit:destroyed', (destroyedUnit: Unit, by: Player | null) =>
+      announced.push(by)
+    );
+
+    unit.destroy(enemy);
+
+    expect(announced).length(1);
+    expect(
+      unitLossRegistry
+        .getByPlayer(player)
+        .map((loss) => [loss.unit().name, loss.count()])
+    ).eql([['Settlers', 1]]);
   });
 });

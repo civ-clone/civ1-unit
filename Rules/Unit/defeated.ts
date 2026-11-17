@@ -28,6 +28,7 @@ import {
 import Criterion from '@civ-clone/core-rule/Criterion';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
 import Effect from '@civ-clone/core-rule/Effect';
+import High from '@civ-clone/core-rule/Priorities/High';
 
 export const getRules: (
   cityRegistry?: CityRegistry,
@@ -44,6 +45,12 @@ export const getRules: (
 ): Defeated[] => [
   new Defeated(
     'civ1-unit:unit/defeated/emit-and-destroy',
+    // High, so the beaten unit is destroyed, and counted as a loss to the winner, before any other package's
+    //  `Defeated` rule runs: before `civ1-city` shrinks, or destroys, the city it defended, as v474.05's `battle`
+    //  (`BATTLE.C`) drops the defender before `vanish` (`CONTROL.C`) removes the city. Shrinking first destroyed a
+    //  defender the city supported, or every unit of a player losing its last city, by no one, so the loss went
+    //  uncounted (civ-clone/web-renderer#1000).
+    new High(),
     // The action is the attack, so a listener can tell the attacker from the defender: `action.unit()` attacked.
     new Effect(emitAndDestroy(engine, ruleRegistry))
   ),
