@@ -164,6 +164,8 @@ import Criterion from '@civ-clone/core-rule/Criterion';
 import DelayedAction from '@civ-clone/core-unit/DelayedAction';
 import { ITransport } from '@civ-clone/core-unit-transport/Transport';
 import Or from '@civ-clone/core-rule/Criteria/Or';
+import Stowed from '@civ-clone/base-unit-action-embark/Busy/Stowed';
+import { Sleep as SleepAboard, isLandUnitAtSea } from '../../lib/sleepAboard';
 import RoutePlanner from '@civ-clone/base-unit-action-rules/lib/RoutePlanner';
 import {
   PlayerGovernmentRegistry,
@@ -454,7 +456,12 @@ export const getRules = (
     { embarkCriteria, disembarkCriteria, unloadCriteria } = transport({
       transportRegistry,
       unitRegistry,
-    });
+    }),
+    // Not a land unit at sea, aboard a transport (civ-clone/web-renderer#1031).
+    notAtSea = new Criterion(
+      (unit: Unit, to: Tile, from: Tile = unit.tile()): boolean =>
+        !isLandUnitAtSea(unit, from)
+    );
 
   // The table, in the order the actions are offered: the AI takes the first action it's offered, and the UI lists them
   //  in this order. A Republic or Democracy can't break a treaty (#133): a row that would (`breaksTreaty`) is offered
@@ -971,11 +978,24 @@ export const getRules = (
           ),
       },
 
+      // Not a land unit `Stowed` aboard a transport: it's asleep aboard already, as v474.05 leaves a unit that boards
+      //  one (`U.status |= 1`, CONTROL.C), and it goes wherever the transport goes. It can still be disbanded. One
+      //  that has been woken at sea sleeps `Stowed` again (`lib/sleepAboard`), as v474.05 never wakes it there, rather
+      //  than `Sleeping`, which wakes when a foreign unit comes into sight (civ-clone/web-renderer#1031). A land unit in
+      //  port and an aircraft aboard a Carrier sleep as any unit does: v474.05 wakes those as `Sleeping` does.
       {
         name: 'sleep',
-        criteria: [...sleepCriteria],
+        criteria: [
+          ...sleepCriteria,
+          new Criterion(
+            (unit: Unit): boolean =>
+              !(isA(unit, LandUnit) && unit.busy() instanceof Stowed)
+          ),
+        ],
         effect: (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
-          new Sleep(from, to, unit, ruleRegistry, turn),
+          isLandUnitAtSea(unit, from)
+            ? new SleepAboard(from, to, unit, ruleRegistry, turn)
+            : new Sleep(from, to, unit, ruleRegistry, turn),
       },
 
       // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
@@ -1260,7 +1280,8 @@ export const getRules = (
         name: 'explore',
         // Land units that fight (and Diplomats and Caravans, which have `Fortifies` too) and ships. Not Settlers, which
         //  have work to do, nor aircraft, which have fuel to mind.
-        criteria: [...exploreCriteria],
+        // Nor a land unit at sea, aboard a transport: it has nothing to explore from there (civ-clone/web-renderer#1031).
+        criteria: [...exploreCriteria, notAtSea],
         effect: (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Explore(
             from,
@@ -1275,7 +1296,8 @@ export const getRules = (
 
       {
         name: 'automate',
-        criteria: [...automateCriteria],
+        // Nor at sea, aboard a transport, as `explore`: it has no work to do from there.
+        criteria: [...automateCriteria, notAtSea],
         effect: (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           new Automate(
             from,

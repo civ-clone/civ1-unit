@@ -235,6 +235,28 @@ const at = (world: World, [x, y]: [number, number]): Tile => world.get(x, y),
 
       prepare(setting);
     },
+  // A transport that can carry a Warrior, at sea, has one aboard, as `Embark` leaves it.
+  aboardAtSea = ({ game, player, from }: Setting): void => {
+    const [transport] = game.units
+      .getByTile(from)
+      .filter((unit) => unit instanceof NavalTransport) as NavalTransport[];
+
+    if (
+      !transport ||
+      !traitsOf(transport, Carries, game.rules).some((carries) =>
+        carries.carries(Warrior, game.rules)
+      )
+    ) {
+      return;
+    }
+
+    const warrior = new Warrior(null, player, from, game.rules);
+
+    expect(transport.stow(warrior)).true;
+
+    warrior.setBusy(new Stowed());
+    warrior.setActive(false);
+  },
   scenarios: Scenario[] = [
     {
       name: 'empty land neighbour',
@@ -356,30 +378,29 @@ const at = (world: World, [x, y]: [number, number]): Tile => world.get(x, y),
       target: ({ world }) => at(world, openSea),
     },
     {
-      // A transport that can carry a Warrior has one aboard.
+      // A transport that can carry a Warrior has one aboard. A land unit has just boarded, so has no moves left.
       name: 'at sea: own square',
       atSea: true,
       target: ({ from }) => from,
-      prepare: ({ game, player, from }) => {
-        const [transport] = game.units
+      prepare: aboardAtSea,
+    },
+    {
+      // As the last, on a later turn: the start of the turn has given the units aboard their moves
+      //  (civ-clone/web-renderer#1031).
+      name: 'at sea: own square, on a later turn',
+      atSea: true,
+      target: ({ from }) => from,
+      prepare: (setting: Setting): void => {
+        const { game, from } = setting;
+
+        aboardAtSea(setting);
+
+        game.units
           .getByTile(from)
-          .filter((unit) => unit instanceof NavalTransport) as NavalTransport[];
-
-        if (
-          !transport ||
-          !traitsOf(transport, Carries, game.rules).some((carries) =>
-            carries.carries(Warrior, game.rules)
-          )
-        ) {
-          return;
-        }
-
-        const warrior = new Warrior(null, player, from, game.rules);
-
-        expect(transport.stow(warrior)).true;
-
-        warrior.setBusy(new Stowed());
-        warrior.setActive(false);
+          .filter((unit: Unit): boolean => game.transports.hasUnit(unit))
+          .forEach((unit: Unit): void =>
+            unit.moves().set(unit.movement().value())
+          );
       },
     },
   ];
@@ -484,7 +505,7 @@ const buildMatrix = async (): Promise<
 };
 
 describe('unit actions', function (): void {
-  // The matrix and the counter build a game for each of their 616 and 588 cells: about a second each here, more on CI.
+  // The matrix and the counter build a game for each of their 644 and 616 cells: about a second each here, more on CI.
   this.timeout(60000);
 
   it('should register the 55 action rules in their order', async (): Promise<void> => {
@@ -497,9 +518,9 @@ describe('unit actions', function (): void {
     );
   });
 
-  it('should be asked of all 28 unit types in 22 scenarios', (): void => {
+  it('should be asked of all 28 unit types in 23 scenarios', (): void => {
     expect(UnitTypes).length(28);
-    expect(scenarios).length(22);
+    expect(scenarios).length(23);
   });
 
   // The offered-actions matrix: the action classes `unit.actions(to, from)` returns, in order, for each unit type and
@@ -585,9 +606,11 @@ describe('unit actions', function (): void {
       Criterion.prototype.validate = validate;
     }
 
-    expect(cells).length(28 * 21);
+    expect(cells).length(28 * 22);
     // 135008 since the Submarine became a `NavalTransport` (base-unit-submarine 0.1.2): its cells ask the transport
-    //  criteria further, and offer the same actions (the matrix fixture).
-    expect(count).to.equal(135008);
+    //  criteria further, and offer the same actions (the matrix fixture). 138873 since cargo at sea is asked about on a
+    //  later turn too (138481), `sleep` asks whether a unit is `Stowed` cargo, and `explore` and `automate` whether it's
+    //  a land unit at sea (civ-clone/web-renderer#1031).
+    expect(count).to.equal(138873);
   });
 });

@@ -91,6 +91,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Battleship": {
@@ -155,6 +159,12 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -234,6 +244,11 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders"
@@ -331,6 +346,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Caravan": {
@@ -414,6 +433,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Carrier": {
@@ -478,6 +501,12 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -576,6 +605,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Chariot": {
@@ -670,6 +703,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Cruiser": {
@@ -734,6 +771,12 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -844,6 +887,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Fighter": {
@@ -922,6 +969,11 @@
       "Sleep",
       "Disband",
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
     ]
   },
   "Frigate": {
@@ -986,6 +1038,13 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -1085,6 +1144,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Ironclad": {
@@ -1149,6 +1212,12 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -1247,6 +1316,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "MechanizedInfantry": {
@@ -1340,6 +1413,10 @@
     ],
     "at sea: water neighbour": [],
     "at sea: own square": [
+      "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
       "NoOrders"
     ]
   },
@@ -1435,6 +1512,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Nuclear": {
@@ -1516,6 +1597,11 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders"
@@ -1613,6 +1699,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Sail": {
@@ -1677,6 +1767,13 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -1786,6 +1883,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Spearman": {
@@ -1880,6 +1981,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Submarine": {
@@ -1938,6 +2043,12 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -2036,6 +2147,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Tank": {
@@ -2130,6 +2245,10 @@
     "at sea: water neighbour": [],
     "at sea: own square": [
       "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
+      "NoOrders"
     ]
   },
   "Transport": {
@@ -2188,6 +2307,13 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -2257,6 +2383,13 @@
       "Move"
     ],
     "at sea: own square": [
+      "Sleep",
+      "Disband",
+      "NoOrders",
+      "Unload",
+      "Explore"
+    ],
+    "at sea: own square, on a later turn": [
       "Sleep",
       "Disband",
       "NoOrders",
@@ -2355,6 +2488,10 @@
     ],
     "at sea: water neighbour": [],
     "at sea: own square": [
+      "NoOrders"
+    ],
+    "at sea: own square, on a later turn": [
+      "Disband",
       "NoOrders"
     ]
   }
