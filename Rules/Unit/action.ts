@@ -172,9 +172,10 @@ import {
   instance as playerGovernmentRegistryInstance,
 } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import routeOrders from '../../lib/routeOrders';
-import { SENATE_RULE } from '../../RuleIds';
+import { NO_RAILROAD_IN_CITIES_RULE, SENATE_RULE } from '../../RuleIds';
 import Effect from '@civ-clone/core-rule/Effect';
 import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
+import BuildOnCitySquare from '../BuildOnCitySquare';
 import hasSenate from '../../lib/senate';
 import senateIntervenes from '@civ-clone/base-government-senate/lib/senate';
 import treatyPartner from '../../lib/treatyPartner';
@@ -262,7 +263,7 @@ export const getRules = (
   strategyRegistry: StrategyRegistry = strategyRegistryInstance,
   engine: Engine = engineInstance,
   playerGovernmentRegistry: PlayerGovernmentRegistry = playerGovernmentRegistryInstance
-): (Action | SenateIntervenes)[] => {
+): (Action | SenateIntervenes | BuildOnCitySquare)[] => {
   // Where an aircraft moving onto `to` would land, for `land-aircraft`.
   const { landsInCity, landingTransport, canLandAircraft } = landing({
     cityRegistry,
@@ -1098,7 +1099,18 @@ export const getRules = (
           ...Criterion[]
         ]): ActionRow => ({
           improvement: Improvement,
-          extra,
+          // On a city's square, only if no `BuildOnCitySquare` rule refuses it: Civ1's refuses a Railroad there
+          //  (`NO_RAILROAD_IN_CITIES_RULE`, civ-clone/web-renderer#1029).
+          extra: [
+            ...extra,
+            new Criterion(
+              (unit: Unit, to: Tile): boolean =>
+                !tileHasCity(to, cityRegistry) ||
+                ruleRegistry
+                  .process(BuildOnCitySquare, to, Improvement, unit.player())
+                  .every((allowed: boolean): boolean => allowed)
+            ),
+          ],
           effect: (
             unit: Unit,
             to: Tile,
@@ -1340,6 +1352,16 @@ export const getRules = (
 
   return [
     ...actions,
+    // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
+    //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
+    new BuildOnCitySquare(
+      NO_RAILROAD_IN_CITIES_RULE,
+      new Criterion(
+        (tile: Tile, Improvement: typeof TileImprovement): boolean =>
+          Improvement === Railroad
+      ),
+      new Effect((): boolean => false)
+    ),
     // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
     //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
     new SenateIntervenes(

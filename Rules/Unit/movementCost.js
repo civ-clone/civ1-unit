@@ -5,6 +5,7 @@ const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
 const TileImprovements_1 = require("@civ-clone/civ1-world/TileImprovements");
+const RuleIds_1 = require("../../RuleIds");
 const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/TileImprovementRegistry");
 const TransportRegistry_1 = require("@civ-clone/core-unit-transport/TransportRegistry");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
@@ -121,15 +122,20 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 1 / 3)),
-    new MovementCost_1.default('civ1-unit:unit/movement-cost/railroad', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
-        .getByTile(action.from())
-        .some((improvement) => improvement instanceof TileImprovements_1.Railroad)), new Criterion_1.default((unit, action) => tileImprovementRegistry
+    // v474.05's railroad (`CONTROL.C`, the move): free from a square with a Railroad to one with a Road, so a train runs
+    //  on into a city, which has no Railroad of its own (civ-clone/web-renderer#1029), and off the end of the line onto a
+    //  road. Leaving a city onto the railroad costs a road move. v474.05 gives this only to the human's units moving by
+    //  hand, not to the computer players' or to a goto: not followed here.
+    new MovementCost_1.default(RuleIds_1.RAILROAD_MOVEMENT_RULE, new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
+    // A Railroad and a Road on the square left (a Railroad is built on a Road, but a save or a rule set might part them),
+    //  and a Road on the square entered.
+    new Criterion_1.default((unit, action) => {
+        const left = tileImprovementRegistry.getByTile(action.from());
+        return (left.some((improvement) => improvement instanceof TileImprovements_1.Railroad) &&
+            left.some((improvement) => improvement instanceof TileImprovements_1.Road));
+    }), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
-        .some((improvement) => improvement instanceof TileImprovements_1.Railroad)), 
-    // TODO: need to also protect against goto etc, like classic Civ does, although I'd rather that was done by evaluating
-    //  the moves and if a loop is detected auto-cancelling - this is pretty primitive.
-    // new Criterion((unit) => ! (unit.player() instanceof AIPlayer)),
-    new Effect_1.default(() => 0)),
+        .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 0)),
     new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
     // `hasUnit`, not `getByUnit` in a `try`: the latter answers "no" by
     // throwing, and this criterion is evaluated for every land unit on every

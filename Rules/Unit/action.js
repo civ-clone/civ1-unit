@@ -43,6 +43,7 @@ const routeOrders_1 = require("../../lib/routeOrders");
 const RuleIds_1 = require("../../RuleIds");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const SenateIntervenes_1 = require("@civ-clone/base-government-senate/Rules/SenateIntervenes");
+const BuildOnCitySquare_1 = require("../BuildOnCitySquare");
 const senate_1 = require("../../lib/senate");
 const senate_2 = require("@civ-clone/base-government-senate/lib/senate");
 const treatyPartner_1 = require("../../lib/treatyPartner");
@@ -468,7 +469,15 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             ],
         ].map(([Improvement, ActionType, ...extra]) => ({
             improvement: Improvement,
-            extra,
+            // On a city's square, only if no `BuildOnCitySquare` rule refuses it: Civ1's refuses a Railroad there
+            //  (`NO_RAILROAD_IN_CITIES_RULE`, civ-clone/web-renderer#1029).
+            extra: [
+                ...extra,
+                new Criterion_1.default((unit, to) => !(0, domain_1.tileHasCity)(to, cityRegistry) ||
+                    ruleRegistry
+                        .process(BuildOnCitySquare_1.default, to, Improvement, unit.player())
+                        .every((allowed) => allowed)),
+            ],
             effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn),
         })),
         // The terrain each conversion changes.
@@ -575,6 +584,9 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     });
     return [
         ...actions,
+        // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
+        //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
+        new BuildOnCitySquare_1.default(RuleIds_1.NO_RAILROAD_IN_CITIES_RULE, new Criterion_1.default((tile, Improvement) => Improvement === TileImprovements_1.Railroad), new Effect_1.default(() => false)),
         // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
         //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
         new SenateIntervenes_1.default(RuleIds_1.SENATE_RULE, new Effect_1.default((player) => (0, senate_1.default)(player, playerGovernmentRegistry))),

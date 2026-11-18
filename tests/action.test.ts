@@ -1,3 +1,4 @@
+import { NO_RAILROAD_IN_CITIES_RULE } from '../RuleIds';
 import {
   Arctic,
   Desert,
@@ -741,6 +742,46 @@ describe('Action', (): void => {
         unitRegistry.unregister(unit);
       })
   );
+
+  // v474.05 refuses a Railroad on a city's square (`CONTROL.C`, the 'r' command, civ-clone/web-renderer#1029).
+  it('should not be possible for Settlers to BuildRailroad on a city square', async (): Promise<void> => {
+    const world = await generateFixedWorld({
+        TerrainType: Grassland,
+      }),
+      unit = await getUnit(getPlayer(), world.get(4, 4), Settlers),
+      road = new Road(unit.tile()),
+      offered = (): boolean =>
+        unit.actions().some((action) => action instanceof BuildRailroad);
+
+    playerResearchRegistry
+      .getByPlayer(unit.player())
+      .addAdvance(RailroadAdvance);
+    tileImprovementRegistry.register(road);
+
+    expect(offered()).true;
+
+    const city = new City(unit.player(), unit.tile(), '');
+
+    cityRegistry.register(city);
+
+    expect(offered()).false;
+
+    // A rule set may allow one, superseding Civ1's rule by its id.
+    ruleRegistry.disableById(NO_RAILROAD_IN_CITIES_RULE);
+
+    expect(offered()).true;
+
+    ruleRegistry.enableById(NO_RAILROAD_IN_CITIES_RULE);
+
+    expect(offered()).false;
+
+    cityRegistry.unregister(city);
+
+    expect(offered()).true;
+
+    tileImprovementRegistry.unregister(road);
+    unitRegistry.unregister(unit);
+  });
 
   (
     [

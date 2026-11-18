@@ -610,7 +610,8 @@ describe('unit actions', function (): void {
     // 135008 since the Submarine became a `NavalTransport` (base-unit-submarine 0.1.2): its cells ask the transport
     //  criteria further, and offer the same actions (the matrix fixture). 138873 since cargo at sea is asked about on a
     //  later turn too (138481), `sleep` asks whether a unit is `Stowed` cargo, and `explore` and `automate` whether it's
-    //  a land unit at sea (civ-clone/web-renderer#1031).
-    expect(count).to.equal(138873);
+    //  a land unit at sea (civ-clone/web-renderer#1031). 138883 since each tile improvement row asks whether it may be
+    //  built on a city's square (`BuildOnCitySquare`, civ-clone/web-renderer#1029).
+    expect(count).to.equal(138883);
   });
 });
