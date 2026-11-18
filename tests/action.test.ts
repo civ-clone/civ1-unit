@@ -1,3 +1,4 @@
+import { NO_RAILROAD_IN_CITIES_RULE } from '../RuleIds';
 import {
   Arctic,
   Desert,
@@ -762,6 +763,15 @@ describe('Action', (): void => {
     const city = new City(unit.player(), unit.tile(), '');
 
     cityRegistry.register(city);
+
+    expect(offered()).false;
+
+    // A rule set may allow one, superseding Civ1's rule by its id.
+    ruleRegistry.disableById(NO_RAILROAD_IN_CITIES_RULE);
+
+    expect(offered()).true;
+
+    ruleRegistry.enableById(NO_RAILROAD_IN_CITIES_RULE);
 
     expect(offered()).false;
 

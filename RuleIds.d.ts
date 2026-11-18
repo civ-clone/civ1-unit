@@ -20,3 +20,16 @@ export declare const SETTLERS_SHRINK_CITY_RULE =
  * civ-clone/web-renderer#133).
  */
 export declare const SENATE_RULE = 'civ1-unit:player/senate-intervenes';
+/**
+ * No Railroad on a city's square: v474.05 refuses one there (`CONTROL.C`, the 'r' command, `fz & 1`,
+ * civ-clone/web-renderer#1029). A `BuildOnCitySquare` rule.
+ */
+export declare const NO_RAILROAD_IN_CITIES_RULE =
+  'civ1-unit:tile-improvement/build-on-city-square/no-railroad';
+/**
+ * A land unit moves for nothing from a square with a Railroad to one with a Road, as v474.05's does (`CONTROL.C`, the
+ * move: the square left has the railroad, both have the road), so a train runs into a city that has none
+ * (civ-clone/web-renderer#1029). A `MovementCost` rule.
+ */
+export declare const RAILROAD_MOVEMENT_RULE =
+  'civ1-unit:unit/movement-cost/railroad';

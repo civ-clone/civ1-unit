@@ -29,6 +29,7 @@ import {
   Sleep,
 } from '../../Actions';
 import { Railroad, Road } from '@civ-clone/civ1-world/TileImprovements';
+import { RAILROAD_MOVEMENT_RULE } from '../../RuleIds';
 import {
   TileImprovementRegistry,
   instance as tileImprovementRegistryInstance,
@@ -209,8 +210,12 @@ export const getRules: (
     new Effect((): number => 1 / 3)
   ),
 
+  // v474.05's railroad (`CONTROL.C`, the move): free from a square with a Railroad to one with a Road, so a train runs
+  //  on into a city, which has no Railroad of its own (civ-clone/web-renderer#1029), and off the end of the line onto a
+  //  road. Leaving a city onto the railroad costs a road move. v474.05 gives this only to the human's units moving by
+  //  hand, not to the computer players' or to a goto: not followed here.
   new MovementCost(
-    'civ1-unit:unit/movement-cost/railroad',
+    RAILROAD_MOVEMENT_RULE,
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
     new Criterion((unit: Unit, action: Action): boolean =>
@@ -225,13 +230,9 @@ export const getRules: (
       tileImprovementRegistry
         .getByTile(action.to())
         .some(
-          (improvement: TileImprovement): boolean =>
-            improvement instanceof Railroad
+          (improvement: TileImprovement): boolean => improvement instanceof Road
         )
     ),
-    // TODO: need to also protect against goto etc, like classic Civ does, although I'd rather that was done by evaluating
-    //  the moves and if a loop is detected auto-cancelling - this is pretty primitive.
-    // new Criterion((unit) => ! (unit.player() instanceof AIPlayer)),
     new Effect((): number => 0)
   ),
 

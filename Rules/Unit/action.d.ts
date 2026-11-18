@@ -22,6 +22,7 @@ import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitIm
 import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
+import BuildOnCitySquare from '../BuildOnCitySquare';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 /**
  * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
@@ -53,5 +54,5 @@ export declare const getRules: (
   strategyRegistry?: StrategyRegistry,
   engine?: Engine,
   playerGovernmentRegistry?: PlayerGovernmentRegistry
-) => (Action | SenateIntervenes)[];
+) => (Action | SenateIntervenes | BuildOnCitySquare)[];
 export default getRules;
