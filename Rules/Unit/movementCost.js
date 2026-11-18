@@ -126,9 +126,14 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     //  on into a city, which has no Railroad of its own (civ-clone/web-renderer#1029), and off the end of the line onto a
     //  road. Leaving a city onto the railroad costs a road move. v474.05 gives this only to the human's units moving by
     //  hand, not to the computer players' or to a goto: not followed here.
-    new MovementCost_1.default(RuleIds_1.RAILROAD_MOVEMENT_RULE, new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), new Criterion_1.default((unit, action) => tileImprovementRegistry
-        .getByTile(action.from())
-        .some((improvement) => improvement instanceof TileImprovements_1.Railroad)), new Criterion_1.default((unit, action) => tileImprovementRegistry
+    new MovementCost_1.default(RuleIds_1.RAILROAD_MOVEMENT_RULE, new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
+    // A Railroad and a Road on the square left (a Railroad is built on a Road, but a save or a rule set might part them),
+    //  and a Road on the square entered.
+    new Criterion_1.default((unit, action) => {
+        const left = tileImprovementRegistry.getByTile(action.from());
+        return (left.some((improvement) => improvement instanceof TileImprovements_1.Railroad) &&
+            left.some((improvement) => improvement instanceof TileImprovements_1.Road));
+    }), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 0)),
     new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 

@@ -94,6 +94,9 @@ describe('unit:movementCost', (): void => {
       ['from a Road to a Railroad', [Road], [Road, Railroad], 1 / 3],
       ['from a Road to a Road', [Road], [Road], 1 / 3],
       ['from a Railroad to nothing', [Road, Railroad], [], 1],
+      // A Railroad is built on a Road, but a save or a rule set might part them: v474.05 needs a Road on both squares
+      //  for a road or railroad move, so this is the terrain's cost.
+      ['from a Railroad with no Road to a Road', [Railroad], [Road], 1],
     ] as [string, (typeof Road)[], (typeof Road)[], number][]
   ).forEach(([description, from, to, cost]): void =>
     it(`should cost ${cost.toFixed(

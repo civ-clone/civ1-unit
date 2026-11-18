@@ -475,7 +475,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 ...extra,
                 new Criterion_1.default((unit, to) => !(0, domain_1.tileHasCity)(to, cityRegistry) ||
                     ruleRegistry
-                        .process(BuildOnCitySquare_1.default, Improvement, to, unit.player())
+                        .process(BuildOnCitySquare_1.default, to, Improvement, unit.player())
                         .every((allowed) => allowed)),
             ],
             effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn),
@@ -584,11 +584,11 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
     });
     return [
         ...actions,
+        // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
+        //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
+        new BuildOnCitySquare_1.default(RuleIds_1.NO_RAILROAD_IN_CITIES_RULE, new Criterion_1.default((tile, Improvement) => Improvement === TileImprovements_1.Railroad), new Effect_1.default(() => false)),
         // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
         //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
-        // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
-        //  civ-clone/web-renderer#1029). Its own rule, so a rule set can allow one.
-        new BuildOnCitySquare_1.default(RuleIds_1.NO_RAILROAD_IN_CITIES_RULE, new Criterion_1.default((Improvement) => Improvement === TileImprovements_1.Railroad), new Effect_1.default(() => false)),
         new SenateIntervenes_1.default(RuleIds_1.SENATE_RULE, new Effect_1.default((player) => (0, senate_1.default)(player, playerGovernmentRegistry))),
     ];
 };

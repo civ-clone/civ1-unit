@@ -1107,7 +1107,7 @@ export const getRules = (
               (unit: Unit, to: Tile): boolean =>
                 !tileHasCity(to, cityRegistry) ||
                 ruleRegistry
-                  .process(BuildOnCitySquare, Improvement, to, unit.player())
+                  .process(BuildOnCitySquare, to, Improvement, unit.player())
                   .every((allowed: boolean): boolean => allowed)
             ),
           ],
@@ -1352,18 +1352,18 @@ export const getRules = (
 
   return [
     ...actions,
-    // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
-    //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
     // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
-    //  civ-clone/web-renderer#1029). Its own rule, so a rule set can allow one.
+    //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
     new BuildOnCitySquare(
       NO_RAILROAD_IN_CITIES_RULE,
       new Criterion(
-        (Improvement: typeof TileImprovement): boolean =>
+        (tile: Tile, Improvement: typeof TileImprovement): boolean =>
           Improvement === Railroad
       ),
       new Effect((): boolean => false)
     ),
+    // The Republic's and Democracy's Senate won't let the player break a treaty (v474.05 `F0_29f3_0c9e`, #133). The
+    //  rows above ask it through `SenateIntervenes`, so another rule set's Senate can answer differently.
     new SenateIntervenes(
       SENATE_RULE,
       new Effect((player: Player): boolean =>

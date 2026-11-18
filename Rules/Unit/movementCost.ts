@@ -218,14 +218,21 @@ export const getRules: (
     RAILROAD_MOVEMENT_RULE,
     new Criterion((unit: Unit, action: UnitAction) => action instanceof Move),
     new Criterion((unit: Unit) => unit instanceof Land),
-    new Criterion((unit: Unit, action: Action): boolean =>
-      tileImprovementRegistry
-        .getByTile(action.from())
-        .some(
+    // A Railroad and a Road on the square left (a Railroad is built on a Road, but a save or a rule set might part them),
+    //  and a Road on the square entered.
+    new Criterion((unit: Unit, action: Action): boolean => {
+      const left = tileImprovementRegistry.getByTile(action.from());
+
+      return (
+        left.some(
           (improvement: TileImprovement): boolean =>
             improvement instanceof Railroad
+        ) &&
+        left.some(
+          (improvement: TileImprovement): boolean => improvement instanceof Road
         )
-    ),
+      );
+    }),
     new Criterion((unit: Unit, action: Action): boolean =>
       tileImprovementRegistry
         .getByTile(action.to())
