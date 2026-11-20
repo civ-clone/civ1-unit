@@ -23,6 +23,8 @@ export declare const ignoreCityWalls: (typeof Unit)[];
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
  * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
+/** City Walls' multiplier, and a fortified unit's, outside walls. */
+export declare const cityWallsMultiplier: number, fortifiedMultiplier: number;
 export declare const defenceMultipliers: (
   defender: Unit,
   attacker: Unit | null,

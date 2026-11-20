@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = exports.defenceMultipliers = exports.ignoreCityWalls = exports.terrainDefence = void 0;
+exports.getRules = exports.defenceMultipliers = exports.fortifiedMultiplier = exports.cityWallsMultiplier = exports.ignoreCityWalls = exports.terrainDefence = void 0;
 const Types_1 = require("../../Types");
 const Units = require("../../Units");
 const CityImprovementRegistry_1 = require("@civ-clone/core-city-improvement/CityImprovementRegistry");
@@ -8,6 +8,7 @@ const CityRegistry_1 = require("@civ-clone/core-city/CityRegistry");
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const UnitImprovementRegistry_1 = require("@civ-clone/core-unit-improvement/UnitImprovementRegistry");
 const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
+const Description_1 = require("@civ-clone/core-rule/Description");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
 const IgnoresFortifications_1 = require("@civ-clone/base-unit-trait-ignores-fortifications/IgnoresFortifications");
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
@@ -48,6 +49,8 @@ exports.ignoreCityWalls = (() => {
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
  * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
+/** City Walls' multiplier, and a fortified unit's, outside walls. */
+exports.cityWallsMultiplier = 3, exports.fortifiedMultiplier = 1.5;
 const defenceMultipliers = (defender, attacker, cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance) => {
     if (defender instanceof Types_1.Air) {
         return [];
@@ -67,12 +70,12 @@ const defenceMultipliers = (defender, attacker, cityRegistry = CityRegistry_1.in
         multipliers.push([TerrainType.name, multiplier]);
     }
     if (cityWalls) {
-        multipliers.push([CityImprovements_1.CityWalls.name, 3]);
+        multipliers.push([CityImprovements_1.CityWalls.name, exports.cityWallsMultiplier]);
     }
     else if (unitImprovementRegistry
         .getByUnit(defender)
         .some((unitImprovement) => unitImprovement instanceof UnitImprovements_1.Fortified)) {
-        multipliers.push([UnitImprovements_1.Fortified.name, 1.5]);
+        multipliers.push([UnitImprovements_1.Fortified.name, exports.fortifiedMultiplier]);
     }
     return multipliers;
 };
@@ -87,6 +90,13 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
             defence.add(current * (multiplier - 1), name);
             current *= multiplier;
         });
+    }), 
+    // What it does, for the Civilopedia (civ-clone/web-renderer#1196).
+    new Description_1.default({
+        type: 'defence_multiplier',
+        subject: CityImprovements_1.CityWalls,
+        value: exports.cityWallsMultiplier,
+        except: IgnoresFortifications_1.default,
     })),
 ];
 exports.getRules = getRules;

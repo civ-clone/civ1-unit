@@ -33,7 +33,9 @@ import {
 } from '../../lib/nuclear';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
 import Detonated from '@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
+import { SdiDefence } from '@civ-clone/library-city/CityImprovements';
 import { HALVE_CITIES_RULE } from '../../RuleIds';
 import High from '@civ-clone/core-rule/Priorities/High';
 import Low from '@civ-clone/core-rule/Priorities/Low';
@@ -100,7 +102,14 @@ export const getRules: (
             ruleRegistry.process(Destroyed, areaUnit, unit.player());
           });
         })
-      )
+      ),
+      // What SDI Defense does, for the Civilopedia (civ-clone/web-renderer#1196).
+      new Description({
+        type: 'protects_from',
+        subject: SdiDefence,
+        event: 'nuclear_attack',
+        what: 'units',
+      })
     ),
 
     new Detonated(
