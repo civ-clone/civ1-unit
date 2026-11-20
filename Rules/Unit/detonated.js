@@ -11,7 +11,9 @@ const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
 const nuclear_1 = require("../../lib/nuclear");
 const Destroyed_1 = require("@civ-clone/core-unit/Rules/Destroyed");
 const Detonated_1 = require("@civ-clone/base-unit-action-nuclear-attack/Rules/Detonated");
+const Description_1 = require("@civ-clone/core-rule/Description");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
+const CityImprovements_1 = require("@civ-clone/library-city/CityImprovements");
 const RuleIds_1 = require("../../RuleIds");
 const High_1 = require("@civ-clone/core-rule/Priorities/High");
 const Low_1 = require("@civ-clone/core-rule/Priorities/Low");
@@ -44,7 +46,14 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
                 }
                 ruleRegistry.process(Destroyed_1.default, areaUnit, unit.player());
             });
-        }))),
+        })), 
+        // What SDI Defense does, for the Civilopedia (civ-clone/web-renderer#1196).
+        new Description_1.default({
+            type: 'protects_from',
+            subject: CityImprovements_1.SdiDefence,
+            event: 'nuclear_attack',
+            what: 'units',
+        })),
         new Detonated_1.default(
         // Every city in the area loses half its size, rounded down. SDI Defense doesn't stop this: in v474.05 it only
         //  spares the units in the city (civd `BATTLE.C`: `atom()` skips the stack of a city with `HAS_SDI`, then

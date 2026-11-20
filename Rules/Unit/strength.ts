@@ -23,6 +23,7 @@ import {
 import { Attack, Defence } from '@civ-clone/core-unit/Yields';
 import CityImprovement from '@civ-clone/core-city-improvement/CityImprovement';
 import { CityWalls } from '@civ-clone/library-city/CityImprovements';
+import Description from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import IgnoresFortifications from '@civ-clone/base-unit-trait-ignores-fortifications/IgnoresFortifications';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
@@ -62,6 +63,10 @@ export const ignoreCityWalls: (typeof Unit)[] = ((): (typeof Unit)[] => {
       hasTrait(UnitType, IgnoresFortifications, declarations)
   );
 })();
+
+/** City Walls' multiplier, and a fortified unit's, outside walls. */
+export const cityWallsMultiplier: number = 3,
+  fortifiedMultiplier: number = 1.5;
 
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
@@ -112,7 +117,7 @@ export const defenceMultipliers = (
   }
 
   if (cityWalls) {
-    multipliers.push([CityWalls.name, 3]);
+    multipliers.push([CityWalls.name, cityWallsMultiplier]);
   } else if (
     unitImprovementRegistry
       .getByUnit(defender)
@@ -121,7 +126,7 @@ export const defenceMultipliers = (
           unitImprovement instanceof Fortified
       )
   ) {
-    multipliers.push([Fortified.name, 1.5]);
+    multipliers.push([Fortified.name, fortifiedMultiplier]);
   }
 
   return multipliers;
@@ -157,7 +162,14 @@ export const getRules = (
           current *= multiplier;
         });
       }
-    )
+    ),
+    // What it does, for the Civilopedia (civ-clone/web-renderer#1196).
+    new Description({
+      type: 'defence_multiplier',
+      subject: CityWalls,
+      value: cityWallsMultiplier,
+      except: IgnoresFortifications,
+    })
   ),
 ];
 

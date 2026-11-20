@@ -12,6 +12,8 @@ export declare const terrainDefence: [typeof Terrain, number][];
  *  This is what civ1-unit's own declarations give, in `Units` order, kept for one release.
  */
 export declare const ignoreCityWalls: (typeof Unit)[];
+/** City Walls' multiplier, and a fortified unit's, outside walls. */
+export declare const cityWallsMultiplier: number, fortifiedMultiplier: number;
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
  * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3) or being
