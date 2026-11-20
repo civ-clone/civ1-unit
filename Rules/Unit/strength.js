@@ -38,6 +38,8 @@ exports.ignoreCityWalls = (() => {
     declarations.register(...(0, traits_2.default)());
     return Object.values(Units).filter((UnitType) => (0, traits_1.hasTrait)(UnitType, IgnoresFortifications_1.default, declarations));
 })();
+/** City Walls' multiplier, and a fortified unit's, outside walls. */
+exports.cityWallsMultiplier = 3, exports.fortifiedMultiplier = 1.5;
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
  * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3) or being
@@ -49,8 +51,6 @@ exports.ignoreCityWalls = (() => {
  * With no `attacker` (a renderer asking what the unit has where it stands), City Walls count, as they do against any
  * attacker but one that `IgnoresFortifications` (Artillery, Bomber).
  */
-/** City Walls' multiplier, and a fortified unit's, outside walls. */
-exports.cityWallsMultiplier = 3, exports.fortifiedMultiplier = 1.5;
 const defenceMultipliers = (defender, attacker, cityRegistry = CityRegistry_1.instance, cityImprovementRegistry = CityImprovementRegistry_1.instance, unitImprovementRegistry = UnitImprovementRegistry_1.instance) => {
     if (defender instanceof Types_1.Air) {
         return [];
