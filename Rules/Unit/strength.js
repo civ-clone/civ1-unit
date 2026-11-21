@@ -91,13 +91,18 @@ const getRules = (cityRegistry = CityRegistry_1.instance, cityImprovementRegistr
             current *= multiplier;
         });
     }), 
-    // What it does, for the Civilopedia (civ-clone/web-renderer#1196).
+    // What it does, for the Civilopedia (civ-clone/web-renderer#1196): City Walls' multiplier, and each terrain's
+    //  (civ-clone/web-renderer#620), which a land unit, or a ship in a walled city, gets.
     new Description_1.default({
         type: 'defence_multiplier',
         subject: CityImprovements_1.CityWalls,
         value: exports.cityWallsMultiplier,
         except: IgnoresFortifications_1.default,
-    })),
+    }, ...exports.terrainDefence.map(([TerrainType, value]) => ({
+        type: 'defence_bonus',
+        subject: TerrainType,
+        value,
+    })))),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

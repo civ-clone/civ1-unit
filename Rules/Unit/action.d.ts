@@ -1,4 +1,10 @@
 import { Action } from '@civ-clone/core-unit/Rules/Action';
+import {
+  ClearForest,
+  ClearJungle,
+  ClearSwamp,
+  PlantForest,
+} from '../../Actions';
 import { CityGrowthRegistry } from '@civ-clone/core-city-growth/CityGrowthRegistry';
 import { CityNameRegistry } from '@civ-clone/core-civilization/CityNameRegistry';
 import { CityBuildRegistry } from '@civ-clone/core-city-build/CityBuildRegistry';
@@ -23,7 +29,30 @@ import { WorkedTileRegistry } from '@civ-clone/core-city/WorkedTileRegistry';
 import { PlayerGovernmentRegistry } from '@civ-clone/core-government/PlayerGovernmentRegistry';
 import SenateIntervenes from '@civ-clone/base-government-senate/Rules/SenateIntervenes';
 import BuildOnCitySquare from '../BuildOnCitySquare';
+import Terrain from '@civ-clone/core-terrain/Terrain';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
+import Description from '@civ-clone/core-rule/Description';
+/** A terrain conversion, and the terrains it changes (to its `result`). */
+export type TerrainConversion = [
+  (
+    | typeof ClearJungle
+    | typeof ClearForest
+    | typeof PlantForest
+    | typeof ClearSwamp
+  ),
+  ...(typeof Terrain)[]
+];
+/** The terrain each conversion changes, in the order its action rules are offered. */
+export declare const terrainConversions: TerrainConversion[];
+/**
+ * What a conversion's action rule says it does, for the Civilopedia (civ-clone/web-renderer#620): on each of its
+ *  terrains, it turns the square into its `result`. Each line names the Settlers' order that does it (Irrigation for
+ *  clearing, Mine for planting a forest; see `terrainJobImprovement`).
+ */
+export declare const terrainConversionDescription: ([
+  ActionType,
+  ...terrains
+]: TerrainConversion) => Description;
 /**
  * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
  *  Irrigation or a Mine, else the Railroad, else the Road. Nothing else on a square, such as Pollution, is pillaged.

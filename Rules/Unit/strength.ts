@@ -163,13 +163,23 @@ export const getRules = (
         });
       }
     ),
-    // What it does, for the Civilopedia (civ-clone/web-renderer#1196).
-    new Description({
-      type: 'defence_multiplier',
-      subject: CityWalls,
-      value: cityWallsMultiplier,
-      except: IgnoresFortifications,
-    })
+    // What it does, for the Civilopedia (civ-clone/web-renderer#1196): City Walls' multiplier, and each terrain's
+    //  (civ-clone/web-renderer#620), which a land unit, or a ship in a walled city, gets.
+    new Description(
+      {
+        type: 'defence_multiplier',
+        subject: CityWalls,
+        value: cityWallsMultiplier,
+        except: IgnoresFortifications,
+      },
+      ...terrainDefence.map(
+        ([TerrainType, value]: [typeof Terrain, number]) => ({
+          type: 'defence_bonus',
+          subject: TerrainType,
+          value,
+        })
+      )
+    )
   ),
 ];
 
