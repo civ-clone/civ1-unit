@@ -220,7 +220,49 @@ import orders from '@civ-clone/base-unit-action-rules/lib/criteria/orders';
 import transport from '@civ-clone/base-unit-action-rules/lib/criteria/transport';
 import actionRules, {
   ActionRow,
+  actionId,
 } from '@civ-clone/base-unit-action-rules/lib/actionRules';
+import Description from '@civ-clone/core-rule/Description';
+import describedRule from '../../lib/describedRule';
+import { terrainJobImprovement } from './movementCost';
+
+/** A terrain conversion, and the terrains it changes (to its `result`). */
+export type TerrainConversion = [
+  (
+    | typeof ClearJungle
+    | typeof ClearForest
+    | typeof PlantForest
+    | typeof ClearSwamp
+  ),
+  ...(typeof Terrain)[]
+];
+
+/** The terrain each conversion changes, in the order its action rules are offered. */
+export const terrainConversions: TerrainConversion[] = [
+  [ClearJungle, Jungle],
+  [ClearForest, Forest],
+  // The mine command: Civ1 turns each of these into Forest.
+  [PlantForest, Plains, Grassland, Jungle, Swamp],
+  [ClearSwamp, Swamp],
+];
+
+/**
+ * What a conversion's action rule says it does, for the Civilopedia (civ-clone/web-renderer#620): on each of its
+ *  terrains, it turns the square into its `result`. Each line names the Settlers' order that does it (Irrigation for
+ *  clearing, Mine for planting a forest; see `terrainJobImprovement`).
+ */
+export const terrainConversionDescription = ([
+  ActionType,
+  ...terrains
+]: TerrainConversion): Description =>
+  new Description(
+    ...terrains.map((TerrainType: typeof Terrain) => ({
+      type: 'converts_to',
+      subject: TerrainType,
+      terrain: ActionType.result,
+      improvement: terrainJobImprovement(ActionType),
+    }))
+  );
 
 /**
  * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
@@ -1120,32 +1162,8 @@ export const getRules = (
       ),
 
       // The terrain each conversion changes.
-      ...(
-        [
-          [ClearJungle, Jungle],
-          [ClearForest, Forest],
-          // The mine command: Civ1 turns each of these into Forest.
-          [PlantForest, Plains, Grassland, Jungle, Swamp],
-          [ClearSwamp, Swamp],
-        ] as [
-          (
-            | typeof ClearJungle
-            | typeof ClearForest
-            | typeof PlantForest
-            | typeof ClearSwamp
-          ),
-          ...(typeof Terrain)[]
-        ][]
-      ).map(
-        ([ActionType, ...terrains]: [
-          (
-            | typeof ClearJungle
-            | typeof ClearForest
-            | typeof PlantForest
-            | typeof ClearSwamp
-          ),
-          ...(typeof Terrain)[]
-        ]): ActionRow => ({
+      ...terrainConversions.map(
+        ([ActionType, ...terrains]: TerrainConversion): ActionRow => ({
           conversion: ActionType,
           terrains,
           effect: (
@@ -1351,7 +1369,18 @@ export const getRules = (
   );
 
   return [
-    ...actions,
+    // The conversions' rules, made by `actionRules`, which takes no description: each as its own rule that says what it
+    //  does, in the same place (civ-clone/web-renderer#620).
+    ...actions.map((rule: Action): Action => {
+      const conversion = terrainConversions.find(
+        ([ActionType]: TerrainConversion): boolean =>
+          rule.id() === actionId('civ1-unit', `terrain/${ActionType.name}`)
+      );
+
+      return conversion === undefined
+        ? rule
+        : describedRule(rule, terrainConversionDescription(conversion));
+    }),
     // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
     //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
     new BuildOnCitySquare(

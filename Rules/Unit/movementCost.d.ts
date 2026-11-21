@@ -1,8 +1,12 @@
 import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import { TransportRegistry } from '@civ-clone/core-unit-transport/TransportRegistry';
+import { EffectDescription } from '@civ-clone/core-rule/Description';
 import MovementCost from '@civ-clone/core-unit/Rules/MovementCost';
 import Terrain from '@civ-clone/core-terrain/Terrain';
+import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
+import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import availableRequirements from '@civ-clone/civ1-world/Requirements';
 import { TerrainJob as BaseTerrainJob } from '@civ-clone/base-terrain-properties/lib/jobTurns';
 export declare const baseTerrainMovementCost: [typeof Terrain, number][];
 /**
@@ -33,6 +37,20 @@ export declare const baseTerrainMovementCost: [typeof Terrain, number][];
  */
 export declare const terrainMovementCost: (terrain: Terrain) => number | null;
 type TerrainJob = BaseTerrainJob<typeof UnitAction>;
+/** A road takes this many times the terrain's movement cost in turns, and a railroad `RAILROAD_JOB_FACTOR` times. */
+export declare const ROAD_JOB_FACTOR: number, RAILROAD_JOB_FACTOR: number;
+/**
+ * The tile improvement each terrain job builds, or whose order it is: in Civ1 clearing a Forest, a Jungle or a Swamp
+ * is the irrigate order on it, and planting a Forest the mine order. For the Civilopedia (civ-clone/web-renderer#620).
+ */
+export declare const terrainJobImprovements: [
+  typeof UnitAction,
+  typeof TileImprovement
+][];
+/** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
+export declare const terrainJobImprovement: (
+  Action: typeof UnitAction
+) => typeof TileImprovement | null;
 /**
  * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
  * v474.05's terrain modification table for irrigating and mining (OpenCivOne
@@ -56,6 +74,27 @@ export declare const terrainJobTurns: (
   Action: typeof UnitAction,
   terrain: Terrain
 ) => number | null;
+/** The unit whose work the terrain jobs are, as the Civilopedia says it. */
+export declare const terrainJobUnit: typeof Unit;
+/**
+ * The advances a Road on `TerrainType` needs, from civ1-world's requirements (Bridge Building on a River), which a
+ *  Railroad, built on a Road, needs too.
+ */
+export declare const roadAdvancesOn: (
+  TerrainType: typeof Terrain,
+  requirements?: typeof availableRequirements
+) => Function[];
+/**
+ * What each terrain job says it takes, for the Civilopedia (civ-clone/web-renderer#620): Civ1's turns (the table's
+ * figure, which counts the turn the order is given on, as Civ1 does) to build the job's improvement on each terrain it
+ * has a time for. A time worked out from the terrain (a road, a railroad) is given for each terrain civ1-world lets
+ * the improvement be built on. A job with no improvement (cleaning up pollution) says nothing. A job converting the
+ * terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
+ */
+export declare const terrainJobDescriptions: (
+  [Action, time]: TerrainJob,
+  requirements?: typeof availableRequirements
+) => EffectDescription[];
 export declare const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   transportRegistry?: TransportRegistry

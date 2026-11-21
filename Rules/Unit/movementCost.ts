@@ -28,7 +28,12 @@ import {
   PlantForest,
   Sleep,
 } from '../../Actions';
-import { Railroad, Road } from '@civ-clone/civ1-world/TileImprovements';
+import {
+  Irrigation,
+  Mine,
+  Railroad,
+  Road,
+} from '@civ-clone/civ1-world/TileImprovements';
 import { RAILROAD_MOVEMENT_RULE } from '../../RuleIds';
 import {
   TileImprovementRegistry,
@@ -40,12 +45,17 @@ import {
 } from '@civ-clone/core-unit-transport/TransportRegistry';
 import Action from '@civ-clone/core-unit/Action';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description, {
+  EffectDescription,
+} from '@civ-clone/core-rule/Description';
 import Effect from '@civ-clone/core-rule/Effect';
 import MovementCost from '@civ-clone/core-unit/Rules/MovementCost';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
+import { Settlers } from '../../Units';
+import availableRequirements from '@civ-clone/civ1-world/Requirements';
 import { cachedTerrainLookup } from '@civ-clone/base-terrain-properties/lib/terrainTable';
 import {
   TerrainJob as BaseTerrainJob,
@@ -100,6 +110,37 @@ export const terrainMovementCost: (terrain: Terrain) => number | null =
 
 type TerrainJob = BaseTerrainJob<typeof UnitAction>;
 
+/** A road takes this many times the terrain's movement cost in turns, and a railroad `RAILROAD_JOB_FACTOR` times. */
+export const ROAD_JOB_FACTOR: number = 2,
+  RAILROAD_JOB_FACTOR: number = 4;
+
+/**
+ * The tile improvement each terrain job builds, or whose order it is: in Civ1 clearing a Forest, a Jungle or a Swamp
+ * is the irrigate order on it, and planting a Forest the mine order. For the Civilopedia (civ-clone/web-renderer#620).
+ */
+export const terrainJobImprovements: [
+  typeof UnitAction,
+  typeof TileImprovement
+][] = [
+  [BuildIrrigation, Irrigation],
+  [BuildMine, Mine],
+  [BuildRoad, Road],
+  [BuildRailroad, Railroad],
+  [ClearForest, Irrigation],
+  [ClearJungle, Irrigation],
+  [ClearSwamp, Irrigation],
+  [PlantForest, Mine],
+];
+
+/** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
+export const terrainJobImprovement = (
+  Action: typeof UnitAction
+): typeof TileImprovement | null =>
+  terrainJobImprovements.find(
+    ([JobAction]: [typeof UnitAction, typeof TileImprovement]): boolean =>
+      JobAction === Action
+  )?.[1] ?? null;
+
 /**
  * How many turns each of a Settlers' terrain jobs takes in Civ1, per terrain:
  * v474.05's terrain modification table for irrigating and mining (OpenCivOne
@@ -128,8 +169,8 @@ export const civ1TerrainJobTurns: TerrainJob[] = [
       [Mountains, 10],
     ],
   ],
-  [BuildRoad, multipleOf(terrainMovementCost, 2)],
-  [BuildRailroad, multipleOf(terrainMovementCost, 4)],
+  [BuildRoad, multipleOf(terrainMovementCost, ROAD_JOB_FACTOR)],
+  [BuildRailroad, multipleOf(terrainMovementCost, RAILROAD_JOB_FACTOR)],
   // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
   //  civ-clone/web-renderer#32).
   [CleanPollution, (): number => 4],
@@ -161,6 +202,85 @@ export const terrainJobTurns = (
   terrain: Terrain
 ): number | null => jobTurns(civ1TerrainJobTurns, Action, terrain);
 
+/** The unit whose work the terrain jobs are, as the Civilopedia says it. */
+export const terrainJobUnit: typeof Unit = Settlers;
+
+/**
+ * The advances a Road on `TerrainType` needs, from civ1-world's requirements (Bridge Building on a River), which a
+ *  Railroad, built on a Road, needs too.
+ */
+export const roadAdvancesOn = (
+  TerrainType: typeof Terrain,
+  requirements: typeof availableRequirements = availableRequirements
+): Function[] =>
+  requirements
+    .filter(
+      (requirement): boolean =>
+        requirement.subject === Road &&
+        (requirement.where ?? []).includes(TerrainType)
+    )
+    .flatMap(
+      (requirement): Function[] =>
+        requirement.targets.filter(
+          (target): boolean => typeof target === 'function'
+        ) as Function[]
+    );
+
+/**
+ * What each terrain job says it takes, for the Civilopedia (civ-clone/web-renderer#620): Civ1's turns (the table's
+ * figure, which counts the turn the order is given on, as Civ1 does) to build the job's improvement on each terrain it
+ * has a time for. A time worked out from the terrain (a road, a railroad) is given for each terrain civ1-world lets
+ * the improvement be built on. A job with no improvement (cleaning up pollution) says nothing. A job converting the
+ * terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
+ */
+export const terrainJobDescriptions = (
+  [Action, time]: TerrainJob,
+  requirements: typeof availableRequirements = availableRequirements
+): EffectDescription[] => {
+  const Improvement = terrainJobImprovement(Action);
+
+  if (Improvement === null) {
+    return [];
+  }
+
+  const rows: [typeof Terrain, number | null][] = Array.isArray(time)
+    ? time
+    : requirements
+        .filter((requirement): boolean => requirement.subject === Improvement)
+        .flatMap(
+          (requirement): (typeof Terrain)[] =>
+            (requirement.where ?? []) as (typeof Terrain)[]
+        )
+        .filter(
+          (TerrainType: typeof Terrain, i: number, terrains): boolean =>
+            terrains.indexOf(TerrainType) === i
+        )
+        .map((TerrainType: typeof Terrain): [typeof Terrain, number | null] => [
+          TerrainType,
+          // Made without its constructor, which would run the game's `Created` rules: the lookup only needs its class.
+          time(Object.create(TerrainType.prototype)),
+        ]);
+
+  return rows
+    .filter(([, turns]): boolean => turns !== null)
+    .map(([TerrainType, turns]): EffectDescription => {
+      const needs =
+        Improvement === Road || Improvement === Railroad
+          ? roadAdvancesOn(TerrainType, requirements)
+          : [];
+
+      return {
+        type: 'improvement_turns',
+        subject: TerrainType,
+        // A conversion declares the terrain it leaves (`result`); a job that builds an improvement doesn't.
+        improvement: 'result' in Action ? Action : Improvement,
+        value: turns as number,
+        unit: terrainJobUnit,
+        with: needs.length > 0 ? needs : undefined,
+      };
+    });
+};
+
 export const getRules: (
   tileImprovementRegistry?: TileImprovementRegistry,
   transportRegistry?: TransportRegistry
@@ -181,6 +301,19 @@ export const getRules: (
     new Effect(
       (unit: Unit, action: Action): number =>
         terrainMovementCost(action.to().terrain()) as number
+    ),
+    // What each terrain costs to move onto, for the Civilopedia (civ-clone/web-renderer#620).
+    new Description(
+      ...baseTerrainMovementCost.map(
+        ([TerrainType, value]: [
+          typeof Terrain,
+          number
+        ]): EffectDescription => ({
+          type: 'movement_cost',
+          subject: TerrainType,
+          value,
+        })
+      )
     )
   ),
   new MovementCost(
@@ -304,23 +437,26 @@ export const getRules: (
 
   // Terrain jobs take the turns in `civ1TerrainJobTurns`, less the turn the
   // order is given on: see `terrainJobTurns`.
-  ...civ1TerrainJobTurns.map(
-    ([Action]: TerrainJob): MovementCost =>
-      new MovementCost(
-        `civ1-unit:unit/movement-cost/action/${Action.name}`,
-        new Criterion(
-          (unit: Unit, action: UnitAction) => action instanceof Action
-        ),
-        new Criterion(
-          (unit: Unit): boolean =>
-            terrainJobTurns(Action, unit.tile().terrain()) !== null
-        ),
-        new Effect(
-          (unit: Unit): number =>
-            terrainJobTurns(Action, unit.tile().terrain()) as number
-        )
-      )
-  ),
+  ...civ1TerrainJobTurns.map(([Action, time]: TerrainJob): MovementCost => {
+    const descriptions = terrainJobDescriptions([Action, time]);
+
+    return new MovementCost(
+      `civ1-unit:unit/movement-cost/action/${Action.name}`,
+      new Criterion(
+        (unit: Unit, action: UnitAction) => action instanceof Action
+      ),
+      new Criterion(
+        (unit: Unit): boolean =>
+          terrainJobTurns(Action, unit.tile().terrain()) !== null
+      ),
+      new Effect(
+        (unit: Unit): number =>
+          terrainJobTurns(Action, unit.tile().terrain()) as number
+      ),
+      // The turns each terrain takes, for the Civilopedia (civ-clone/web-renderer#620).
+      ...(descriptions.length > 0 ? [new Description(...descriptions)] : [])
+    );
+  }),
 ];
 
 export default getRules;

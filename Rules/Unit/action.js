@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = exports.pillageable = exports.pillageOrder = void 0;
+exports.getRules = exports.pillageable = exports.pillageOrder = exports.terrainConversionDescription = exports.terrainConversions = void 0;
 const Action_1 = require("@civ-clone/core-unit/Rules/Action");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
@@ -68,6 +68,29 @@ const worker_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/worker"
 const orders_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/orders");
 const transport_1 = require("@civ-clone/base-unit-action-rules/lib/criteria/transport");
 const actionRules_1 = require("@civ-clone/base-unit-action-rules/lib/actionRules");
+const Description_1 = require("@civ-clone/core-rule/Description");
+const describedRule_1 = require("../../lib/describedRule");
+const movementCost_1 = require("./movementCost");
+/** The terrain each conversion changes, in the order its action rules are offered. */
+exports.terrainConversions = [
+    [Actions_1.ClearJungle, Terrains_1.Jungle],
+    [Actions_1.ClearForest, Terrains_1.Forest],
+    // The mine command: Civ1 turns each of these into Forest.
+    [Actions_1.PlantForest, Terrains_1.Plains, Terrains_1.Grassland, Terrains_1.Jungle, Terrains_1.Swamp],
+    [Actions_1.ClearSwamp, Terrains_1.Swamp],
+];
+/**
+ * What a conversion's action rule says it does, for the Civilopedia (civ-clone/web-renderer#620): on each of its
+ *  terrains, it turns the square into its `result`. Each line names the Settlers' order that does it (Irrigation for
+ *  clearing, Mine for planting a forest; see `terrainJobImprovement`).
+ */
+const terrainConversionDescription = ([ActionType, ...terrains]) => new Description_1.default(...terrains.map((TerrainType) => ({
+    type: 'converts_to',
+    subject: TerrainType,
+    terrain: ActionType.result,
+    improvement: (0, movementCost_1.terrainJobImprovement)(ActionType),
+})));
+exports.terrainConversionDescription = terrainConversionDescription;
 /**
  * What a pillage takes, in the order v474.05 takes it (`CONTROL.C`, the 'P' command, civ-clone/web-renderer#1061):
  *  Irrigation or a Mine, else the Railroad, else the Road. Nothing else on a square, such as Pollution, is pillaged.
@@ -481,13 +504,7 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
             effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, turn),
         })),
         // The terrain each conversion changes.
-        ...[
-            [Actions_1.ClearJungle, Terrains_1.Jungle],
-            [Actions_1.ClearForest, Terrains_1.Forest],
-            // The mine command: Civ1 turns each of these into Forest.
-            [Actions_1.PlantForest, Terrains_1.Plains, Terrains_1.Grassland, Terrains_1.Jungle, Terrains_1.Swamp],
-            [Actions_1.ClearSwamp, Terrains_1.Swamp],
-        ].map(([ActionType, ...terrains]) => ({
+        ...exports.terrainConversions.map(([ActionType, ...terrains]) => ({
             conversion: ActionType,
             terrains,
             effect: (unit, to, from = unit.tile()) => new ActionType(from, to, unit, ruleRegistry, terrainFeatureRegistry, turn),
@@ -583,7 +600,14 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
         unitRegistry,
     });
     return [
-        ...actions,
+        // The conversions' rules, made by `actionRules`, which takes no description: each as its own rule that says what it
+        //  does, in the same place (civ-clone/web-renderer#620).
+        ...actions.map((rule) => {
+            const conversion = exports.terrainConversions.find(([ActionType]) => rule.id() === (0, actionRules_1.actionId)('civ1-unit', `terrain/${ActionType.name}`));
+            return conversion === undefined
+                ? rule
+                : (0, describedRule_1.default)(rule, (0, exports.terrainConversionDescription)(conversion));
+        }),
         // Civ1 builds no Railroad on a city's square (v474.05 `CONTROL.C`, the 'r' command, `fz & 1`,
         //  civ-clone/web-renderer#1029). Its own rule, so a rule set can supersede it to allow one.
         new BuildOnCitySquare_1.default(RuleIds_1.NO_RAILROAD_IN_CITIES_RULE, new Criterion_1.default((tile, Improvement) => Improvement === TileImprovements_1.Railroad), new Effect_1.default(() => false)),
