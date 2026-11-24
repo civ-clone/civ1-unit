@@ -431,10 +431,12 @@ export const getRules: (
         )
     ),
     new Effect((): number => 0),
-    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272): free onto a road as well, which
+    //  civ1-enhanced's rule, a railroad on both squares, doesn't give (civ-clone/web-renderer#1339).
     new Description({
       type: 'route_free',
       subject: Railroad,
+      onto: 'road',
     })
   ),
 

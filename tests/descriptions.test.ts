@@ -406,7 +406,7 @@ describe('descriptions', (): void => {
     ]);
     expect(ROAD_SQUARES_PER_MOVE).to.equal(3);
     expect(described(RAILROAD_MOVEMENT_RULE)).to.eql([
-      { type: 'route_free', subject: Railroad },
+      { type: 'route_free', subject: Railroad, onto: 'road' },
     ]);
   });
 
