@@ -148,7 +148,7 @@ export const register = (game: Game): void => {
     ...playerAction(game.units),
     // What a pillage takes, in v474.05's order, and never what can't be pillaged (civ-clone/web-renderer#1061).
     pillageTarget('civ1-unit', pillageable, pillageOrder),
-    ...stowed(),
+    ...stowed(game.rules, game.turn, game.units),
     ...diplomat(
       game.cityBuilds,
       game.cityImprovements,

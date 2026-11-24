@@ -435,8 +435,8 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 new Criterion_1.default((unit) => !((0, traits_1.isA)(unit, Types_1.Land) && unit.busy() instanceof Stowed_1.default)),
             ],
             effect: (unit, to, from = unit.tile()) => (0, sleepAboard_1.isLandUnitAtSea)(unit, from)
-                ? new sleepAboard_1.Sleep(from, to, unit, ruleRegistry, turn)
-                : new Actions_1.Sleep(from, to, unit, ruleRegistry, turn),
+                ? new sleepAboard_1.Sleep(from, to, unit, ruleRegistry, turn, unitRegistry)
+                : new Actions_1.Sleep(from, to, unit, ruleRegistry, turn, unitRegistry),
         },
         // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
         //  (`activate.ts`) decide what that does. Not cargo: a unit `Stowed` aboard a transport is woken by unloading, and
