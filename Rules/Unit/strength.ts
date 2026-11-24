@@ -1,4 +1,4 @@
-import { Air, Naval } from '../../Types';
+import { Air, Land, Naval } from '../../Types';
 import * as Units from '../../Units';
 import {
   CityImprovementRegistry,
@@ -17,6 +17,10 @@ import {
   Swamp,
 } from '@civ-clone/civ1-world/Terrains';
 import {
+  TileImprovementRegistry,
+  instance as tileImprovementRegistryInstance,
+} from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import {
   UnitImprovementRegistry,
   instance as unitImprovementRegistryInstance,
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
@@ -30,6 +34,8 @@ import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import { hasTrait } from '@civ-clone/core-unit/traits';
 import traits from './traits';
 import { Fortified } from '../../UnitImprovements';
+import { Fortress } from '@civ-clone/civ1-world/TileImprovements';
+import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
 import Strength from '@civ-clone/core-unit/Rules/Strength';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Unit from '@civ-clone/core-unit/Unit';
@@ -64,14 +70,16 @@ export const ignoreCityWalls: (typeof Unit)[] = ((): (typeof Unit)[] => {
   );
 })();
 
-/** City Walls' multiplier, and a fortified unit's, outside walls. */
+/** City Walls' multiplier, a Fortress's, and a fortified unit's, outside walls and off a Fortress. */
 export const cityWallsMultiplier: number = 3,
+  fortressMultiplier: number = 2,
   fortifiedMultiplier: number = 1.5;
 
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
- * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3) or being
- * fortified (×1.5); they don't stack. A ship gets no terrain or fortification bonus, except in a city with City Walls,
+ * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3), a Fortress (×2,
+ * against any attacker: `BATTLE.C`, map flag 0x20, civ-clone/web-renderer#388) or being fortified (×1.5); they don't
+ * stack. A ship gets no terrain or fortification bonus, except in a city with City Walls,
  * where it defends like a land unit: v474.05's walls branch sets the defence to terrain × defence × 3 for any defender
  * but an aircraft, replacing the ship's flat value. An aircraft gets nothing. The defender's own defence already has
  * Veteran's ×1.5, which v474.05 applies last: the product is the same.
@@ -84,7 +92,8 @@ export const defenceMultipliers = (
   attacker: Unit | null,
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
-  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance
+  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
+  tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance
 ): [string, number][] => {
   if (defender instanceof Air) {
     return [];
@@ -119,6 +128,16 @@ export const defenceMultipliers = (
   if (cityWalls) {
     multipliers.push([CityWalls.name, cityWallsMultiplier]);
   } else if (
+    tileImprovementRegistry
+      .getByTile(tile)
+      .some(
+        (tileImprovement: TileImprovement): boolean =>
+          tileImprovement instanceof Fortress
+      )
+  ) {
+    // A ship is never here: off a walled city it returned above. In place of being fortified.
+    multipliers.push([Fortress.name, fortressMultiplier]);
+  } else if (
     unitImprovementRegistry
       .getByUnit(defender)
       .some(
@@ -138,7 +157,8 @@ export const defenceMultipliers = (
 export const getRules = (
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
-  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance
+  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
+  tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance
 ): Strength[] => [
   new Strength(
     new Effect(
@@ -155,7 +175,8 @@ export const getRules = (
           attacker,
           cityRegistry,
           cityImprovementRegistry,
-          unitImprovementRegistry
+          unitImprovementRegistry,
+          tileImprovementRegistry
         ).forEach(([name, multiplier]): void => {
           defence.add(current * (multiplier - 1), name);
 
@@ -171,6 +192,13 @@ export const getRules = (
         subject: CityWalls,
         value: cityWallsMultiplier,
         except: IgnoresFortifications,
+      },
+      // What a Fortress does for a land unit (civ-clone/web-renderer#388), in place of being fortified.
+      {
+        type: 'square_defence_multiplier',
+        subject: Fortress,
+        value: fortressMultiplier,
+        unit: Land,
       },
       ...terrainDefence.map(
         ([TerrainType, value]: [typeof Terrain, number]) => ({

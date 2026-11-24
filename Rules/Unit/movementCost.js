@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = exports.terrainJobDescriptions = exports.roadAdvancesOn = exports.terrainJobUnit = exports.terrainJobTurns = exports.civ1TerrainJobTurns = exports.terrainJobImprovement = exports.ROAD_SQUARES_PER_MOVE = exports.terrainJobRemovals = exports.terrainJobImprovements = exports.RAILROAD_JOB_FACTOR = exports.ROAD_JOB_FACTOR = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
+exports.getRules = exports.terrainJobDescriptions = exports.roadAdvancesOn = exports.terrainJobUnit = exports.terrainJobTurns = exports.civ1TerrainJobTurns = exports.terrainJobImprovement = exports.ROAD_SQUARES_PER_MOVE = exports.terrainJobRemovals = exports.terrainJobImprovements = exports.FORTRESS_JOB_TURNS = exports.RAILROAD_JOB_FACTOR = exports.ROAD_JOB_FACTOR = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
@@ -60,6 +60,8 @@ exports.baseTerrainMovementCost = [
 exports.terrainMovementCost = (0, terrainTable_1.cachedTerrainLookup)(exports.baseTerrainMovementCost);
 /** A road takes this many times the terrain's movement cost in turns, and a railroad `RAILROAD_JOB_FACTOR` times. */
 exports.ROAD_JOB_FACTOR = 2, exports.RAILROAD_JOB_FACTOR = 4;
+/** A Fortress takes the terrain's movement cost plus this many turns (v474.05 `CONTROL.C`, the 'f' order). */
+exports.FORTRESS_JOB_TURNS = 4;
 /**
  * The tile improvement each terrain job builds, or whose order it is: in Civ1 clearing a Forest, a Jungle or a Swamp
  * is the irrigate order on it, and planting a Forest the mine order. For the Civilopedia (civ-clone/web-renderer#620).
@@ -69,6 +71,7 @@ exports.terrainJobImprovements = [
     [Actions_1.BuildMine, TileImprovements_1.Mine],
     [Actions_1.BuildRoad, TileImprovements_1.Road],
     [Actions_1.BuildRailroad, TileImprovements_1.Railroad],
+    [Actions_1.BuildFortress, TileImprovements_1.Fortress],
     [Actions_1.ClearForest, TileImprovements_1.Irrigation],
     [Actions_1.ClearJungle, TileImprovements_1.Irrigation],
     [Actions_1.ClearSwamp, TileImprovements_1.Irrigation],
@@ -114,6 +117,15 @@ exports.civ1TerrainJobTurns = [
     ],
     [Actions_1.BuildRoad, (0, jobTurns_1.multipleOf)(exports.terrainMovementCost, exports.ROAD_JOB_FACTOR)],
     [Actions_1.BuildRailroad, (0, jobTurns_1.multipleOf)(exports.terrainMovementCost, exports.RAILROAD_JOB_FACTOR)],
+    // A Fortress takes the terrain's movement cost plus 4 turns: 5 on Grassland, 7 on Mountains (Table 3-2;
+    //  civ-clone/web-renderer#388).
+    [
+        Actions_1.BuildFortress,
+        (terrain) => {
+            const cost = (0, exports.terrainMovementCost)(terrain);
+            return cost === null ? null : cost + exports.FORTRESS_JOB_TURNS;
+        },
+    ],
     // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
     //  civ-clone/web-renderer#32).
     [Actions_1.CleanPollution, () => 4],

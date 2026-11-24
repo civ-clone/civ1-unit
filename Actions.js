@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LandAircraft = exports.Unload = exports.SubvertCity = exports.StealTechnology = exports.SneakStealTechnology = exports.SneakPillage = exports.SneakNuclearAttack = exports.SneakMove = exports.SneakInciteRevolt = exports.SneakCaptureCity = exports.SneakAttack = exports.Sleep = exports.SetHomeCity = exports.RoadTo = exports.RailroadTo = exports.PlantForest = exports.Pillage = exports.Overruled = exports.NuclearAttack = exports.NoOrders = exports.Move = exports.MeetWithLeader = exports.JoinCity = exports.InvestigateCity = exports.InciteRevolt = exports.IndustrialSabotage = exports.HelpBuildWonder = exports.GoTo = exports.FoundCity = exports.Fortify = exports.Explore = exports.EstablishTradeRoute = exports.EstablishEmbassy = exports.Embark = exports.Disembark = exports.Disband = exports.ClearSwamp = exports.ClearJungle = exports.ClearForest = exports.CleanPollution = exports.CaptureCity = exports.BuildRailroad = exports.BuildRoad = exports.BuildMine = exports.BuildIrrigation = exports.BribeUnit = exports.Automate = exports.Attack = exports.Activate = exports.AbortMove = void 0;
+exports.BuildFortress = void 0;
 var Actions_1 = require("@civ-clone/library-unit/Actions");
 Object.defineProperty(exports, "AbortMove", { enumerable: true, get: function () { return Actions_1.AbortMove; } });
 Object.defineProperty(exports, "Activate", { enumerable: true, get: function () { return Actions_1.Activate; } });
@@ -53,4 +54,6 @@ Object.defineProperty(exports, "SubvertCity", { enumerable: true, get: function 
 Object.defineProperty(exports, "Unload", { enumerable: true, get: function () { return Actions_1.Unload; } });
 var LandAircraft_1 = require("@civ-clone/base-unit-action-land-aircraft/LandAircraft");
 Object.defineProperty(exports, "LandAircraft", { enumerable: true, get: function () { return LandAircraft_1.LandAircraft; } });
+var BuildFortress_1 = require("@civ-clone/base-unit-action-build-fortress/BuildFortress");
+Object.defineProperty(exports, "BuildFortress", { enumerable: true, get: function () { return BuildFortress_1.BuildFortress; } });
 //# sourceMappingURL=Actions.js.map

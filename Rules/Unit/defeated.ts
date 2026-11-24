@@ -26,8 +26,12 @@ import {
   notInCity,
 } from '@civ-clone/base-unit-lifecycle/lib/defeated';
 import Criterion from '@civ-clone/core-rule/Criterion';
+import Description from '@civ-clone/core-rule/Description';
 import Defeated from '@civ-clone/core-unit/Rules/Defeated';
 import Effect from '@civ-clone/core-rule/Effect';
+import { Fortress } from '@civ-clone/civ1-world/TileImprovements';
+import TileImprovement from '@civ-clone/core-tile-improvement/TileImprovement';
+import Unit from '@civ-clone/core-unit/Unit';
 import High from '@civ-clone/core-rule/Priorities/High';
 
 export const getRules: (
@@ -59,13 +63,20 @@ export const getRules: (
     // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
     new Criterion(defended),
     new Criterion(notInCity(cityRegistry)),
-    // TODO: Add `Fortress`es
-    // new Criterion((unit: Unit) =>
-    //   !tileImprovementRegistry.getByTile(unit.tile())
-    //     .some((tileImprovement) => tileImprovement instanceof Fortress)
-    // ),
+    // Nor on a Fortress, where only the defender dies (v474.05 `BATTLE.C`, map flag 0x20; civ-clone/web-renderer#388).
+    new Criterion(
+      (unit: Unit): boolean =>
+        !tileImprovementRegistry
+          .getByTile(unit.tile())
+          .some(
+            (tileImprovement: TileImprovement): boolean =>
+              tileImprovement instanceof Fortress
+          )
+    ),
     new Criterion(hasStack(unitRegistry)),
-    new Effect(destroyStack(unitRegistry, ruleRegistry))
+    new Effect(destroyStack(unitRegistry, ruleRegistry)),
+    // What a Fortress does here, for the Civilopedia.
+    new Description({ type: 'spares_stack', subject: Fortress })
   ),
 ];
 

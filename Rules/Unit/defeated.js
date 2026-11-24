@@ -8,8 +8,10 @@ const TileImprovementRegistry_1 = require("@civ-clone/core-tile-improvement/Tile
 const UnitRegistry_1 = require("@civ-clone/core-unit/UnitRegistry");
 const defeated_1 = require("@civ-clone/base-unit-lifecycle/lib/defeated");
 const Criterion_1 = require("@civ-clone/core-rule/Criterion");
+const Description_1 = require("@civ-clone/core-rule/Description");
 const Defeated_1 = require("@civ-clone/core-unit/Rules/Defeated");
 const Effect_1 = require("@civ-clone/core-rule/Effect");
+const TileImprovements_1 = require("@civ-clone/civ1-world/TileImprovements");
 const High_1 = require("@civ-clone/core-rule/Priorities/High");
 const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleRegistry_1.instance, tileImprovementRegistry = TileImprovementRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, engine = Engine_1.instance) => [
     new Defeated_1.default('civ1-unit:unit/defeated/emit-and-destroy', 
@@ -24,12 +26,12 @@ const getRules = (cityRegistry = CityRegistry_1.instance, ruleRegistry = RuleReg
     new Defeated_1.default('civ1-unit:unit/defeated/destroy-stack', 
     // `Attack` processes `Defeated` for a losing attacker too; only a defeated defender takes its stack with it.
     new Criterion_1.default(defeated_1.defended), new Criterion_1.default((0, defeated_1.notInCity)(cityRegistry)), 
-    // TODO: Add `Fortress`es
-    // new Criterion((unit: Unit) =>
-    //   !tileImprovementRegistry.getByTile(unit.tile())
-    //     .some((tileImprovement) => tileImprovement instanceof Fortress)
-    // ),
-    new Criterion_1.default((0, defeated_1.hasStack)(unitRegistry)), new Effect_1.default((0, defeated_1.destroyStack)(unitRegistry, ruleRegistry))),
+    // Nor on a Fortress, where only the defender dies (v474.05 `BATTLE.C`, map flag 0x20; civ-clone/web-renderer#388).
+    new Criterion_1.default((unit) => !tileImprovementRegistry
+        .getByTile(unit.tile())
+        .some((tileImprovement) => tileImprovement instanceof TileImprovements_1.Fortress)), new Criterion_1.default((0, defeated_1.hasStack)(unitRegistry)), new Effect_1.default((0, defeated_1.destroyStack)(unitRegistry, ruleRegistry)), 
+    // What a Fortress does here, for the Civilopedia.
+    new Description_1.default({ type: 'spares_stack', subject: TileImprovements_1.Fortress })),
 ];
 exports.getRules = getRules;
 exports.default = exports.getRules;

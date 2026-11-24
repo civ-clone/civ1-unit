@@ -25,6 +25,7 @@ import {
   PlantForest,
 } from '../Actions';
 import {
+  Fortress,
   Irrigation,
   Mine,
   Pollution,
@@ -52,7 +53,9 @@ import Unit from '@civ-clone/core-unit/Unit';
 import UnitAction from '@civ-clone/core-unit/Action';
 import action from '../Rules/Unit/action';
 import availableRequirements from '@civ-clone/civ1-world/Requirements';
+import defeated from '../Rules/Unit/defeated';
 import detonated from '../Rules/Unit/detonated';
+import { Land } from '../Types';
 import { expect } from 'chai';
 import { terrainValue } from '@civ-clone/base-terrain-properties/lib/terrainTable';
 
@@ -107,6 +110,22 @@ describe('descriptions', (): void => {
       },
     ]);
     expect(cityWallsMultiplier).to.equal(3);
+  });
+
+  it('a Fortress doubles a land unit’s defence, and spares the stack of a defender beaten there', (): void => {
+    expect(
+      [...strength(), ...defeated()]
+        .flatMap((rule) => rule.descriptions())
+        .filter((description) => description.subject === Fortress)
+    ).to.eql([
+      {
+        type: 'square_defence_multiplier',
+        subject: Fortress,
+        value: 2,
+        unit: Land,
+      },
+      { type: 'spares_stack', subject: Fortress },
+    ]);
   });
 
   it('SDI Defense saves the units in its city from a nuclear attack', (): void => {
@@ -292,6 +311,36 @@ describe('descriptions', (): void => {
           unit: Settlers,
         }))
       ),
+      // A Fortress: the movement cost plus 4 (civ-clone/web-renderer#388).
+      {
+        type: 'improvement_turns',
+        subject: Hills,
+        improvement: Fortress,
+        value: 6,
+        unit: Settlers,
+      },
+      {
+        type: 'improvement_turns',
+        subject: Grassland,
+        improvement: Fortress,
+        value: 5,
+        unit: Settlers,
+      },
+    ]);
+    expect(
+      all.filter(
+        (description) =>
+          description.subject === Mountains &&
+          description.improvement === Fortress
+      )
+    ).to.eql([
+      {
+        type: 'improvement_turns',
+        subject: Mountains,
+        improvement: Fortress,
+        value: 7,
+        unit: Settlers,
+      },
     ]);
   });
 
@@ -348,6 +397,14 @@ describe('descriptions', (): void => {
         value: 4,
         unit: Settlers,
         with: [BridgeBuilding],
+      },
+      // A Fortress needs no bridge.
+      {
+        type: 'improvement_turns',
+        subject: River,
+        improvement: Fortress,
+        value: 5,
+        unit: Settlers,
       },
     ]);
   });
