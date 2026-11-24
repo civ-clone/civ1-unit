@@ -47,6 +47,13 @@ export declare const terrainJobImprovements: [
   typeof UnitAction,
   typeof TileImprovement
 ][];
+/** The tile improvement each terrain job takes away, for the Civilopedia (civ-clone/web-renderer#621). */
+export declare const terrainJobRemovals: [
+  typeof UnitAction,
+  typeof TileImprovement
+][];
+/** A land unit moves this many squares along a road for each of its moves. */
+export declare const ROAD_SQUARES_PER_MOVE: number;
 /** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
 export declare const terrainJobImprovement: (
   Action: typeof UnitAction
@@ -88,8 +95,8 @@ export declare const roadAdvancesOn: (
  * What each terrain job says it takes, for the Civilopedia (civ-clone/web-renderer#620): Civ1's turns (the table's
  * figure, which counts the turn the order is given on, as Civ1 does) to build the job's improvement on each terrain it
  * has a time for. A time worked out from the terrain (a road, a railroad) is given for each terrain civ1-world lets
- * the improvement be built on. A job with no improvement (cleaning up pollution) says nothing. A job converting the
- * terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
+ * the improvement be built on. A job that builds no improvement but takes one away (cleaning up pollution) says its
+ * own turns (`removalDescriptions`), and any other says nothing. A job converting the terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
  */
 export declare const terrainJobDescriptions: (
   [Action, time]: TerrainJob,

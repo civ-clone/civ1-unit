@@ -31,6 +31,7 @@ import {
 import {
   Irrigation,
   Mine,
+  Pollution,
   Railroad,
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
@@ -132,6 +133,13 @@ export const terrainJobImprovements: [
   [PlantForest, Mine],
 ];
 
+/** The tile improvement each terrain job takes away, for the Civilopedia (civ-clone/web-renderer#621). */
+export const terrainJobRemovals: [typeof UnitAction, typeof TileImprovement][] =
+  [[CleanPollution, Pollution]];
+
+/** A land unit moves this many squares along a road for each of its moves. */
+export const ROAD_SQUARES_PER_MOVE: number = 3;
+
 /** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
 export const terrainJobImprovement = (
   Action: typeof UnitAction
@@ -230,8 +238,8 @@ export const roadAdvancesOn = (
  * What each terrain job says it takes, for the Civilopedia (civ-clone/web-renderer#620): Civ1's turns (the table's
  * figure, which counts the turn the order is given on, as Civ1 does) to build the job's improvement on each terrain it
  * has a time for. A time worked out from the terrain (a road, a railroad) is given for each terrain civ1-world lets
- * the improvement be built on. A job with no improvement (cleaning up pollution) says nothing. A job converting the
- * terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
+ * the improvement be built on. A job that builds no improvement but takes one away (cleaning up pollution) says its
+ * own turns (`removalDescriptions`), and any other says nothing. A job converting the terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
  */
 export const terrainJobDescriptions = (
   [Action, time]: TerrainJob,
@@ -240,7 +248,7 @@ export const terrainJobDescriptions = (
   const Improvement = terrainJobImprovement(Action);
 
   if (Improvement === null) {
-    return [];
+    return removalDescriptions([Action, time]);
   }
 
   const rows: [typeof Terrain, number | null][] = Array.isArray(time)
@@ -279,6 +287,49 @@ export const terrainJobDescriptions = (
         with: needs.length > 0 ? needs : undefined,
       };
     });
+};
+
+/**
+ * What a job that takes a tile improvement away says it takes (civ-clone/web-renderer#621): Civ1's turns, as the table
+ *  gives them, to clean up Pollution. Said once for each time the land terrains give, which is one in Civ1, as it
+ *  takes the same on any terrain. A job that takes nothing away says nothing.
+ */
+const removalDescriptions = ([
+  Action,
+  time,
+]: TerrainJob): EffectDescription[] => {
+  const Removed =
+    terrainJobRemovals.find(
+      ([JobAction]: [typeof UnitAction, typeof TileImprovement]): boolean =>
+        JobAction === Action
+    )?.[1] ?? null;
+
+  if (Removed === null) {
+    return [];
+  }
+
+  const turns = (
+    Array.isArray(time)
+      ? time.map(([, turns]): number | null => turns)
+      : baseTerrainMovementCost
+          .filter(([TerrainType]): boolean => TerrainType !== Ocean)
+          .map(([TerrainType]): number | null =>
+            // Made without its constructor, as `terrainJobDescriptions` does: the lookup only needs its class.
+            time(Object.create(TerrainType.prototype))
+          )
+  ).filter(
+    (value: number | null, i: number, values): value is number =>
+      value !== null && values.indexOf(value) === i
+  );
+
+  return turns.map(
+    (value: number): EffectDescription => ({
+      type: 'removal_turns',
+      subject: Removed,
+      value,
+      unit: terrainJobUnit,
+    })
+  );
 };
 
 export const getRules: (
@@ -340,7 +391,13 @@ export const getRules: (
           (improvement: TileImprovement): boolean => improvement instanceof Road
         )
     ),
-    new Effect((): number => 1 / 3)
+    new Effect((): number => 1 / ROAD_SQUARES_PER_MOVE),
+    // What a road gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    new Description({
+      type: 'route_squares',
+      subject: Road,
+      value: ROAD_SQUARES_PER_MOVE,
+    })
   ),
 
   // v474.05's railroad (`CONTROL.C`, the move): free from a square with a Railroad to one with a Road, so a train runs
@@ -373,7 +430,12 @@ export const getRules: (
           (improvement: TileImprovement): boolean => improvement instanceof Road
         )
     ),
-    new Effect((): number => 0)
+    new Effect((): number => 0),
+    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    new Description({
+      type: 'route_free',
+      subject: Railroad,
+    })
   ),
 
   new MovementCost(

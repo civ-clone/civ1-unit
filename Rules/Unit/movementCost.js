@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRules = exports.terrainJobDescriptions = exports.roadAdvancesOn = exports.terrainJobUnit = exports.terrainJobTurns = exports.civ1TerrainJobTurns = exports.terrainJobImprovement = exports.terrainJobImprovements = exports.RAILROAD_JOB_FACTOR = exports.ROAD_JOB_FACTOR = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
+exports.getRules = exports.terrainJobDescriptions = exports.roadAdvancesOn = exports.terrainJobUnit = exports.terrainJobTurns = exports.civ1TerrainJobTurns = exports.terrainJobImprovement = exports.ROAD_SQUARES_PER_MOVE = exports.terrainJobRemovals = exports.terrainJobImprovements = exports.RAILROAD_JOB_FACTOR = exports.ROAD_JOB_FACTOR = exports.terrainMovementCost = exports.baseTerrainMovementCost = void 0;
 const Terrains_1 = require("@civ-clone/civ1-world/Terrains");
 const Types_1 = require("../../Types");
 const Actions_1 = require("../../Actions");
@@ -74,6 +74,10 @@ exports.terrainJobImprovements = [
     [Actions_1.ClearSwamp, TileImprovements_1.Irrigation],
     [Actions_1.PlantForest, TileImprovements_1.Mine],
 ];
+/** The tile improvement each terrain job takes away, for the Civilopedia (civ-clone/web-renderer#621). */
+exports.terrainJobRemovals = [[Actions_1.CleanPollution, TileImprovements_1.Pollution]];
+/** A land unit moves this many squares along a road for each of its moves. */
+exports.ROAD_SQUARES_PER_MOVE = 3;
 /** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
 const terrainJobImprovement = (Action) => {
     var _a, _b;
@@ -155,13 +159,13 @@ exports.roadAdvancesOn = roadAdvancesOn;
  * What each terrain job says it takes, for the Civilopedia (civ-clone/web-renderer#620): Civ1's turns (the table's
  * figure, which counts the turn the order is given on, as Civ1 does) to build the job's improvement on each terrain it
  * has a time for. A time worked out from the terrain (a road, a railroad) is given for each terrain civ1-world lets
- * the improvement be built on. A job with no improvement (cleaning up pollution) says nothing. A job converting the
- * terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
+ * the improvement be built on. A job that builds no improvement but takes one away (cleaning up pollution) says its
+ * own turns (`removalDescriptions`), and any other says nothing. A job converting the terrain (clearing or planting a forest) is named as itself, not as the order it is, as it builds no improvement.
  */
 const terrainJobDescriptions = ([Action, time], requirements = Requirements_1.default) => {
     const Improvement = (0, exports.terrainJobImprovement)(Action);
     if (Improvement === null) {
-        return [];
+        return removalDescriptions([Action, time]);
     }
     const rows = Array.isArray(time)
         ? time
@@ -192,6 +196,31 @@ const terrainJobDescriptions = ([Action, time], requirements = Requirements_1.de
     });
 };
 exports.terrainJobDescriptions = terrainJobDescriptions;
+/**
+ * What a job that takes a tile improvement away says it takes (civ-clone/web-renderer#621): Civ1's turns, as the table
+ *  gives them, to clean up Pollution. Said once for each time the land terrains give, which is one in Civ1, as it
+ *  takes the same on any terrain. A job that takes nothing away says nothing.
+ */
+const removalDescriptions = ([Action, time,]) => {
+    var _a, _b;
+    const Removed = (_b = (_a = exports.terrainJobRemovals.find(([JobAction]) => JobAction === Action)) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : null;
+    if (Removed === null) {
+        return [];
+    }
+    const turns = (Array.isArray(time)
+        ? time.map(([, turns]) => turns)
+        : exports.baseTerrainMovementCost
+            .filter(([TerrainType]) => TerrainType !== Terrains_1.Ocean)
+            .map(([TerrainType]) => 
+        // Made without its constructor, as `terrainJobDescriptions` does: the lookup only needs its class.
+        time(Object.create(TerrainType.prototype)))).filter((value, i, values) => value !== null && values.indexOf(value) === i);
+    return turns.map((value) => ({
+        type: 'removal_turns',
+        subject: Removed,
+        value,
+        unit: exports.terrainJobUnit,
+    }));
+};
 const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, transportRegistry = TransportRegistry_1.instance) => [
     // One rule, not one per terrain: see `terrainMovementCost`. Was
     // `civ1-unit:unit/movement-cost/move/<Terrain>`.
@@ -207,7 +236,13 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
         .getByTile(action.from())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
-        .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 1 / 3)),
+        .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 1 / exports.ROAD_SQUARES_PER_MOVE), 
+    // What a road gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    new Description_1.default({
+        type: 'route_squares',
+        subject: TileImprovements_1.Road,
+        value: exports.ROAD_SQUARES_PER_MOVE,
+    })),
     // v474.05's railroad (`CONTROL.C`, the move): free from a square with a Railroad to one with a Road, so a train runs
     //  on into a city, which has no Railroad of its own (civ-clone/web-renderer#1029), and off the end of the line onto a
     //  road. Leaving a city onto the railroad costs a road move. v474.05 gives this only to the human's units moving by
@@ -221,7 +256,12 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
             left.some((improvement) => improvement instanceof TileImprovements_1.Road));
     }), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
-        .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 0)),
+        .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 0), 
+    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    new Description_1.default({
+        type: 'route_free',
+        subject: TileImprovements_1.Railroad,
+    })),
     new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
     // `hasUnit`, not `getByUnit` in a `try`: the latter answers "no" by
     // throwing, and this criterion is evaluated for every land unit on every
