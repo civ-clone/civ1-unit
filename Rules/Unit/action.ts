@@ -1037,8 +1037,8 @@ export const getRules = (
         ],
         effect: (unit: Unit, to: Tile, from: Tile = unit.tile()): UnitAction =>
           isLandUnitAtSea(unit, from)
-            ? new SleepAboard(from, to, unit, ruleRegistry, turn)
-            : new Sleep(from, to, unit, ruleRegistry, turn),
+            ? new SleepAboard(from, to, unit, ruleRegistry, turn, unitRegistry)
+            : new Sleep(from, to, unit, ruleRegistry, turn, unitRegistry),
       },
 
       // Waking a unit that's asleep, fortified or busy with a job (civ-clone/web-renderer#160): its `Activate` rules
