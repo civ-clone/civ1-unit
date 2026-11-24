@@ -17,6 +17,7 @@ import {
   SdiDefence,
 } from '@civ-clone/library-city/CityImprovements';
 import {
+  CleanPollution,
   ClearForest,
   ClearJungle,
   ClearSwamp,
@@ -26,11 +27,13 @@ import {
 import {
   Irrigation,
   Mine,
+  Pollution,
   Railroad,
   Road,
 } from '@civ-clone/civ1-world/TileImprovements';
 import { BridgeBuilding } from '@civ-clone/library-science/Advances';
 import movementCost, {
+  ROAD_SQUARES_PER_MOVE,
   civ1TerrainJobTurns,
   terrainJobImprovement,
   terrainMovementCost,
@@ -41,6 +44,7 @@ import strength, {
 } from '../Rules/Unit/strength';
 import { EffectDescription } from '@civ-clone/core-rule/Description';
 import IgnoresFortifications from '@civ-clone/base-unit-trait-ignores-fortifications/IgnoresFortifications';
+import { RAILROAD_MOVEMENT_RULE } from '../RuleIds';
 import { Settlers } from '../Units';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
@@ -387,5 +391,42 @@ describe('descriptions', (): void => {
         terrainJobImprovement(Action as typeof UnitAction)
       )
     ).to.eql([Irrigation, Irrigation, Irrigation, Mine]);
+  });
+
+  // What a Road, a Railroad and cleaning up Pollution say, for the tile improvements' pages (civ-clone/web-renderer#1272,
+  //  civ-clone/web-renderer#621). `movementCost.test.ts` checks the moves themselves.
+  it('a Road says a land unit moves 3 squares along it for each move, and a Railroad that it moves for free', (): void => {
+    const described = (id: string): EffectDescription[] =>
+      movementCost()
+        .filter((rule) => rule.id() === id)
+        .flatMap((rule) => rule.descriptions());
+
+    expect(described('civ1-unit:unit/movement-cost/road')).to.eql([
+      { type: 'route_squares', subject: Road, value: 3 },
+    ]);
+    expect(ROAD_SQUARES_PER_MOVE).to.equal(3);
+    expect(described(RAILROAD_MOVEMENT_RULE)).to.eql([
+      { type: 'route_free', subject: Railroad },
+    ]);
+  });
+
+  it('cleaning up Pollution says it takes 4 turns of Settlers work, once, as on any terrain', (): void => {
+    const [, time] = civ1TerrainJobTurns.find(
+        ([Action]): boolean => Action === CleanPollution
+      )!,
+      described = movementCost()
+        .filter(
+          (rule) =>
+            rule.id() ===
+            `civ1-unit:unit/movement-cost/action/${CleanPollution.name}`
+        )
+        .flatMap((rule) => rule.descriptions());
+
+    expect(described).to.eql([
+      { type: 'removal_turns', subject: Pollution, value: 4, unit: Settlers },
+    ]);
+    expect((time as (terrain: Terrain) => number)(terrainOf(Hills))).to.equal(
+      4
+    );
   });
 });

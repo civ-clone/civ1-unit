@@ -47,6 +47,13 @@ export declare const terrainJobImprovements: [
   typeof UnitAction,
   typeof TileImprovement
 ][];
+/** The tile improvement each terrain job takes away, for the Civilopedia (civ-clone/web-renderer#621). */
+export declare const terrainJobRemovals: [
+  typeof UnitAction,
+  typeof TileImprovement
+][];
+/** A land unit moves this many squares along a road for each of its moves. */
+export declare const ROAD_SQUARES_PER_MOVE: number;
 /** The tile improvement `Action` builds, or whose order it is (`terrainJobImprovements`), or `null`. */
 export declare const terrainJobImprovement: (
   Action: typeof UnitAction
