@@ -257,10 +257,12 @@ const getRules = (tileImprovementRegistry = TileImprovementRegistry_1.instance, 
     }), new Criterion_1.default((unit, action) => tileImprovementRegistry
         .getByTile(action.to())
         .some((improvement) => improvement instanceof TileImprovements_1.Road)), new Effect_1.default(() => 0), 
-    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272).
+    // What a railroad gives, for the Civilopedia (civ-clone/web-renderer#1272): free onto a road as well, which
+    //  civ1-enhanced's rule, a railroad on both squares, doesn't give (civ-clone/web-renderer#1339).
     new Description_1.default({
         type: 'route_free',
         subject: TileImprovements_1.Railroad,
+        onto: 'road',
     })),
     new MovementCost_1.default('civ1-unit:unit/movement-cost/transported', new Criterion_1.default((unit, action) => action instanceof Actions_1.Move), new Criterion_1.default((unit) => unit instanceof Types_1.Land), 
     // `hasUnit`, not `getByUnit` in a `try`: the latter answers "no" by
