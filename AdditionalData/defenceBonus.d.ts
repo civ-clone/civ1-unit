@@ -1,5 +1,6 @@
 import { CityImprovementRegistry } from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
+import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import AdditionalData from '@civ-clone/core-data-object/AdditionalData';
 export type DefenceBonus = {
@@ -17,6 +18,7 @@ export type DefenceBonus = {
 export declare const getAdditionalData: (
   cityRegistry?: CityRegistry,
   cityImprovementRegistry?: CityImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  tileImprovementRegistry?: TileImprovementRegistry
 ) => AdditionalData[];
 export default getAdditionalData;

@@ -39,6 +39,8 @@ export declare const terrainMovementCost: (terrain: Terrain) => number | null;
 type TerrainJob = BaseTerrainJob<typeof UnitAction>;
 /** A road takes this many times the terrain's movement cost in turns, and a railroad `RAILROAD_JOB_FACTOR` times. */
 export declare const ROAD_JOB_FACTOR: number, RAILROAD_JOB_FACTOR: number;
+/** A Fortress takes the terrain's movement cost plus this many turns (v474.05 `CONTROL.C`, the 'f' order). */
+export declare const FORTRESS_JOB_TURNS: number;
 /**
  * The tile improvement each terrain job builds, or whose order it is: in Civ1 clearing a Forest, a Jungle or a Swamp
  * is the irrigate order on it, and planting a Forest the mine order. For the Civilopedia (civ-clone/web-renderer#620).

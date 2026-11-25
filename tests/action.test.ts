@@ -16,6 +16,7 @@ import {
 import {
   Attack,
   Automate,
+  BuildFortress,
   BuildIrrigation,
   BuildMine,
   BuildRailroad,
@@ -51,6 +52,7 @@ import {
   Shield,
 } from '@civ-clone/civ1-world/TerrainFeatures';
 import {
+  Fortress,
   Irrigation,
   Mine,
   Railroad,
@@ -60,6 +62,7 @@ import Action from '@civ-clone/core-unit/Action';
 import Advance from '@civ-clone/core-science/Advance';
 import AdvanceRegistry from '@civ-clone/core-science/AdvanceRegistry';
 import BridgeBuilding from '@civ-clone/base-science-advance-bridgebuilding/BridgeBuilding';
+import { Construction } from '@civ-clone/library-science/Advances';
 import City from '@civ-clone/core-city/City';
 import CityGrowth from '@civ-clone/core-city-growth/CityGrowth';
 import { instance as cityGrowthRegistryInstance } from '@civ-clone/core-city-growth/CityGrowthRegistry';
@@ -742,6 +745,41 @@ describe('Action', (): void => {
         unitRegistry.unregister(unit);
       })
   );
+
+  // v474.05's 'f' order for Settlers: Construction known, not on a city's square or a Fortress (civ-clone/web-renderer#388).
+  it('should be possible for Settlers to BuildFortress once Construction is known, but not in a city or on a Fortress', async (): Promise<void> => {
+    const world = await generateFixedWorld({
+        TerrainType: Hills,
+      }),
+      unit = await getUnit(getPlayer(), world.get(4, 4), Settlers),
+      warrior = await getUnit(unit.player(), world.get(4, 4), Warrior),
+      offered = (to: Unit = unit): boolean =>
+        to.actions().some((action) => action instanceof BuildFortress);
+
+    expect(offered()).false;
+
+    playerResearchRegistry.getByPlayer(unit.player()).addAdvance(Construction);
+
+    expect(offered()).true;
+    expect(offered(warrior)).false;
+
+    const city = new City(unit.player(), unit.tile(), '');
+
+    cityRegistry.register(city);
+
+    expect(offered()).false;
+
+    cityRegistry.unregister(city);
+
+    const fortress = new Fortress(unit.tile());
+
+    tileImprovementRegistry.register(fortress);
+
+    expect(offered()).false;
+
+    tileImprovementRegistry.unregister(fortress);
+    unitRegistry.unregister(unit, warrior);
+  });
 
   // v474.05 refuses a Railroad on a city's square (`CONTROL.C`, the 'r' command, civ-clone/web-renderer#1029).
   it('should not be possible for Settlers to BuildRailroad on a city square', async (): Promise<void> => {

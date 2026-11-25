@@ -1,5 +1,6 @@
 import { CityImprovementRegistry } from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
+import { TileImprovementRegistry } from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import { UnitImprovementRegistry } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
 import Strength from '@civ-clone/core-unit/Rules/Strength';
 import Terrain from '@civ-clone/core-terrain/Terrain';
@@ -12,12 +13,15 @@ export declare const terrainDefence: [typeof Terrain, number][];
  *  This is what civ1-unit's own declarations give, in `Units` order, kept for one release.
  */
 export declare const ignoreCityWalls: (typeof Unit)[];
-/** City Walls' multiplier, and a fortified unit's, outside walls. */
-export declare const cityWallsMultiplier: number, fortifiedMultiplier: number;
+/** City Walls' multiplier, a Fortress's, and a fortified unit's, outside walls and off a Fortress. */
+export declare const cityWallsMultiplier: number,
+  fortressMultiplier: number,
+  fortifiedMultiplier: number;
 /**
  * Civ1's defence bonuses for `defender` (v474.05, `F0_29f3_000e`), as the multipliers that apply in order, each named
- * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3) or being
- * fortified (×1.5); they don't stack. A ship gets no terrain or fortification bonus, except in a city with City Walls,
+ * after what gives it. A defender gets its terrain's multiplier and then the first of City Walls (×3), a Fortress (×2,
+ * against any attacker: `BATTLE.C`, map flag 0x20, civ-clone/web-renderer#388) or being fortified (×1.5); they don't
+ * stack. A ship gets no terrain or fortification bonus, except in a city with City Walls,
  * where it defends like a land unit: v474.05's walls branch sets the defence to terrain × defence × 3 for any defender
  * but an aircraft, replacing the ship's flat value. An aircraft gets nothing. The defender's own defence already has
  * Veteran's ×1.5, which v474.05 applies last: the product is the same.
@@ -30,7 +34,8 @@ export declare const defenceMultipliers: (
   attacker: Unit | null,
   cityRegistry?: CityRegistry,
   cityImprovementRegistry?: CityImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  tileImprovementRegistry?: TileImprovementRegistry
 ) => [string, number][];
 /**
  * Civ1's defence bonuses in battle: `defenceMultipliers`, each added to the defence under its own name.
@@ -38,6 +43,7 @@ export declare const defenceMultipliers: (
 export declare const getRules: (
   cityRegistry?: CityRegistry,
   cityImprovementRegistry?: CityImprovementRegistry,
-  unitImprovementRegistry?: UnitImprovementRegistry
+  unitImprovementRegistry?: UnitImprovementRegistry,
+  tileImprovementRegistry?: TileImprovementRegistry
 ) => Strength[];
 export default getRules;

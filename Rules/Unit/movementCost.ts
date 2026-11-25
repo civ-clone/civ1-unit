@@ -14,6 +14,7 @@ import {
 } from '@civ-clone/civ1-world/Terrains';
 import { Air, Land, Naval, NavalTransport } from '../../Types';
 import {
+  BuildFortress,
   BuildIrrigation,
   BuildMine,
   BuildRailroad,
@@ -29,6 +30,7 @@ import {
   Sleep,
 } from '../../Actions';
 import {
+  Fortress,
   Irrigation,
   Mine,
   Pollution,
@@ -115,6 +117,9 @@ type TerrainJob = BaseTerrainJob<typeof UnitAction>;
 export const ROAD_JOB_FACTOR: number = 2,
   RAILROAD_JOB_FACTOR: number = 4;
 
+/** A Fortress takes the terrain's movement cost plus this many turns (v474.05 `CONTROL.C`, the 'f' order). */
+export const FORTRESS_JOB_TURNS: number = 4;
+
 /**
  * The tile improvement each terrain job builds, or whose order it is: in Civ1 clearing a Forest, a Jungle or a Swamp
  * is the irrigate order on it, and planting a Forest the mine order. For the Civilopedia (civ-clone/web-renderer#620).
@@ -127,6 +132,7 @@ export const terrainJobImprovements: [
   [BuildMine, Mine],
   [BuildRoad, Road],
   [BuildRailroad, Railroad],
+  [BuildFortress, Fortress],
   [ClearForest, Irrigation],
   [ClearJungle, Irrigation],
   [ClearSwamp, Irrigation],
@@ -179,6 +185,16 @@ export const civ1TerrainJobTurns: TerrainJob[] = [
   ],
   [BuildRoad, multipleOf(terrainMovementCost, ROAD_JOB_FACTOR)],
   [BuildRailroad, multipleOf(terrainMovementCost, RAILROAD_JOB_FACTOR)],
+  // A Fortress takes the terrain's movement cost plus 4 turns: 5 on Grassland, 7 on Mountains (Table 3-2;
+  //  civ-clone/web-renderer#388).
+  [
+    BuildFortress,
+    (terrain: Terrain): number | null => {
+      const cost = terrainMovementCost(terrain);
+
+      return cost === null ? null : cost + FORTRESS_JOB_TURNS;
+    },
+  ],
   // Cleaning up pollution takes 4 turns on any terrain (Table 3-2; v474.05 `CheckPlayerTurn.cs` ~L1050,
   //  civ-clone/web-renderer#32).
   [CleanPollution, (): number => 4],

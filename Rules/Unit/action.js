@@ -490,6 +490,13 @@ const getRules = (cityNameRegistry = CityNameRegistry_1.instance, cityRegistry =
                 Actions_1.BuildRailroad,
                 (0, worker_1.requiresImprovement)({ tileImprovementRegistry }, TileImprovements_1.Road),
             ],
+            // Never on a city's square, whatever a `BuildOnCitySquare` rule says: v474.05 refuses the order there
+            //  (`CONTROL.C`, 'f', `map_flags & 0x21`; civ-clone/web-renderer#388).
+            [
+                TileImprovements_1.Fortress,
+                Actions_1.BuildFortress,
+                new Criterion_1.default((unit, to) => !(0, domain_1.tileHasCity)(to, cityRegistry)),
+            ],
         ].map(([Improvement, ActionType, ...extra]) => ({
             improvement: Improvement,
             // On a city's square, only if no `BuildOnCitySquare` rule refuses it: Civ1's refuses a Railroad there

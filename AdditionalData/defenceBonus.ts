@@ -7,6 +7,10 @@ import {
   instance as cityRegistryInstance,
 } from '@civ-clone/core-city/CityRegistry';
 import {
+  TileImprovementRegistry,
+  instance as tileImprovementRegistryInstance,
+} from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
+import {
   UnitImprovementRegistry,
   instance as unitImprovementRegistryInstance,
 } from '@civ-clone/core-unit-improvement/UnitImprovementRegistry';
@@ -17,7 +21,7 @@ import { defenceMultipliers } from '../Rules/Unit/strength';
 export type DefenceBonus = {
   // All of them together: 3 for a fortified unit on Hills (×2 × ×1.5).
   multiplier: number;
-  // What gives each, in the order they apply: a terrain, `CityWalls` or `Fortified`.
+  // What gives each, in the order they apply: a terrain, `CityWalls`, `Fortress` or `Fortified`.
   sources: { name: string; multiplier: number }[];
 };
 
@@ -29,7 +33,8 @@ export type DefenceBonus = {
 export const getAdditionalData = (
   cityRegistry: CityRegistry = cityRegistryInstance,
   cityImprovementRegistry: CityImprovementRegistry = cityImprovementRegistryInstance,
-  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance
+  unitImprovementRegistry: UnitImprovementRegistry = unitImprovementRegistryInstance,
+  tileImprovementRegistry: TileImprovementRegistry = tileImprovementRegistryInstance
 ): AdditionalData[] => [
   new AdditionalData(
     Unit,
@@ -40,7 +45,8 @@ export const getAdditionalData = (
         null,
         cityRegistry,
         cityImprovementRegistry,
-        unitImprovementRegistry
+        unitImprovementRegistry,
+        tileImprovementRegistry
       );
 
       if (multipliers.length === 0) {

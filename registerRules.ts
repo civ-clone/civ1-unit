@@ -176,7 +176,12 @@ export const register = (game: Game): void => {
       game.strategyNotes,
       game.rules
     ),
-    ...strength(game.cities, game.cityImprovements, game.unitImprovements),
+    ...strength(
+      game.cities,
+      game.cityImprovements,
+      game.unitImprovements,
+      game.tileImprovements
+    ),
     ...unitYield(game.unitImprovements, game.rules, game.transports),
     ...unsupported(game.engine),
     ...validateMove(game.rng)

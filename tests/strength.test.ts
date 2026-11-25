@@ -16,6 +16,8 @@ import {
   Swamp,
 } from '@civ-clone/civ1-world/Terrains';
 import { Attack } from '../Actions';
+import { Fortress } from '@civ-clone/civ1-world/TileImprovements';
+import TileImprovementRegistry from '@civ-clone/core-tile-improvement/TileImprovementRegistry';
 import City from '@civ-clone/core-city/City';
 import CityImprovementRegistry from '@civ-clone/core-city-improvement/CityImprovementRegistry';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
@@ -45,6 +47,7 @@ describe('unit:strength', (): void => {
       cityRegistry = new CityRegistry(),
       cityImprovementRegistry = new CityImprovementRegistry(),
       unitImprovementRegistry = new UnitImprovementRegistry(),
+      tileImprovementRegistry = new TileImprovementRegistry(),
       unitRegistry = new UnitRegistry(),
       player = new Player(ruleRegistry),
       enemy = new Player(ruleRegistry),
@@ -56,7 +59,8 @@ describe('unit:strength', (): void => {
       ...strengthRules(
         cityRegistry,
         cityImprovementRegistry,
-        unitImprovementRegistry
+        unitImprovementRegistry,
+        tileImprovementRegistry
       ),
       ...unitYield(
         unitImprovementRegistry,
@@ -103,13 +107,17 @@ describe('unit:strength', (): void => {
 
         return city;
       },
+      buildFortress = (): void => {
+        tileImprovementRegistry.register(new Fortress(tile, ruleRegistry));
+      },
       defenceOf = (defender: Unit, attacker: Unit): number =>
         strength(attacker, defender, ruleRegistry)[1].value();
 
     const [bonus] = defenceBonus(
         cityRegistry,
         cityImprovementRegistry,
-        unitImprovementRegistry
+        unitImprovementRegistry,
+        tileImprovementRegistry
       ),
       bonusOf = (unit: Unit) => bonus.data(unit);
 
@@ -117,6 +125,7 @@ describe('unit:strength', (): void => {
       attackWith,
       bonusOf,
       buildCity,
+      buildFortress,
       defend,
       defenceOf,
       ruleRegistry,
@@ -219,6 +228,36 @@ describe('unit:strength', (): void => {
     expect(defenceOf(defender, attackWith(Knight))).equal(2);
   });
 
+  it('should give a unit on a Fortress ×2 after its terrain, in place of being fortified, against any attacker', async (): Promise<void> => {
+    const { attackWith, buildFortress, defend, defenceOf, ruleRegistry } =
+        await setUp(),
+      fortified = defend(Spearman, Hills, [Fortified]);
+
+    buildFortress();
+
+    // v474.05 `BATTLE.C`: terrain × defence × 8 on a Fortress (×2), fortified or not (civ-clone/web-renderer#388).
+    expect(defenceOf(fortified, attackWith(Knight))).equal(8);
+    // The walls test exempts Artillery and Bombers; a Fortress has none.
+    expect(defenceOf(fortified, attackWith(Artillery))).equal(8);
+    expect(defenceOf(fortified, attackWith(Bomber))).equal(8);
+
+    const [, defence] = strength(attackWith(Knight), fortified, ruleRegistry);
+
+    expect(defence.values()).deep.include([4, 'Fortress']);
+    expect(defence.values().map(([, provider]) => provider)).not.include(
+      'Fortified'
+    );
+  });
+
+  it('should give a ship or an aircraft on a Fortress nothing from it', async (): Promise<void> => {
+    const { attackWith, buildFortress, defend, defenceOf } = await setUp();
+
+    buildFortress();
+
+    expect(defenceOf(defend(Sail, Hills), attackWith(Knight))).equal(1);
+    expect(defenceOf(defend(Fighter, Hills), attackWith(Knight))).equal(2);
+  });
+
   it('should fight at these strengths when attacking', async (): Promise<void> => {
     const { attackWith, defend, ruleRegistry, tile, unitRegistry } =
         await setUp(),
@@ -272,6 +311,21 @@ describe('unit:strength', (): void => {
       expect(bonusOf(defender)).deep.equal({
         multiplier: 3,
         sources: [{ name: 'CityWalls', multiplier: 3 }],
+      });
+    });
+
+    it('should give a Fortress in place of fortified', async (): Promise<void> => {
+      const { bonusOf, buildFortress, defend } = await setUp(),
+        defender = defend(Spearman, Hills, [Fortified]);
+
+      buildFortress();
+
+      expect(bonusOf(defender)).deep.equal({
+        multiplier: 4,
+        sources: [
+          { name: 'Hills', multiplier: 2 },
+          { name: 'Fortress', multiplier: 2 },
+        ],
       });
     });
 

@@ -6,7 +6,12 @@ import routeOrders from './AdditionalData/routeOrders';
 
 export const register = (game: Game): void =>
   game.additionalData.register(
-    ...defenceBonus(game.cities, game.cityImprovements, game.unitImprovements),
+    ...defenceBonus(
+      game.cities,
+      game.cityImprovements,
+      game.unitImprovements,
+      game.tileImprovements
+    ),
     ...attackSound(),
     ...joinCityRefusal(game.cities, game.cityGrowth),
     ...routeOrders(game.playerResearch)

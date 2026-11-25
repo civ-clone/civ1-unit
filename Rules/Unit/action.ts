@@ -10,6 +10,7 @@ import {
   Attack,
   Automate,
   BribeUnit,
+  BuildFortress,
   BuildIrrigation,
   BuildMine,
   BuildRailroad,
@@ -108,6 +109,7 @@ import {
   instance as interactionRegistryInstance,
 } from '@civ-clone/core-diplomacy/InteractionRegistry';
 import {
+  Fortress,
   Irrigation,
   Mine,
   Pollution,
@@ -1132,6 +1134,15 @@ export const getRules = (
             Railroad,
             BuildRailroad,
             requiresImprovement({ tileImprovementRegistry }, Road),
+          ],
+          // Never on a city's square, whatever a `BuildOnCitySquare` rule says: v474.05 refuses the order there
+          //  (`CONTROL.C`, 'f', `map_flags & 0x21`; civ-clone/web-renderer#388).
+          [
+            Fortress,
+            BuildFortress,
+            new Criterion(
+              (unit: Unit, to: Tile): boolean => !tileHasCity(to, cityRegistry)
+            ),
           ],
         ] as [typeof TileImprovement, typeof DelayedAction, ...Criterion[]][]
       ).map(

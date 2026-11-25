@@ -6,6 +6,7 @@ import Defeated from '@civ-clone/core-unit/Rules/Defeated';
 import Destroyed from '@civ-clone/core-unit/Rules/Destroyed';
 import Effect from '@civ-clone/core-rule/Effect';
 import Engine from '@civ-clone/core-engine/Engine';
+import { Fortress } from '@civ-clone/civ1-world/TileImprovements';
 import FillGenerator from '@civ-clone/simple-world-generator/tests/lib/FillGenerator';
 import { Grassland } from '@civ-clone/civ1-world/Terrains';
 import Player from '@civ-clone/core-player/Player';
@@ -29,13 +30,14 @@ describe('defeated', (): void => {
       engine = new Engine(),
       player = new Player(ruleRegistry),
       enemy = new Player(ruleRegistry),
+      tileImprovementRegistry = new TileImprovementRegistry(),
       world = new World(new FillGenerator(5, 5, Grassland), ruleRegistry);
 
     ruleRegistry.register(
       ...defeated(
         cityRegistry,
         ruleRegistry,
-        new TileImprovementRegistry(),
+        tileImprovementRegistry,
         unitRegistry,
         engine
       ),
@@ -61,6 +63,7 @@ describe('defeated', (): void => {
       ruleRegistry,
       stack,
       tile,
+      tileImprovementRegistry,
       unitRegistry,
     };
   };
@@ -91,6 +94,25 @@ describe('defeated', (): void => {
     } = await setUp();
 
     cityRegistry.register(new City(player, tile, '', ruleRegistry));
+
+    ruleRegistry.process(Defeated, defender, attacker);
+
+    expect(defender.destroyed()).true;
+    others.forEach((unit: Unit): void => {
+      expect(unit.destroyed()).false;
+    });
+  });
+
+  it('should only destroy the defender of a stack on a Fortress (civ-clone/web-renderer#388)', async (): Promise<void> => {
+    const {
+      attacker,
+      ruleRegistry,
+      stack: [defender, ...others],
+      tile,
+      tileImprovementRegistry,
+    } = await setUp();
+
+    tileImprovementRegistry.register(new Fortress(tile, ruleRegistry));
 
     ruleRegistry.process(Defeated, defender, attacker);
 

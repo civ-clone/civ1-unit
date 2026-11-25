@@ -44,7 +44,7 @@ import register from '../registerRules';
 //  the action wiring is lifted into base packages (civ-clone/web-renderer#1008). The AI takes the first action it's
 //  offered and the UI lists them in order, so the order is behaviour, not presentation.
 
-// The 55 action rules, in the order `Rules/Unit/action.ts` registers them. civ1-wonder's `help-build-wonder` comes
+// The 56 action rules, in the order `Rules/Unit/action.ts` registers them. civ1-wonder's `help-build-wonder` comes
 //  after these in a game (plugins load in name order), but civ1-wonder isn't installed here.
 const actionRuleIds = [
   'civ1-unit:unit/action/steal-technology',
@@ -88,6 +88,7 @@ const actionRuleIds = [
   'civ1-unit:unit/action/improvement/Mine',
   'civ1-unit:unit/action/improvement/Road',
   'civ1-unit:unit/action/improvement/Railroad',
+  'civ1-unit:unit/action/improvement/Fortress',
   'civ1-unit:unit/action/terrain/ClearJungle',
   'civ1-unit:unit/action/terrain/ClearForest',
   'civ1-unit:unit/action/terrain/PlantForest',
@@ -508,7 +509,7 @@ describe('unit actions', function (): void {
   // The matrix and the counter build a game for each of their 644 and 616 cells: about a second each here, more on CI.
   this.timeout(60000);
 
-  it('should register the 55 action rules in their order', async (): Promise<void> => {
+  it('should register the 56 action rules in their order', async (): Promise<void> => {
     const game = new Game({ rng: createRng(1008) });
 
     register(game);
@@ -613,7 +614,9 @@ describe('unit actions', function (): void {
     //  a land unit at sea (civ-clone/web-renderer#1031). 138883 since each tile improvement row asks whether it may be
     //  built on a city's square (`BuildOnCitySquare`, civ-clone/web-renderer#1029). 141347 since the four terrain
     //  conversions' rules are each wrapped to say what they do (`describedRule`, civ-clone/web-renderer#620): the
-    //  wrapper's one criterion asks the rule `actionRules` made, once per cell each (616 × 4 more).
-    expect(count).to.equal(141347);
+    //  wrapper's one criterion asks the rule `actionRules` made, once per cell each (616 × 4 more). 142231 since
+    //  Settlers can build a Fortress (civ-clone/web-renderer#388): its row's criteria are asked on every cell, and it is
+    //  offered in no cell, as no one there knows Construction.
+    expect(count).to.equal(142231);
   });
 });
