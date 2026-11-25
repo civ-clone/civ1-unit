@@ -243,11 +243,13 @@ describe('RailroadTo through a city', (): void => {
     // The way runs through the city.
     expect(note()!.path).to.include(cityTile);
 
-    // A finished build makes its Railroad with the default rule registry (`base-unit-action-build-railroad`), so that's
-    //  where civ1-world's `Built` rules have to be for it to land in this game's registry.
+    // civ1-world's `Built` rules, so a finished Railroad lands in this game's registry. Older
+    //  `base-unit-action-build-railroad` builds it with the default rule registry, and newer with the registry the action
+    //  was made with (this game's), so they go in both.
     const builtRules = built(game.tileImprovements, game.engine);
 
     ruleRegistryInstance.register(...builtRules);
+    game.rules.register(...builtRules);
 
     try {
       for (let turn = 0; turn < 30 && note(); turn++) {
@@ -267,6 +269,7 @@ describe('RailroadTo through a city', (): void => {
       }
     } finally {
       ruleRegistryInstance.unregister(...builtRules);
+      game.rules.unregister(...builtRules);
     }
 
     const hasRailroad = (tile: Tile): boolean =>
